@@ -4,7 +4,9 @@ function pass = run_all_S6_S7()
 %   - Stage S6: Storage Capacitor Parasitics (ESR, ESL, Dielectric Leakage) & 200% Degradation
 %   - Stage S7: Power Semiconductor (MOSFET) Switching Dynamics, Loss Breakdown & Thermal Rise
 
-clc; clear; close all;
+clc;
+clearvars -except rootDir mode tMasterStart s5Dir s6s7Dir flatDir;
+close all;
 
 fprintf('\n============================================================\n');
 fprintf('SITRA STAGES S6 & S7 COMPREHENSIVE VALIDATION SUITE\n');
@@ -12,13 +14,12 @@ fprintf('============================================================\n');
 
 thisDir = fileparts(mfilename('fullpath'));
 if isempty(thisDir), thisDir = pwd; end
-rootDir = fileparts(thisDir);
-cd(rootDir);
-addpath(rootDir);
+flatRoot = fileparts(thisDir);
+addpath(flatRoot);
 addpath(thisDir);
-addpath(fullfile(rootDir, 'SITRA_baselines', 'MATLAB', 'baselines'));
+addpath(fullfile(flatRoot, 'baselines'));
 
-outDir = fullfile(rootDir, 'Results', 'S6_S7');
+outDir = fullfile(flatRoot, 'Results', 'S6_S7');
 if ~exist(outDir, 'dir'), mkdir(outDir); end
 
 % Run S6

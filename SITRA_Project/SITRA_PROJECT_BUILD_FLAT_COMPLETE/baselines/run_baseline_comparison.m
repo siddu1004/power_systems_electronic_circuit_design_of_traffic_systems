@@ -52,13 +52,14 @@ rateAxis = cell(nS,1);
 perSeed = {};
 
 % Clearance metric storage
-meanClearTime  = nan(nS,nC);
-stdClearTime   = nan(nS,nC);
+meanClearTime   = nan(nS,nC);
+stdClearTime    = nan(nS,nC);
 clearedSeedsStr = cell(nS,nC);
-meanExcessVehS = nan(nS,nC);
+meanExcessVehS  = nan(nS,nC);
+meanPeakExcess  = nan(nS,nC);
 
 fidSeed = fopen(fullfile(outDir,'baseline_runs_per_seed.csv'),'w');
-fprintf(fidSeed, 'Scenario,Controller,Seed,AvgDelay_s,NetDelay_s,AvgQueue_veh,MaxQueue_veh,MaxQueueB4_veh,Throughput_veh,FinalQueue_veh,LOS,ClearTime_s,ExcessVehS,Cleared\n');
+fprintf(fidSeed, 'Scenario,Controller,Seed,AvgDelay_s,NetDelay_s,AvgQueue_veh,MaxQueue_veh,MaxQueueB4_veh,Throughput_veh,FinalQueue_veh,LOS,ClearTime_s,ExcessVehS,PeakExcess_veh,Cleared\n');
 
 for i = 1:nS
     s = scn(i);
@@ -74,10 +75,28 @@ for i = 1:nS
     vals = zeros(nSeeds, nC, numel(fields));
     clearVals = nan(nSeeds, nC);
     excessVals = nan(nSeeds, nC);
+    peakExcessVals = nan(nSeeds, nC);
     clearedFlags = false(nSeeds, nC);
 
     for j = 1:nSeeds
         A = bl_make_arrivals(s, p, seeds(j));     % SAME arrivals for all controllers
+        
+        % Twin run setup if scenario has an event definition
+        hasTwin = ~isnan(s.tEvent) && isfield(s, 'twin') && ~isempty(fieldnames(s.twin));
+        if hasTwin
+            sTwin = s;
+            if isfield(s.twin, 'demandFcn') && ~isempty(s.twin.demandFcn)
+                sTwin.demandFcn = s.twin.demandFcn;
+            end
+            pTwin = p;
+            if isfield(s.twin, 'q0') && ~isempty(s.twin.q0)
+                pTwin.q0 = s.twin.q0;
+            else
+                pTwin.q0 = zeros(1,4);
+            end
+            A_twin = bl_make_arrivals(sTwin, pTwin, seeds(j));
+        end
+
         if j == 1
             tAxis{i} = A.tVec(:);
             rateAxis{i} = A.rate;
@@ -91,17 +110,24 @@ for i = 1:nS
             end
             traces{i,c} = traces{i,c} + sum(R.qHist(:,1:3),2)/nSeeds;
 
-            % A1: Compute clearance metrics
+            % Compute clearance metrics against twin run
             Q_total = sum(R.qHist(:,1:3), 2);
-            C_res = bl_clearance(R.tVec, Q_total, s.tEvent, s.tBaseWin);
+            if hasTwin
+                R_twin = bl_simulate(ctrls{c}, A_twin, pTwin, net);
+                Q_twin = sum(R_twin.qHist(:,1:3), 2);
+                C_res = bl_clearance(R.tVec, Q_total, Q_twin, s.tEvent);
+            else
+                C_res = bl_clearance(R.tVec, Q_total, [], s.tEvent);
+            end
             clearVals(j,c) = C_res.tClear;
             excessVals(j,c) = C_res.excessVehS;
+            peakExcessVals(j,c) = C_res.peakExcess;
             clearedFlags(j,c) = C_res.cleared;
 
-            fprintf(fidSeed, '%s,%s,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.3f,%s,%.2f,%.2f,%d\n', ...
+            fprintf(fidSeed, '%s,%s,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.3f,%s,%.2f,%.2f,%.2f,%d\n', ...
                 s.id, ctrls{c}, seeds(j), M.avgDelay, M.netDelay, M.avgQueue, ...
                 M.maxQueue, M.maxQueueB4, M.throughput, M.finalQueue, M.LOS, ...
-                C_res.tClear, C_res.excessVehS, double(C_res.cleared));
+                C_res.tClear, C_res.excessVehS, C_res.peakExcess, double(C_res.cleared));
             if s.stochastic == false || j == 1
                 perSeed{end+1} = bl_export_for_simulink(R); %#ok<AGROW>
                 perSeed{end}.scenario = s.id;
@@ -132,25 +158,37 @@ for i = 1:nS
                 stdClearTime(i,c) = NaN;
             end
             meanExcessVehS(i,c) = mean(excessVals(:, c));
+            meanPeakExcess(i,c) = mean(peakExcessVals(:, c));
         else
             clearedSeedsStr{i,c} = 'N/A';
             meanClearTime(i,c) = NaN;
             stdClearTime(i,c) = NaN;
             meanExcessVehS(i,c) = NaN;
+            meanPeakExcess(i,c) = NaN;
         end
     end
     fprintf('  %s %-30s done (%d seed%s)\n', s.id, s.name, nSeeds, plural(nSeeds));
 end
 fclose(fidSeed);
 
+% Sanity check: for T6, Webster excessVehS must be larger than SITRA's
+idxT6 = find(strcmp({scn.id}, 'T6'), 1);
+if ~isempty(idxT6)
+    cWeb = find(strcmp(ctrls, 'Webster'), 1);
+    cSit = find(strcmp(ctrls, 'SITRA'), 1);
+    assert(meanExcessVehS(idxT6, cWeb) > meanExcessVehS(idxT6, cSit), ...
+        'Sanity check failed: T6 Webster excessVehS (%.1f) must be > SITRA excessVehS (%.1f)', ...
+        meanExcessVehS(idxT6, cWeb), meanExcessVehS(idxT6, cSit));
+end
+
 % Reset p.q0
 p.q0 = zeros(1,4);
 
 % ---- table -----------------------------------------------------------------
 fid = fopen(fullfile(outDir,'baseline_comparison.csv'),'w');
-fprintf(fid, 'Scenario,Name,Controller,AvgDelay_s,AvgDelay_std,LOS,NetDelay_s,AvgQueue_veh,MaxQueue_veh,MaxQueueB4_veh,Throughput_veh,Throughput_vph,FinalQueue_veh,MaxResidual,ClearTime_s,ClearTime_std,ClearedSeeds,ExcessVehS\n');
-hdr = sprintf('%-4s %-12s %9s %4s %9s %9s %9s %9s %10s %9s %11s %11s %9s', ...
-    'Scn','Controller','Delay[s]','LOS','NetDel[s]','AvgQ','MaxQ','MaxQ_B4','Thru[veh]','FinalQ','ClearTime[s]','ClearSeeds','ExcessVehS');
+fprintf(fid, 'Scenario,Name,Controller,AvgDelay_s,AvgDelay_std,LOS,NetDelay_s,AvgQueue_veh,MaxQueue_veh,MaxQueueB4_veh,Throughput_veh,Throughput_vph,FinalQueue_veh,MaxResidual,ClearTime_s,ClearTime_std,ClearedSeeds,ExcessVehS,PeakExcess_veh\n');
+hdr = sprintf('%-4s %-12s %9s %4s %9s %9s %9s %9s %10s %9s %11s %11s %9s %10s', ...
+    'Scn','Controller','Delay[s]','LOS','NetDel[s]','AvgQ','MaxQ','MaxQ_B4','Thru[veh]','FinalQ','ClearTime[s]','ClearSeeds','ExcessVehS','PeakExc[v]');
 fprintf('\n%s\n%s\n', hdr, repmat('-',1,numel(hdr)));
 for i = 1:nS
     for c = 1:nC
@@ -158,16 +196,18 @@ for i = 1:nS
         if isnan(meanClearTime(i,c)), clearStr = 'NaN'; end
         excessStr = sprintf('%.1f', meanExcessVehS(i,c));
         if isnan(meanExcessVehS(i,c)), excessStr = 'NaN'; end
-        fprintf('%-4s %-12s %9.2f %4s %9.2f %9.2f %9.2f %9.2f %10.1f %9.2f %11s %11s %9s\n', ...
+        peakExcStr = sprintf('%.2f', meanPeakExcess(i,c));
+        if isnan(meanPeakExcess(i,c)), peakExcStr = 'NaN'; end
+        fprintf('%-4s %-12s %9.2f %4s %9.2f %9.2f %9.2f %9.2f %10.1f %9.2f %11s %11s %9s %10s\n', ...
             scn(i).id, ctrls{c}, mean_.avgDelay(i,c), LOS{i,c}, mean_.netDelay(i,c), ...
             mean_.avgQueue(i,c), mean_.maxQueue(i,c), mean_.maxQueueB4(i,c), ...
-            mean_.throughput(i,c), mean_.finalQueue(i,c), clearStr, clearedSeedsStr{i,c}, excessStr);
-        fprintf(fid, '%s,%s,%s,%.3f,%.3f,%s,%.3f,%.3f,%.3f,%.3f,%.2f,%.1f,%.3f,%.2e,%.2f,%.2f,%s,%.2f\n', ...
+            mean_.throughput(i,c), mean_.finalQueue(i,c), clearStr, clearedSeedsStr{i,c}, excessStr, peakExcStr);
+        fprintf(fid, '%s,%s,%s,%.3f,%.3f,%s,%.3f,%.3f,%.3f,%.3f,%.2f,%.1f,%.3f,%.2e,%.2f,%.2f,%s,%.2f,%.2f\n', ...
             scn(i).id, scn(i).name, ctrls{c}, mean_.avgDelay(i,c), std_.avgDelay(i,c), ...
             LOS{i,c}, mean_.netDelay(i,c), mean_.avgQueue(i,c), mean_.maxQueue(i,c), ...
             mean_.maxQueueB4(i,c), mean_.throughput(i,c), mean_.throughputRate(i,c), ...
             mean_.finalQueue(i,c), mean_.maxResidual(i,c), ...
-            meanClearTime(i,c), stdClearTime(i,c), clearedSeedsStr{i,c}, meanExcessVehS(i,c));
+            meanClearTime(i,c), stdClearTime(i,c), clearedSeedsStr{i,c}, meanExcessVehS(i,c), meanPeakExcess(i,c));
     end
     if i < nS, fprintf('\n'); end
 end
@@ -361,10 +401,18 @@ RES.mean = mean_; RES.std = std_; RES.LOS = LOS;
 RES.traces = traces; RES.tAxis = tAxis; RES.rate = rateAxis;
 RES.simulinkSignals = perSeed;  % first-seed runs, ready for From Workspace
 RES.clearance = struct('meanClearTime', meanClearTime, 'stdClearTime', stdClearTime, ...
-                       'clearedSeeds', {clearedSeedsStr}, 'excessVehS', meanExcessVehS);
+                       'clearedSeeds', {clearedSeedsStr}, 'excessVehS', meanExcessVehS, ...
+                       'peakExcess', meanPeakExcess);
 RES.config = rmfield(p, 'controllers');
-scnSave = rmfield(scn, 'demandFcn'); %#ok<NASGU>  (function handles do not save portably)
-RES.scenarios = rmfield(scn, 'demandFcn');
+% Clean non-portable function handles before saving
+scnSave = scn;
+for k = 1:numel(scnSave)
+    scnSave(k).demandFcn = [];
+    if isfield(scnSave(k), 'twin') && isfield(scnSave(k).twin, 'demandFcn')
+        scnSave(k).twin.demandFcn = [];
+    end
+end
+RES.scenarios = scnSave;
 save(fullfile(outDir,'baseline_results.mat'), 'RES');
 fprintf('\nSaved table, per-seed CSV, MAT and 7 figures to:\n  %s\n\n', outDir);
 end

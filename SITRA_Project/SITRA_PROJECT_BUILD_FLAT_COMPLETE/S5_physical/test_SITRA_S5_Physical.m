@@ -10,7 +10,8 @@
 %
 % Put this folder (S5_physical) inside SITRA_PROJECT_BUILD_FLAT_COMPLETE.
 
-clear; clc;
+clc;
+clearvars -except rootDir mode tMasterStart s5Dir s6s7Dir flatDir;
 here = fileparts(mfilename('fullpath'));
 if isempty(here), here = pwd; end
 root = fileparts(here);

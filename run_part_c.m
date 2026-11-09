@@ -1,5 +1,5 @@
 clc;
-clearvars;
+clearvars -except rootDir mode tMasterStart;
 
 %% ============================================================
 % SITRA PART C

@@ -11,8 +11,16 @@ clc;
 clearvars;
 
 model = 'SITRA_S2_test_ControllerCompare';
+modelPath = which([model '.slx']);
+if isempty(modelPath)
+    cand = fullfile(pwd, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', [model '.slx']);
+    if isfile(cand)
+        addpath(fileparts(cand));
+        modelPath = cand;
+    end
+end
 
-assert(isfile([model '.slx']), ...
+assert(~isempty(modelPath) && isfile(modelPath), ...
     'Comparison model file not found.');
 
 exportDir = fullfile('Results', 'T6_Simulink_Exports');
@@ -42,10 +50,11 @@ assignin('base', 'SITRA_ControllerSelect', SITRA_ControllerSelect);
 load_system(model);
 
 %% 1. BACKUP
-backupModel = [model '_BeforeElectricalUpgrade'];
+modelDir = fileparts(modelPath);
+backupModel = fullfile(modelDir, [model '_BeforeElectricalUpgrade']);
 
 if ~isfile([backupModel '.slx'])
-    copyfile([model '.slx'], [backupModel '.slx']);
+    copyfile(modelPath, [backupModel '.slx']);
 end
 fprintf('\nBackup created: %s.slx\n', backupModel);
 

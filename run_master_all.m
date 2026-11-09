@@ -77,17 +77,22 @@ if ismember(mode, [1, 3])
     
     % Step 2.1: S5 Simscape Physical Circuit Model Test
     fprintf('\n--- [2.1] Running Stage S5: Physical Simscape Model Verification ---\n');
+    rootDir = fileparts(mfilename('fullpath')); if isempty(rootDir), rootDir = pwd; end
     s5Dir = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S5_physical');
     cd(s5Dir);
     run(fullfile(s5Dir, 'test_SITRA_S5_Physical.m'));
     
     % Step 2.2: Four-Controller Physical Circuit Clearance-Time Benchmarking
     fprintf('\n--- [2.2] Running S5 Physical Circuit Clearance-Time Benchmarking ---\n');
+    rootDir = fileparts(mfilename('fullpath')); if isempty(rootDir), rootDir = pwd; end
+    s5Dir = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S5_physical');
+    cd(s5Dir);
     run(fullfile(s5Dir, 'run_controllers_on_S5_physical.m'));
     cd(rootDir);
     
     % Step 2.3: S6 & S7 Capacitor Parasitics and Semiconductor Thermal Dynamics
     fprintf('\n--- [2.3] Running Stages S6 & S7: Parasitics & Thermal Dynamics ---\n');
+    rootDir = fileparts(mfilename('fullpath')); if isempty(rootDir), rootDir = pwd; end
     s6s7Dir = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S6_S7_parasitics');
     cd(s6s7Dir);
     run(fullfile(s6s7Dir, 'run_all_S6_S7.m'));
@@ -103,11 +108,18 @@ if ismember(mode, [1, 4])
     flatDir = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE');
     cd(flatDir);
     run(fullfile(flatDir, 'run_all_SITRA.m'));
+    rootDir = fileparts(mfilename('fullpath'));
+    if isempty(rootDir), rootDir = pwd; end
     cd(rootDir);
 end
 
-totalElapsed = toc(tMasterStart);
-fprintf('\n======================================================================\n');
-fprintf('  SITRA MASTER SUITE COMPLETED SUCCESSFULLY IN %.2f SECONDS\n', totalElapsed);
+if exist('tMasterStart', 'var')
+    totalElapsed = toc(tMasterStart);
+    fprintf('\n======================================================================\n');
+    fprintf('  SITRA MASTER SUITE COMPLETED SUCCESSFULLY IN %.2f SECONDS\n', totalElapsed);
+else
+    fprintf('\n======================================================================\n');
+    fprintf('  SITRA MASTER SUITE COMPLETED SUCCESSFULLY\n');
+end
 fprintf('  All results, logs, and figures have been updated and validated.\n');
 fprintf('======================================================================\n');

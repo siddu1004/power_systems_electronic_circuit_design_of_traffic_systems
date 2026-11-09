@@ -1,13 +1,19 @@
 clc;
-clearvars;
+clearvars -except rootDir mode tMasterStart;
 
 %% ============================================================
 % SITRA PART B
 % CAPACITOR VOLTAGE/CURRENT CONSERVATION VERIFICATION
 %% ============================================================
 
+rootDir = fileparts(mfilename('fullpath'));
+if isempty(rootDir), rootDir = pwd; end
+addpath(rootDir);
+flatDir = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE');
+if exist(flatDir, 'dir'), addpath(flatDir); end
+
 model = 'SITRA_S2_test_ControllerCompare';
-assert(exist(model,'file')==4, 'Comparison model file not found.');
+assert(exist(model,'file') > 0, 'Comparison model file not found.');
 load_system(model);
 
 fprintf('\n============================================\n');

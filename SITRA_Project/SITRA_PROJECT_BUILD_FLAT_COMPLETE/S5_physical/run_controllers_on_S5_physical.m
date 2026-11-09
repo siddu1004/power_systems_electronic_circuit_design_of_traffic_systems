@@ -3,8 +3,9 @@
 % through the real Simscape physical circuit (SITRA_S5_Physical.slx) on
 % scenarios T5, T6, T7, and T8.
 %
-% Measures clearance time directly from the capacitor voltages vC_B1..vC_B3
-% and compares against the baseline model queue trajectories.
+% Clearance time is measured by comparing the congested run queue (measured
+% from capacitor voltages vC_B1..vC_B3) against a twin run without the
+% congestion event (same controller, same seed, same arrivals profile).
 %
 % Outputs:
 %   - Results/S5_physical/controller_clearance_physical.csv
@@ -64,6 +65,7 @@ rectClearCirc    = zeros(numRuns, 1);
 recCleared       = false(numRuns, 1);
 recMaxErrV       = zeros(numRuns, 1);
 recExcessVehS    = zeros(numRuns, 1);
+recPeakExcess    = zeros(numRuns, 1);
 recQpeak         = zeros(numRuns, 1);
 recQbase         = zeros(numRuns, 1);
 
@@ -72,6 +74,7 @@ plotData = struct();
 
 fprintf('========================================================================\n');
 fprintf(' SITRA S5: Controller Clearance Time Comparison on Physical Simscape Circuit\n');
+fprintf(' (Evaluated against No-Congestion Twin Model Runs)\n');
 fprintf('========================================================================\n');
 
 set_param([mdl '/Power_Path'], 'Commented', 'on');
@@ -88,9 +91,22 @@ for r = 1:numel(evalRuns)
     end
     
     A = bl_make_arrivals(s, pRun, target.seed);
+    
+    % Twin run setup
+    sTwin = s;
+    if isfield(s, 'twin') && isfield(s.twin, 'demandFcn') && ~isempty(s.twin.demandFcn)
+        sTwin.demandFcn = s.twin.demandFcn;
+    end
+    pTwin = pRun;
+    if isfield(s, 'twin') && isfield(s.twin, 'q0') && ~isempty(s.twin.q0)
+        pTwin.q0 = s.twin.q0;
+    else
+        pTwin.q0 = zeros(1, 4);
+    end
+    A_twin = bl_make_arrivals(sTwin, pTwin, target.seed);
+    
     plotData.(sprintf('run_%d', r)).name = s.name;
     plotData.(sprintf('run_%d', r)).tEvent = s.tEvent;
-    plotData.(sprintf('run_%d', r)).tBaseWin = s.tBaseWin;
     
     for c = 1:numel(controllers)
         ctrlName = controllers{c};
@@ -99,9 +115,12 @@ for r = 1:numel(evalRuns)
         fprintf('\n--- [%d/%d] %s on %s (seed %d) ---\n', ...
             rowIdx, numRuns, ctrlName, s.name, target.seed);
         
-        % 1. Baseline model simulation
+        % 1. Baseline model simulation (event run and twin run)
         R = bl_simulate(ctrlName, A, pRun, net);
         S = bl_export_for_simulink(R);
+        
+        R_twin = bl_simulate(ctrlName, A_twin, pTwin, net);
+        Qtwin_model = sum(R_twin.qHist(:, 1:3), 2);
         
         % 2. Setup inputs for SITRA_S5_Physical
         S5 = evalin('base', 'S5');
@@ -133,9 +152,9 @@ for r = 1:numel(evalRuns)
         Qcirc  = sum(vC(:, 1:3), 2);
         Qmodel = sum(qRef(:, 1:3), 2);
         
-        % 6. Compute clearance
-        Cc = bl_clearance(tv, Qcirc, s.tEvent, s.tBaseWin);
-        Cm = bl_clearance(tv, Qmodel, s.tEvent, s.tBaseWin);
+        % 6. Compute clearance against twin run
+        Cc = bl_clearance(tv, Qcirc,  Qtwin_model, s.tEvent);
+        Cm = bl_clearance(tv, Qmodel, Qtwin_model, s.tEvent);
         
         % Consistency assertion
         if isnan(Cm.tClear)
@@ -152,20 +171,22 @@ for r = 1:numel(evalRuns)
         recCleared(rowIdx)     = Cc.cleared;
         recMaxErrV(rowIdx)     = maxErr;
         recExcessVehS(rowIdx)  = Cc.excessVehS;
+        recPeakExcess(rowIdx)  = Cc.peakExcess;
         recQpeak(rowIdx)       = Cc.Qpeak;
         recQbase(rowIdx)       = Cc.Qbase;
         
         if isnan(Cc.tClear)
-            fprintf('Clearance: NOT CLEARED | Excess queue: %.1f veh*s | Qpeak = %.1f veh\n', ...
-                Cc.excessVehS, Cc.Qpeak);
+            fprintf('Clearance: NOT CLEARED | Excess queue: %.1f veh*s | Peak Excess: %.2f veh\n', ...
+                Cc.excessVehS, Cc.peakExcess);
         else
-            fprintf('Clearance time: %.1f s | Excess queue: %.1f veh*s | Qbase = %.1f, Qpeak = %.1f\n', ...
-                Cc.tClear, Cc.excessVehS, Cc.Qbase, Cc.Qpeak);
+            fprintf('Clearance time: %.1f s | Excess queue: %.1f veh*s | Peak Excess: %.2f veh\n', ...
+                Cc.tClear, Cc.excessVehS, Cc.peakExcess);
         end
         
         % Save for plotting
         plotData.(sprintf('run_%d', r)).(ctrlName).t = tv;
         plotData.(sprintf('run_%d', r)).(ctrlName).Q = Qcirc;
+        plotData.(sprintf('run_%d', r)).(ctrlName).Qtwin = Qtwin_model;
         plotData.(sprintf('run_%d', r)).(ctrlName).tClear = Cc.tClear;
         plotData.(sprintf('run_%d', r)).(ctrlName).cleared = Cc.cleared;
     end
@@ -173,11 +194,21 @@ end
 
 set_param([mdl '/Power_Path'], 'Commented', 'off');
 
+% Sanity check: for T6, Webster excessVehS must be > SITRA excessVehS
+t6WebIdx = find(strcmp(recScenario, allScn(6).name) & strcmp(recController, 'Webster'), 1);
+t6SitIdx = find(strcmp(recScenario, allScn(6).name) & strcmp(recController, 'SITRA'), 1);
+assert(~isempty(t6WebIdx) && ~isempty(t6SitIdx), 'T6 Webster/SITRA records not found');
+assert(recExcessVehS(t6WebIdx) > recExcessVehS(t6SitIdx), ...
+    'Sanity check failed: T6 Webster excessVehS (%.1f) must be > SITRA excessVehS (%.1f)', ...
+    recExcessVehS(t6WebIdx), recExcessVehS(t6SitIdx));
+fprintf('\nSanity check PASS: T6 Webster excessVehS (%.1f) > SITRA (%.1f)\n', ...
+    recExcessVehS(t6WebIdx), recExcessVehS(t6SitIdx));
+
 % Format results table
 T = table(recScenario, recController, rectClearModel, rectClearCirc, ...
-    recCleared, recMaxErrV, recExcessVehS, recQpeak, recQbase, ...
+    recCleared, recMaxErrV, recExcessVehS, recPeakExcess, recQpeak, recQbase, ...
     'VariableNames', {'Scenario', 'Controller', 'tClear_Model_s', 'tClear_Circuit_s', ...
-                      'Cleared', 'MaxErr_V', 'ExcessVehS', 'Qpeak_veh', 'Qbase_veh'});
+                      'Cleared', 'MaxErr_V', 'ExcessVehS', 'PeakExcess_veh', 'Qpeak_veh', 'Qbase_veh'});
 
 csvFile = fullfile(outDir, 'controller_clearance_physical.csv');
 writetable(T, csvFile);
@@ -197,8 +228,10 @@ for r = 1:numel(evalRuns)
     for c = 1:numel(controllers)
         ctrlName = controllers{c};
         cdat = d.(ctrlName);
+        clrLabel = sprintf('%.0fs', cdat.tClear);
+        if isnan(cdat.tClear), clrLabel = 'NC'; end
         plot(cdat.t, cdat.Q, 'LineWidth', 1.4, 'Color', ctrlColors.(ctrlName), ...
-             'DisplayName', sprintf('%s (t_{clear}=%.0fs)', ctrlName, cdat.tClear));
+             'DisplayName', sprintf('%s (t_{clear}=%s)', ctrlName, clrLabel));
     end
     
     if ~isnan(d.tEvent)
