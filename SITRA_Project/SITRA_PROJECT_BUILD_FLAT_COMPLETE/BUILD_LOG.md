@@ -2164,3 +2164,77 @@ Stage S5 is complete. Proceed to Stage S6 / S12 for commercial hardware componen
 ============================================================
 END OF STAGE S5 VALIDATION
 ============================================================
+
+
+---
+
+## Stage S5 Physical Circuit Rebuild (`SITRA_S5_Physical.slx`)
+**Status: DONE — Validated in MATLAB/Simulink (PASS).**
+
+### 1. Motivation & Architectural Correction
+The initial deliverable `SITRA_Simscape_Hardware.slx` contained mathematical update equations embedded in MATLAB Function blocks with disconnected utility blocks. To satisfy the physical simulation requirements, `SITRA_S5_Physical.slx` was engineered from scratch via `build_SITRA_S5_Physical.m` using Simscape Foundation Library Electrical (`fl_lib`) and `ee_lib`.
+
+Every component is a genuine physical block connected by physical conserving electrical ports (`LConn`/`RConn`), allowing visual tracing from AC mains to individual signal head lamps.
+
+### 2. Block Inventory & Hardware Architecture
+- **Layer A (Traffic Equivalent Circuit)**:
+  - 4 x 1 F Capacitor blocks ($C_{B1}..C_{B4}$) representing approach and downstream queues (1 V = 1 vehicle, 1 C = 1 vehicle).
+  - 3 x Controlled Current Sources for arrivals into $C_{B1}..C_{B3}$.
+  - 3 x Controlled Current Sources physically wired between branch capacitor nodes and the B4 node ($C_{B4}$), creating an authentic Kirchhoff Current Law (KCL) summing junction.
+  - 1 x Controlled Current Source draining $C_{B4}$ to ground via a Current Sensor.
+  - 4 x Voltage Sensors measuring capacitor voltages across each queue.
+  - Discrete supervisory logic: S4 gate interlock and sample-and-held departure laws.
+- **Layer B (Power Supply & Channel Distribution)**:
+  - AC mains source ($230\text{ V}_{\text{rms}}$, $50\text{ Hz}$).
+  - Ideal step-down transformer ($230\text{ V} \rightarrow 36\text{ V}_{\text{sec}}$) with primary/secondary winding leakage resistance and inductance.
+  - Full-wave 4-diode rectifier bridge.
+  - DC-link capacitor ($2200\,\mu\text{F}$ with ESR) and safety bleed resistor.
+  - Synchronous/freewheeling Buck DC-DC converter (MOSFET + freewheeling diode + filter inductor $L_{\text{buck}} = 2\text{ mH}$ + output filter capacitor $C_{\text{out}} = 3300\,\mu\text{F}$ + RC damper) regulated to $24\text{ VDC}$ by a closed-loop PI controller and PWM generator.
+  - 3 signal-head channels, each featuring: high-side switching MOSFET, series Current Sensor, and $24\,\Omega$ ($24\text{ W}$) resistive signal head load.
+  - Protection & interlock: One-green mutual exclusion interlock, over-current trip latch ($2\text{ A}$ threshold), and bus undervoltage shutdown ($< 18\text{ V}$).
+  - Feedback sampling: Discrete ADC unit delays ($T_s = 2\,\mu\text{s}$) in sensor feedback lines, completely eliminating algebraic loops and enabling fast, stable backward-Euler local-solver execution.
+
+### 3. Empirical Verification Results (`test_SITRA_S5_Physical.m`)
+- **Check 1: Block Audit**
+  - Capacitors: 7 (Min: 7) -> PASS
+  - Controlled Current Sources: 7 (Min: 7) -> PASS
+  - Diodes: 5 (Min: 5) -> PASS
+  - MOSFETs: 4 (Min: 4) -> PASS
+  - Inductors: 2 (Min: 2) -> PASS
+  - Ideal Transformers: 1 (Min: 1) -> PASS
+  - AC Voltage Sources: 1 (Min: 1) -> PASS
+  - Voltage Sensors: 6 (Min: 6) -> PASS
+  - Current Sensors: 4 (Min: 4) -> PASS
+  - Resistors: 8 (Min: 8) -> PASS
+  - Code blocks inside physical subsystems: 0 -> PASS
+  - Unconnected physical ports: 0 -> PASS
+  - **Audit Status: PASS**
+
+- **Check 2: Traffic Equivalence (T6 Surge Replay)**
+  - Max error $|v_C - q_{\text{ref}}| = 1.300 \times 10^{-6}\text{ V}$ (Limit: $< 10^{-3}\text{ V}$) -> PASS
+  - Charge balance error $= -1.500 \times 10^{-7}\text{ C}$ (Limit: $< 10^{-3}\text{ C}$) -> PASS
+  - Minimum capacitor voltage $= 9.199 \times 10^{-32}\text{ V} \ge -10^{-6}\text{ V}$ (Strict non-negativity without clipping) -> PASS
+  - Gate overlap violations: 0 -> PASS
+  - Simulation runtime: 3.0 s -> PASS
+  - **Traffic Equivalence Status: PASS**
+
+- **Check 3: Power Path Operation**
+  - Mean DC-link voltage: $47.31\text{ V}$
+  - Regulated 24V bus mean: $23.98\text{ V}$ (Specification: $24.0\text{ V} \pm 5\%$) -> PASS
+  - Regulated 24V bus min / max: $22.06\text{ V}$ / $25.63\text{ V}$ (Specification: $24.0\text{ V} \pm 10\%$) -> PASS
+  - Off-state channel leakage current: $2.76 \times 10^{-4}\text{ A}$ (Limit: $< 1\text{ mA}$) -> PASS
+  - Conduction below 0.50 A during green phase: 0 samples -> PASS
+  - Simultaneous multi-channel conduction (shoot-through): 0 samples (Interlock successfully blocked illegal two-green command) -> PASS
+  - Simulation runtime: 32.2 s -> PASS
+  - **Power Path Status: PASS**
+
+- **Overall Deliverable Status: S5 PHYSICAL STATUS = PASS**
+
+### 4. Generated Artifacts & Schematics
+All figures and schematics are exported to `Results/S5_physical/`:
+- `schematic_top.png`: Top-level integration showing Traffic and Power subsystems.
+- `schematic_traffic_circuit.png`: Physical 1F capacitor network with KCL junction and current sources.
+- `schematic_power_path.png`: Full AC grid $\rightarrow$ Transformer $\rightarrow$ Rectifier $\rightarrow$ DC link $\rightarrow$ Buck $\rightarrow$ 3 MOSFET channels.
+- `fig_vC_vs_qRef.png`: Traffic capacitor voltage vs reference Part 8 queue trajectories.
+- `fig_error.png`: Sub-microvolt error trajectory.
+- `fig_power_path.png`: DC-link voltage, regulated bus voltage, and channel currents.
