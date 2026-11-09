@@ -1,0 +1,25 @@
+SITRA MATLAB SIMULATION PACKAGE
+================================
+
+1. Put the frozen Part 8 reference files in MATLAB/:
+   - part8_mpc_controller.m
+   - mpcSignalModel.m
+
+2. Ensure MATLAB can run createNetwork.m.
+
+3. From the project root, run:
+       run_all_SITRA
+
+4. Inspect:
+   - Command Window
+   - Results/figures/01...14
+   - Results/data/SITRA_master_results.mat
+   - Results/comparison_tables/SITRA_reference_vs_switching.csv
+
+5. Only after inspection should the current stage be declared PASS and recorded in BUILD_LOG.md.
+
+IMPORTANT:
+- Frozen reference files are not rewritten by the master program.
+- Electrical values are not invented.
+- The conceptual power-electronics figure is NOT an electrically validated circuit.
+- A successful code run alone is not a validation PASS.

@@ -18,3 +18,11 @@ logs/
 # beside it.
 /.plugins/
 /.opencode-skills/
+
+# Agent workspace state
+.agents/
+
+# MATLAB / Simulink cache and temporary files
+slprj/
+*.slxc
+*.asv

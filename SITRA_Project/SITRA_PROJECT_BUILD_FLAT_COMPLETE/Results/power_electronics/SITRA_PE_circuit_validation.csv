@@ -1,0 +1,8 @@
+Metric,Value,Unit,ValidationStatus
+MaxQueueVoltageError,0.000000e+00,V,PASS
+MaxDemandCurrentError,0.000000e+00,A,PASS
+MaxKCLResidual,7.216450e-16,A,PASS
+PeakTotalVoltage,15.210,V,PASS
+PeakStoredEnergy,77.282,J,PASS
+TotalDissipatedEnergy,0.811,J,PASS
+MutualExclusionInterlock,1,logical,PASS

@@ -1,0 +1,42 @@
+SITRA PROJECT BUILD MANIFEST
+============================
+Generated: 2026-09-14
+Status: IMPLEMENTED - MATLAB EXECUTION / FIGURE INSPECTION PENDING
+
+Main entry point:
+    run_all_SITRA.m
+
+Master simulation:
+    MATLAB/run_SITRA_Master_Simulation.m
+
+Structure validator:
+    MATLAB/validate_SITRA_Project_Structure.m
+
+Documentation:
+    Documentation/README.md
+    Documentation/BUILD_LOG.md
+
+Results:
+    Results/figures/
+    Results/data/
+    Results/comparison_tables/
+
+Previous-stage frozen copies included where exact source bytes were available:
+    Frozen/fixedsignalbaseline.m
+    Frozen/part5_demand_surge.m
+    Frozen/part6_adaptive_controller.m
+    Frozen/part9_step9_3_trajectory_validation.m
+
+Reference network:
+    MATLAB/createNetwork.m
+    MATLAB/adaptiveSignalModel.m
+
+NOTE:
+The current package deliberately does not synthesize or rewrite frozen
+Part 8 files. The master simulation therefore expects these exact reference
+files to be present in MATLAB/:
+    part8_mpc_controller.m
+    mpcSignalModel.m
+
+Also preserve the validated switching/reference files used by the existing
+project. Do not overwrite them with generated substitutes.
