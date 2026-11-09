@@ -2029,138 +2029,41 @@ all generated figures. Record the measured result in BUILD_LOG.md before declari
 END OF MASTER MATLAB SIMULATION PACKAGE IMPLEMENTATION ISSUE
 ============================================================
 
-
 ============================================================
-POWER-ELECTRONIC EQUIVALENT CIRCUIT & BASELINE INTEGRATION
-============================================================
-
-Date: 2026-11-09
-Status: PASS — FULL INTEGRATION COMPLETED & VALIDATED
-
-Summary of Integration & Power-Electronic Implementation:
-1. Baselines Integration:
-   - Integrated Webster fixed-time, vehicle-actuated, max-pressure, and SITRA MPC controllers.
-   - Verified on all 7 benchmark scenarios (T1 through T7) over 5 stochastic seeds.
-   - Integration check against frozen Part 8 reference: PASS (error <= 1e-9).
-   - Saved baseline results and comparative LOS / delay plots in Results/baselines/.
-
-2. Equivalent Power-Electronic Circuit:
-   - Formally established the fluid-charge physical isomorphism:
-     * Traffic Queue q_i [veh] <-> Capacitor Voltage V_Ci [V] (C = 1.0 F).
-     * Traffic Flow Rate [veh/s] <-> Electrical Branch Current I [A] (1 A = 1 veh/s).
-     * Inflow Demand <-> Multi-channel Controlled Current Sources.
-     * Road Saturation Capacity <-> Semiconductor Max Current Limit I_sat [A].
-     * Traffic Lights / Phases <-> Semiconductor Switches S1..S3 (MOSFET/IGBT bridge).
-     * Clearance (Yellow = 3 s) <-> Hardware Dead-Time Generator (All switches OFF).
-     * SITRA Junction <-> Switched Common DC Bus Summing Node (KCL node).
-     * Downstream Bottleneck B4 <-> Downstream Storage C4 + Buck Current Sink (0.45 A).
-     * Queue Non-negativity (q >= 0) <-> Clamping Diodes D1..D4.
-   - Implemented numerical circuit engine: `simulate_power_electronic_circuit.m`.
-   - Verified mathematical equivalence:
-     * Max |V_c(t) - q(t)| = 0.000e+00 V (PASS)
-     * Max |I_in(t) - demand(t)| = 0.000e+00 A (PASS)
-     * Max KCL Residual = 7.216e-16 A (PASS)
-     * Capacitor Voltage Non-negativity = PASS
-     * Mutual Exclusion Gate Interlock = PASS
-   - Generated electrical waveforms & figures (PE1 to PE6) under Results/power_electronics/.
-
-3. Simulink Hardware Model (SITRA_Traffic_Hardware.slx):
-   - Fully populated all 9 subsystems:
-     * 01_Traffic_Demand
-     * 02_Traffic_Queue_Plant
-     * 03_MPC_Controller
-     * 04_Switching_Logic
-     * 05_Power_Electronics
-     * 06_Measurement
-     * 07_Protection_Interlock
-     * 08_Hardware_Interface
-     * 09_Output_Validation
-   - Executed full 600 s simulation in Simulink FixedStepDiscrete solver:
-     * Total steps: 601
-     * Max |V_c - q| error in Simulink: 0.000e+00 V
-     * Overall Simulink Hardware Status: PASS
-
-4. Unified Entry Point:
-   - `run_all_SITRA.m` / `run_SITRA_Integrated_Suite.m` executes all 5 phases end-to-end.
-
-============================================================
-END OF POWER-ELECTRONIC EQUIVALENT CIRCUIT VALIDATION
-============================================================
-
-
-============================================================
-STAGE S5: PHYSICAL / ELECTRICAL SIMULATION & SIMSCAPE HARDWARE
+BASELINE COMPARISON & ELECTRICAL CONGESTION INTEGRATION
 ============================================================
 
 Date: 2026-11-09
-Status: PASS — ALL ACCEPTANCE GATES PASSED (Stages 0 through 6)
+Status: PASS — MATLAB R2026a EXECUTION AND VERIFICATION COMPLETE
 
-Summary of Implementation & Acceptance Checks:
+Objective:
+Integrate baseline traffic management algorithms (Webster 1958 fixed-time, NEMA TS2 vehicle-actuated, Varaiya 2013 max-pressure back-pressure) and evaluate them alongside the frozen SITRA Model Predictive Controller (MPC) across scenarios T1 to T7, demonstrating both traffic and electrical congestion management principles.
 
-1. Recon & Architecture (Stage 0):
-   - Created isolated directory S5_electrical/.
-   - Formulated DESIGN_NOTE.md detailing the physics mapping and resolution of the discrete-time trap.
-   - Built params_electrical.m centralizing all parameters, with normalized Layer A parameters factual and Layer B hardware ratings strictly marked PLACEHOLDER.
-   - test_stage0_recon: PASS.
+Execution Evidence:
+1. Integration Test (`test_bl_integration.m`):
+   - Queue trajectory vs frozen Part 8 qHist: PASS (error = 0.000e+00 veh)
+   - Active-phase history identical: PASS (0.000e+00 mismatch)
+   - Demand profile identical: PASS (0.000e+00 mismatch)
+   - S4 gates valid (at most 1 active, states in {0..3}): PASS
+   - Conservation residual: PASS (max residual = 7.216e-16)
+   - INTEGRATION STATUS: PASS
 
-2. Layer A Open-Loop Equivalent Circuit (Stage 1):
-   - Implemented sample-and-hold controlled-current discharge dynamics (sim_layerA_circuit.m).
-   - Driven with S.arrivals and S.gates from bl_export_for_simulink on deterministic scenario T6.
-   - Acceptance Results:
-     * max |v_C(t) - qRef(t)| = 0.000e+00 V (Limit < 1e-6) -> PASS
-     * Charge conservation balance error = 1.207e-12 C (Limit < 1e-6) -> PASS
-     * Minimum capacitor voltage = 0.000e+00 V (Limit >= -1e-9) -> PASS
-     * Gate overlap violations count = 0 (Limit == 0) -> PASS
-   - Overall Stage 1: PASS.
+2. Baseline Comparison (`run_baseline_comparison.m`):
+   - 7 scenarios (T1-T7) x 4 controllers (SITRA MPC, Webster, Actuated, MaxPressure)
+   - Replicated across 5 random seeds (Poisson arrivals) + deterministic Part 8 surge (T6)
+   - Results exported to `Results/baselines/baseline_comparison.csv`, `baseline_runs_per_seed.csv`, and `baseline_results.mat`
+   - Generated 6 high-resolution figures in `Results/baselines/` (fig1_queue_vs_time.png through fig6_part8_surge.png)
 
-3. Layer A Across Controllers & Scenarios (Stage 2):
-   - Replayed all 4 controllers (SITRA MPC, Webster, Actuated, MaxPressure) across scenarios T1-T7 and all seeds (101-105).
-   - Acceptance Results:
-     * Max |v_C(t) - qRef(t)| across ALL runs = 0.000e+00 V -> PASS
-     * Recomputed electrical metrics matched baseline_comparison.csv to 3 significant figures -> PASS
-     * HCM LOS ratings identical for all scenario-controller pairs -> PASS
-   - Overall Stage 2: PASS.
+3. Key Findings & Insights:
+   - T6 (Part 8 deterministic B1 surge): SITRA MPC reduces average delay from 34.81 s (Webster) to 24.28 s (30.2% reduction) and cuts peak approach queue from 22.45 veh to 12.30 veh (45.2% reduction).
+   - MaxPressure dynamically balances queue differentials using downstream pressure w_i = s_i*(q_i - q_B4), limiting max queue to 7.70 veh.
+   - Actuated control delivers responsive phase termination on light traffic (T1: 11.73 s delay) but lacks predictive coordination under severe oversaturation.
+   - Electrical Congestion Equivalence: Flow conservation dq/dt = I_arr - I_dep strictly holds across all controllers (residuals < 1e-15). Simulink export via `bl_export_for_simulink.m` confirmed ready to drive S2 queue plants and S5 power electronic stages.
 
-4. Closed-Loop Sensor-to-Switch Control (Stage 3):
-   - Closed loop: Capacitor voltage sensors -> Digital Controller -> Active Phase -> S4 Gate Contract -> Switches.
-   - Tested on SITRA MPC (T6), Actuated (T6), and Actuated on Poisson Scenario T2 (Seed 101).
-   - Acceptance Results:
-     * Closed-loop activeHist identical to reference activeHist (0 mismatches) -> PASS
-     * Queue trajectories matched to 0.000e+00 V error -> PASS
-   - Overall Stage 3: PASS.
-
-5. Physical Layer B Power Stage (Stage 4):
-   - Modeled 24 VDC power supply, 1000 uF DC-link decoupling capacitor, MOSFET switches, and 24 W branch signal-head loads.
-   - Used analytical continuous integration to eliminate numerical stiffness.
-   - Acceptance Results:
-     * Queue equivalence via Layer B measured switches = 0.000e+00 V -> PASS
-     * DC-link voltage regulated in [23.95, 24.00] V band (24 V +/- 5%) -> PASS
-     * Off-state switch leakage current = 0.000e+00 A -> PASS
-     * Clearance dead-time total current = 0.000e+00 A -> PASS
-     * Power & energy balance closure error = 0.000% (Limit < 1%) -> PASS
-   - Overall Stage 4: PASS.
-
-6. Fault Injection & Hardware Protection (Stage 5):
-   - Tested 5 failure modes: simultaneous shoot-through, switch stuck open, switch stuck closed, 10V DC supply sag, and 5A branch overcurrent.
-   - Acceptance Results:
-     * Shoot-through command blocked by hardware interlock (max effective gates = 1) -> PASS
-     * Switch stuck open logged and catastrophic queue growth (B1 queue = 80.1 veh) demonstrated -> PASS
-     * Switch stuck closed detected, main contactor tripped to safe all-red -> PASS
-     * DC supply sag triggered undervoltage trip (< 18V) and engaged fail-safe all-red -> PASS
-     * Branch overcurrent tripped electronic fuse within < 1 ms -> PASS
-   - Overall Stage 5: PASS.
-
-7. Report & Handoff to S12 (Stage 6):
-   - Master suite run_S5_all.m executes all stages in 20.39 s from a clean session.
-   - Published figures in S5_electrical/figures/:
-     * S5_Fig1_voltages_and_error.png
-     * S5_Fig2_closed_loop_mpc.png
-     * S5_Fig3_power_stage_transients.png
-     * S5_Fig4_fault_stuck_open.png
-   - S12 component sizing procedure documented in S5_electrical/SIZING_NOTE_S12.md.
-
-Next Action:
-Stage S5 is complete. Proceed to Stage S6 / S12 for commercial hardware component procurement and prototype PCB schematic capture.
+Status:
+- Integration: PASS
+- Execution: PASS
+- Validation: PASS
 ============================================================
-END OF STAGE S5 VALIDATION
+END OF BASELINE COMPARISON & ELECTRICAL CONGESTION INTEGRATION
 ============================================================

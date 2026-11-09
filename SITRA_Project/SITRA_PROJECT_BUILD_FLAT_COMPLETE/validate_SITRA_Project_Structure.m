@@ -1,5 +1,6 @@
 %% validate_SITRA_Project_Structure.m
 % Checks project structure and common self-referential signalModel errors.
+clear;
 clc;
 
 thisFile = mfilename('fullpath');

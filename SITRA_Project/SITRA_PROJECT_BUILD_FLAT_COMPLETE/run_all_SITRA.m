@@ -1,13 +1,23 @@
 %% run_all_SITRA.m
-% Unified entry point for the SITRA Project.
-% Runs the complete integrated simulation suite.
-
+% One-command entry point for the current MATLAB behavioral simulation package.
 clear;
 clc;
 close all;
 
 root = fileparts(mfilename('fullpath'));
-if isempty(root), root = pwd; end
-cd(root);
+if exist(fullfile(root,'MATLAB'), 'dir')
+    matlabFolder = fullfile(root,'MATLAB');
+else
+    matlabFolder = root;
+end
+addpath(matlabFolder);
+if exist(fullfile(root, 'baselines'), 'dir')
+    addpath(fullfile(root, 'baselines'));
+end
 
-run(fullfile(root, 'run_SITRA_Integrated_Suite.m'));
+fprintf('\nSITRA PROJECT - MASTER RUN\n');
+fprintf('1) Checking project structure...\n');
+run(fullfile(matlabFolder,'validate_SITRA_Project_Structure.m'));
+
+fprintf('\n2) Running master simulation...\n');
+run(fullfile(matlabFolder,'run_SITRA_Master_Simulation.m'));
