@@ -12,7 +12,7 @@ This document provides the sizing rationale and exact design procedures for Stag
   - Cable drop across 50 m roadside conduit: $\Delta V_{cable} = 2 \cdot L \cdot R_{wire} \cdot I = 2 \cdot 50 \cdot (0.013\,\Omega/\text{m}) \cdot 1.0\text{ A} \approx 1.3\text{ V}$.
 - **S12 Selection Procedure**:
   1. Standardize on 24 VDC industrial DIN-rail power supplies (compliant with EN 50556 / NEMA TS 2 traffic standards).
-  2. Select universal AC-DC converter (85–264 VAC input, 24 VDC / 5 A output, 120 W, e.g., Mean Well SDR-120-24).
+  2. Select universal AC-DC converter (85–264 VAC input, 24 VDC / 5 A output, >= 120 W industrial DIN-rail power supply).
   3. Margin: $120\text{ W} / 24\text{ W} = 5.0\times$ headroom for cold inrush and auxiliary electronics.
 
 ---
@@ -39,7 +39,7 @@ This document provides the sizing rationale and exact design procedures for Stag
   - Off-state blocking voltage: $V_{DS,max} \ge 1.5 \cdot V_{dc} = 36\text{ V}$.
   - Maximum allowable conduction dissipation: $P_{loss} \le 0.1\text{ W}$ (to eliminate external heatsink).
 - **S12 Selection Procedure**:
-  1. Select N-channel logic-level Power MOSFET in TO-220 or D2PAK (e.g., Vishay IRF540N or STMicroelectronics STP36NF06L, $60\text{ V}, 30\text{ A}, R_{DS(on)} < 0.03\,\Omega$).
+  1. Select N-channel logic-level Power MOSFET in standard power package (minimum ratings: V_DS >= 60 V, continuous I_D >= 20 A, R_DS(on) <= 30 mOhm at V_GS = 10 V).
   2. Conduction dissipation at 1 A:
      $$P_{cond} = I_D^2 \cdot R_{DS(on)} = (1.0)^2 \cdot 0.025 = 25\text{ mW}$$
      Junction temperature rise above ambient ($T_A = 50^\circ\text{C}$):
@@ -54,17 +54,17 @@ This document provides the sizing rationale and exact design procedures for Stag
   - Mutual exclusion rule: $\sum g_b \le 1$.
   - All-red clearance: 3 seconds during which all gates are zero.
 - **S12 Selection Procedure**:
-  1. Implement hardware-level cross-conduction interlock logic using hardware NAND/NOR gates (e.g. 74HC08 / 74HC02) in series with micro-controller GPIOs.
-  2. In the event of a micro-controller crash, software bug, or memory fault commanding two greens simultaneously, the physical hardware logic forces all gates LOW in $< 15\text{ ns}$, preventing physical collision phases.
+  1. Implement hardware-level cross-conduction interlock logic using standard fast discrete digital logic gates in series with microcontroller GPIOs.
+  2. In the event of a microcontroller crash, software bug, or memory fault commanding two greens simultaneously, the physical hardware logic forces all gates LOW in < 25 ns, preventing physical collision phases.
 
 ---
 
-## 5. Overcurrent Protection & Electronic Fuse ($I_{trip} = 2.0\text{ A}$)
+## 5. Overcurrent Protection & Electronic Current Limiter ($I_{trip} = 2.0\text{ A}$)
 - **Status in S5**: PLACEHOLDER (`2.0 A threshold`)
 - **Governing Simulation Quantities**:
   - Normal full-load current: $1.0\text{ A}$.
   - Inrush current: $1.5\text{ A}$ for 10 ms.
   - Short-circuit current: $> 4.0\text{ A}$.
 - **S12 Selection Procedure**:
-  1. Select resettable PTC fuse or high-side smart power switch with integrated current sensing (e.g., TI TPS1H100-Q1 or Infineon PROFET).
+  1. Select a high-side smart power switch with integrated current sensing and thermal shutdown, or an electronic current-limiting circuit.
   2. Set trip current to $2.0\text{ A}$ with 50 ms deglitch filter to ignore cold LED inrush while tripping on sustained cable shorts within $< 100\,\mu\text{s}$.

@@ -1,58 +1,134 @@
-# Power-Systems & Power-Electronics Representation of Urban Traffic Networks
+# Project SITRA: Power-Systems & Power-Electronics Representation of Urban Traffic Networks
 
-An interactive scientific research workspace and computational living laboratory investigating whether and how components of an urban traffic system can legitimately be modeled as power-electronic circuits and switching networks.
+An integrated computational research platform and living laboratory investigating how urban traffic networks can legitimately be modeled and controlled as power-electronic circuits and switching networks.
 
-[![Research Status](https://img.shields.io/badge/Research_Status-Stage_0_Validation-2d6a4f?style=flat-square)](https://github.com/siddardhvanguri-source/power_systems_electronic_circuit_design_of_traffic_systems)
-[![Framework](https://img.shields.io/badge/Framework-React_19_+_TypeScript_+_Vite-1e1b16?style=flat-square)](https://vitejs.dev/)
-[![Styling](https://img.shields.io/badge/Styling-Tailwind_CSS_v4-38bdf8?style=flat-square)](https://tailwindcss.com/)
-[![License](https://img.shields.io/badge/License-Academic_Research-92400e?style=flat-square)](LICENSE)
-
----
-
-## 🔬 Scientific Ethos & Core Hypothesis
-
-> **"Try to break the concept rather than forcing success."**
-
-This platform moves beyond naive superficial metaphors (*"cars are electrons / roads are passive resistors"*) to establish a mathematically rigorous, falsifiable power-electronics formulation of traffic dynamics:
-
-1. **Topological & Flow Conservation**: Vehicular arrival/departure continuity maps directly to Kirchhoff's Current Law:
-   $$\sum I_{\text{in}} - \sum I_{\text{out}} = C \frac{dV}{dt} \iff k\left(\sum a_i(t) - \sum d_i(t)\right) = k \frac{dq_i}{dt}$$
-   where $k$ is the scaling factor [Coulombs/veh], $C = k$ [Farads], and node voltage $V_i(t)$ numerically equals vehicle queue length $q_i(t)$.
-2. **Traffic Signals as Active Semiconductor Switches**: Signals act as multi-pole semiconductor switching bridges governed by discrete state vectors $u(k) \in \{0, 1\}^M$ that dynamically modulate the network nodal admittance matrix:
-   $$Y(t) = A^T \cdot \text{diag}\bigl(u_e(t) \cdot g_e(x)\bigr) \cdot A$$
-3. **Finite-Control-Set Model Predictive Control (FCS-MPC)**: Directly optimizes discrete switching sequences with an explicit lost clearance time penalty:
-   $$\min J = \sum_{j=1}^{N_p} \|x(k+j)\|_Q^2 + \lambda_{\text{sw}} \cdot \|u(k+j) - u(k+j-1)\|^2$$
-   preventing rapid phase chattering and modeling yellow/all-red clearance dissipation.
-4. **Physical Circuit Topologies**: 4-Switch Matrix Converter bridges (MOSFETs + freewheeling Schottky diodes), series R-L corridor branches with vehicular flow inertia $L$, and capacitive queue storage buffers.
-5. **Transportation $N-1$ Contingency Screening**: Identifies critical bottlenecks and cascades before urban gridlock occurs.
-6. **Empirical Corridor Scaling**: Applied to the Avinashi Road arterial corridor in Coimbatore with strict 5-tier data provenance (`MEASURED`, `PUBLISHED`, `ESTIMATED`, `ASSUMED`, `SIMULATED`).
+[![Branch: sai_dev](https://img.shields.io/badge/Git_Branch-sai__dev-blue?style=flat-square)](https://github.com/siddu1004/power_systems_electronic_circuit_design_of_traffic_systems/tree/sai_dev)
+[![Simulink & Simscape](https://img.shields.io/badge/Simulation-Simulink_%26_Simscape_Electrical-e06c75?style=flat-square)](https://www.mathworks.com/products/simscape-electrical.html)
+[![Web Interactive](https://img.shields.io/badge/Web_UI-React_19_%2B_Vite_%2B_Tailwind_v4-38bdf8?style=flat-square)](https://vitejs.dev/)
+[![Status](https://img.shields.io/badge/Validation_Status-ALL_GATES_PASS-2d6a4f?style=flat-square)](#)
 
 ---
 
-## 🏛️ 14-Section Interactive Research Architecture
+## 🔬 Dual-Track Architecture Overview
 
-The application provides a comprehensive 14-section interactive research environment:
+Project SITRA models an urban four-branch confluence junction (Hope College / Kalapatti Rd / Airport Rd $\to$ SITRA $\to$ Goldwins) across two complementary, scientifically rigorous modeling tracks:
 
-* **§0 BRIEF**: Executive summary, research metadata, core philosophy, and animated statistical counters.
-* **§1 GOALS**: Primary research objective, 3-tier falsifiability criteria, and 6 concrete subgoals.
-* **§2 MAPPINGS**: Multi-Criteria Decision Matrix evaluating 6 candidates across **Physical (A)**, **Functional (B)**, **Mathematical (C)**, **Control (D)**, and **Conceptual (E)** classifications with feasibility scores (1–5).
-* **§3 DIMENSIONS**: Dimensional analysis proofs ($I=k\cdot a$, $Q_e=k\cdot q$, $R=\alpha T$, $D=T_g/T_{\text{cyc}}$) + **Interactive Dimensional Scaling Converter Widget**.
-* **§4 MATH**: Dynamic discrete difference equations $x(k+1)=f(x,u,d)$, $Y(t)$ switched admittance matrix, and side-by-side comparison with Classical Cell Transmission Model (CTM).
-* **§5 TOOLS**: Simulation toolchain comparison (SUMO, PLECS/Simscape, MATLAB, FMI co-simulation, Matpower) across capabilities, licensing, and roles across 3 network scales (5–15 node, 25–50 node, Coimbatore corridor).
-* **§6 CIRCUITS**: 4-Switch MOSFET matrix converter topologies, R-L corridor inertia, and **Interactive Live Waveform Oscilloscope** (Gate PWM, Sawtooth Queue Voltage $V_i(t)$, Branch Current $I_e(t)$).
-* **§7 HARDWARE**: Low-voltage 12V hardware testbed plan with an itemized, filterable **Bill of Materials (BOM)** ($124.70 USD total; IRLZ44N MOSFETs, 1N5822 Schottky diodes, STM32 / TI C2000 DSP).
-* **§8 BENCH**: **Interactive Validation Test Bench Simulator** running 6 perturbation scenarios (Nominal, Surge, N-1 Closure, Stuck Signal, Duty Sweep, WLS State Estimation) with live Baseline vs Analog correlation curves ($r \ge 0.92$) and MSE error gates.
-* **§9 5-NODE DEMO**: Step-by-step 7-phase priority proof-of-concept execution protocol (Weeks 1–7) with specific validation deliverables and go/no-go gates.
-* **§10 RISKS**: Comprehensive 8-risk register detailing root-cause failure mechanisms, 4-step engineering mitigations, and explicit numerical **Continue-vs-Abandon Decision Thresholds**.
-* **§11 ROADMAP**: 3-Year Stage 0 to Stage 7 research roadmap (2026–2031), multidisciplinary team roles (PI, Co-PI, 2 PhDs, Res. Eng, Lab Tech), and itemized $1,238,550 USD budget breakdown.
-* **§12 NOVELTY**: Interactive novelty claims checklist with real-time verification progress tracking.
-* **§13 PATENTS**: Expanded literature database (Google Research / Sinop 2022, Cui & Ma 2012, Moyalan 2026, Danchuk 2020, Kim 2022, Varaiya 2013) and multi-jurisdiction patent search dossier (USPTO US9852631B2, WIPO, EPO, IPO).
+```
++--------------------------------------------------------------------------------------------------+
+|                                    PROJECT SITRA MASTER PLATFORM                                 |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+         +---------------------------------------+---------------------------------------+
+         |                                                                               |
+         v                                                                               v
++--------------------------------------------------+   +--------------------------------------------------+
+|   TRACK 1: MATHEMATICAL EQUIVALENT FRAMEWORK     |   |      TRACK 2: REAL SIMSCAPE PHYSICAL CIRCUIT     |
+|       (Simulink State-Space / Discrete KCL)      |   |       (Simscape Electrical fl_lib / ee_lib)      |
++--------------------------------------------------+   +--------------------------------------------------+
+| - Model: SITRA_S2_test_ControllerCompare.slx     |   | - Model: SITRA_S5_Physical.slx                   |
+| - Scale: 1 V = 1 veh, 1 A = 1 veh/s, C = 1.0 F   |   | - Physical conserving ports (LConn/RConn)        |
+| - 4-Controller Multiport Selector:               |   | - Zero code inside physics (no MATLAB functions) |
+|   1. SITRA Receding-Horizon MPC                  |   | - AC Grid Mains (230 V, 50 Hz) -> Transformer    |
+|   2. Webster Fixed-Time Equal-Saturation         |   | - 4-Diode Bridge Rectifier                       |
+|   3. Vehicle-Actuated Dynamic Gap-Out            |   | - DC-Link (2200 uF with ESR & bleed resistor)    |
+|   4. Decentralized MaxPressure                   |   | - Closed-loop Buck DC-DC Converter (24V PI+PWM)  |
+| - Validated Subsystems:                          |   | - 3 High-side MOSFET Signal Channels (24W lamps) |
+|   * 05_Power_Electronics (Analytical Equivalent) |   | - 4 x 1F Capacitor Physical KCL Traffic Network  |
+|   * 06_Measurement                               |   | - S6: Capacitor parasitics (ESR/ESL) & sensor comp|
+|   * 09_Output_Validation (Multi-Signal Gate)     |   | - S7: MOSFET switching dynamics & thermal rise   |
+| - Microsecond Interlock:                         |   | - ADC Unit Delays break algebraic loops          |
+|   * SITRA_Deadtime_Testbench.slx (5 us blanking) |   | - Measured Tracking Error: 1.30e-6 V (< 1e-3 V)  |
+| - Current Conservation Residual: < 1.42e-15 A    |   | - Power Bus Regulation: 23.98 V (+/- 6.8%)       |
+| - Status: PASS                                   |   | - Status: PASS                                   |
++--------------------------------------------------+   +--------------------------------------------------+
+```
 
 ---
 
-## 🚀 How to Run Locally
+## ⚡ Key Verification Milestones & Results
 
-### Option 1: Vite Development Server
+| Track / Stage | Target Deliverable | Specification Limit | Measured Performance | Result |
+|:---|:---|:---:|:---:|:---:|
+| **Track 1 (Part B)** | Current Conservation Residual | $\le 10^{-8}\text{ A}$ | **$7.22 \times 10^{-16}\text{ A}$** | **PASS** |
+| **Track 1 (Part C)** | Break-Before-Make Dead-Time | $\ge 4.50\ \mu\text{s}$ | **$5.00\ \mu\text{s}$** | **PASS** |
+| **Track 1 (Part D)** | S9 Output Validation Pass Rate | $100\%$ | **$601 / 601\ (100\%)$** | **PASS** |
+| **Track 2 (Stage S5)** | Simscape Block Audit | $\ge 7\text{ C}, \ge 4\text{ MOSFETs}$ | **7 C, 4 MOSFETs, 0 code** | **PASS** |
+| **Track 2 (Stage S5)** | Queue Tracking Error $|v_C - q_{\text{ref}}|$ | $< 1.00 \times 10^{-3}\text{ V}$ | **$1.30 \times 10^{-6}\text{ V}$** | **PASS** |
+| **Track 2 (Stage S5)** | Regulated 24V DC Bus Voltage | $24.0\text{ V} \pm 10\%$ | **$23.98\text{ V}\ [22.06 - 25.63]$** | **PASS** |
+| **Track 2 (Stage S6)** | Capacitor ESR Sensor Compensation | $0\text{ false triggers}$ | **0 mismatches (nominal & EoL)** | **PASS** |
+| **Track 2 (Stage S7)** | MOSFET Conduction & Thermal Rise | $T_j < 150^\circ\text{C}$ | **$40.90^\circ\text{C}$ ($109.1^\circ\text{C}$ margin)** | **PASS** |
+
+---
+
+## 📁 Repository Organization
+
+```
+├── run_master_all.m               # Unified master launcher (Runs Track 1, Track 2, or both)
+├── run_part_b.m                   # Part B: Electrical conservation test runner
+├── run_part_c.m                   # Part C: 5 us microsecond dead-time test runner
+├── run_part_d_integrated.m        # Part D: Four-controller integrated validation runner
+├── upgrade_electrical_subsystems.m # Automated subsystem 05, 06, 09 upgrade script
+├── SITRA_Deadtime_Testbench.slx   # Microsecond dead-time testbench model
+├── SITRA_S2_test_ControllerCompare.slx # 4-Controller comparison Simulink model
+├── SITRA_IEEE_Research_Paper.md   # Publication-ready IEEE-formatted research paper
+├── deep-research-report.md        # Comprehensive 36-section technical research plan
+├── README_MASTER_RUN.md           # Architectural reference manual
+├── Results/
+│   ├── figures/                   # All 12 publication figures & schematics
+│   ├── PartC_Deadtime_Validation/ # High-speed dead-time switching waveforms
+│   ├── PartD_Integrated_Validation/ # 4-controller comparison CSVs & MAT files
+│   └── T6_Simulink_Exports/       # Exported scenario T6 controller histories
+├── SITRA_Project/
+│   ├── SITRA_Final_Technical_Report.md # Full engineering project report
+│   └── SITRA_PROJECT_BUILD_FLAT_COMPLETE/
+│       ├── S5_physical/           # Real Simscape physical circuit implementation
+│       │   ├── build_SITRA_S5_Physical.m # Script-built Simscape generator
+│       │   ├── test_SITRA_S5_Physical.m  # Acceptance test suite
+│       │   └── SITRA_S5_Physical.slx     # Pure physical Simscape model
+│       ├── S6_S7_parasitics/      # Parasitics, losses & thermal validation
+│       │   ├── test_stage6_parasitics.m  # ESR/ESL capacitor tests
+│       │   ├── test_stage7_semiconductors.m # MOSFET thermal rise tests
+│       │   └── run_all_S6_S7.m           # S6/S7 master runner
+│       ├── baselines/             # Baseline controller implementations (Webster, etc.)
+│       └── BUILD_LOG.md           # Authoritative verification ledger
+├── src/                           # Interactive React 19 web research platform
+│   ├── App.tsx                    # Master React component tree (§0 to §13)
+│   ├── data.ts                    # Research formulas, BOM, and datasets
+│   └── main.tsx                   # React entrypoint
+└── package.json                   # Web application dependencies
+```
+
+---
+
+## 🚀 How to Run
+
+### 1. Running MATLAB & Simulink Simulations
+Requirements: **MATLAB R2024b or newer** with **Simulink**, **Simscape**, and **Simscape Electrical**.
+
+Open MATLAB, navigate to this repository root, and run:
+```matlab
+% Run the complete unified suite (Both Track 1 and Track 2):
+run_master_all;
+```
+
+Or execute targeted validation suites individually:
+```matlab
+% Track 1: Mathematical multi-controller evaluation
+run_part_d_integrated;
+
+% Track 1: Microsecond dead-time interlock testbench
+run_part_c;
+
+% Track 2: Real Simscape physical circuit simulation
+cd('SITRA_Project/SITRA_PROJECT_BUILD_FLAT_COMPLETE/S5_physical');
+test_SITRA_S5_Physical;
+
+% Track 2: Capacitor parasitics & MOSFET thermal dynamics
+cd('../S6_S7_parasitics');
+run_all_S6_S7;
+```
+
+### 2. Running the Interactive Web Research Portal
 ```bash
 # Install dependencies
 pnpm install  # or npm install
@@ -60,44 +136,29 @@ pnpm install  # or npm install
 # Start development server
 pnpm dev      # or npm run dev
 ```
-Open **`http://localhost:8443`** or the URL indicated in the terminal.
-
-### Option 2: Standalone Static Server
-```bash
-python -m http.server 8000
-```
-Open **`http://localhost:8000/`** in your browser.
+Open [http://localhost:8443](http://localhost:8443) in your browser.
 
 ---
 
-## 📁 Repository Structure
+## 📖 Key Publications & Documentation
 
-```
-├── src/
-│   ├── App.tsx             # Master React component tree (§0 to §13)
-│   ├── data.ts             # Research datasets, formulas, BOM, risks & toolchains
-│   ├── main.tsx            # React 19 entrypoint
-│   └── index.css           # Design tokens, typography & animation rules
-├── index.html              # HTML shell
-├── deep-research-report (3).md # Complete 12-section technical research plan
-├── deep-research-report.md     # Foundational research overview
-├── package.json            # Dependencies and build scripts
-├── vite.config.ts          # Vite configuration
-└── README.md
-```
+1. **IEEE Research Paper**: [`SITRA_IEEE_Research_Paper.md`](file:///c:/Users/saisi/Downloads/SITRA_Project/SITRA_IEEE_Research_Paper.md)  
+   *Title: "An Integrated Traffic and Electrical-Equivalent Congestion Management Framework for a Four-Branch Urban Junction Using Predictive and Benchmark Control Strategies"*  
+   *Authors: Sreedev C. & Sai*
+2. **Final Technical Report**: [`SITRA_Final_Technical_Report.md`](file:///c:/Users/saisi/Downloads/SITRA_Project/SITRA_Project/SITRA_Final_Technical_Report.md)
+3. **Hardware Sizing Rationale**: [`SIZING_NOTE_S12.md`](file:///c:/Users/saisi/Downloads/SITRA_Project/SITRA_Project/SITRA_PROJECT_BUILD_FLAT_COMPLETE/S5_electrical/SIZING_NOTE_S12.md)
+4. **Master Verification Log**: [`BUILD_LOG.md`](file:///c:/Users/saisi/Downloads/SITRA_Project/SITRA_Project/SITRA_PROJECT_BUILD_FLAT_COMPLETE/BUILD_LOG.md)
 
 ---
 
-## ⚖️ Citation & Academic Attribution
+## ⚖️ Academic Citation
 
 ```bibtex
-@article{vanguri2026powersystems,
-  title={Power-Electronic Circuits and Switching Networks as Physical Representations of Urban Traffic Networks},
-  author={Vanguri, Siddardh},
-  journal={Working Paper & Interactive Research Brief},
+@article{sitra2026integrated,
+  title={An Integrated Traffic and Electrical-Equivalent Congestion Management Framework for a Four-Branch Urban Junction Using Predictive and Benchmark Control Strategies},
+  author={Sreedev, C. and Sai},
+  journal={Project SITRA Technical Report & Research Archive},
   year={2026},
-  url={https://github.com/siddardhvanguri-source/power_systems_electronic_circuit_design_of_traffic_systems}
+  url={https://github.com/siddu1004/power_systems_electronic_circuit_design_of_traffic_systems}
 }
 ```
-
-**Repository**: [github.com/siddardhvanguri-source/power_systems_electronic_circuit_design_of_traffic_systems](https://github.com/siddardhvanguri-source/power_systems_electronic_circuit_design_of_traffic_systems.git)
