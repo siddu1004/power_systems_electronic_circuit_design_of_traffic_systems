@@ -195,11 +195,11 @@ The comparative simulation suite generated 6 standardized engineering figures sa
 ### 5.1 Queue Evolution and Disturbance Responses
 
 ````carousel
-![Queue Evolution across T1-T4 Scenarios](C:/Users/Sreedev/.gemini/antigravity/brain/263e47f0-70a0-4abf-8173-f65811226930/fig1_queue_vs_time.png)
+![Queue Evolution across T1-T4 Scenarios](Results/figures/fig1_queue_vs_time.png)
 <!-- slide -->
-![Part 8 Surge Response (T6 Deterministic & T7 Stochastic)](C:/Users/Sreedev/.gemini/antigravity/brain/263e47f0-70a0-4abf-8173-f65811226930/fig6_part8_surge.png)
+![Part 8 Surge Response (T6 Deterministic & T7 Stochastic)](Results/figures/fig6_part8_surge.png)
 <!-- slide -->
-![Step Demand Transition (Scenario T5)](C:/Users/Sreedev/.gemini/antigravity/brain/263e47f0-70a0-4abf-8173-f65811226930/fig5_step_response.png)
+![Step Demand Transition (Scenario T5)](Results/figures/fig5_step_response.png)
 ````
 
 1. **Figure 1 (Queue vs Time)**: Illustrates the transition from stable cyclical queue oscillations in T1 and T2 to unbounded queue buildup in T4 ($0.50\text{ veh/s}$ total demand against $B_4$ bottleneck capacity of $0.45\text{ veh/s}$).
@@ -208,11 +208,11 @@ The comparative simulation suite generated 6 standardized engineering figures sa
 ### 5.2 Capacity, Delay, and Throughput Characteristics
 
 ````carousel
-![Delay vs Demand with HCM LOS Bands](C:/Users/Sreedev/.gemini/antigravity/brain/263e47f0-70a0-4abf-8173-f65811226930/fig2_delay_vs_demand.png)
+![Delay vs Demand with HCM LOS Bands](Results/figures/fig2_delay_vs_demand.png)
 <!-- slide -->
-![Network Throughput Comparison](C:/Users/Sreedev/.gemini/antigravity/brain/263e47f0-70a0-4abf-8173-f65811226930/fig3_throughput.png)
+![Network Throughput Comparison](Results/figures/fig3_throughput.png)
 <!-- slide -->
-![Peak Approach Queue Comparison](C:/Users/Sreedev/.gemini/antigravity/brain/263e47f0-70a0-4abf-8173-f65811226930/fig4_max_queue.png)
+![Peak Approach Queue Comparison](Results/figures/fig4_max_queue.png)
 ````
 
 1. **Figure 2 (Delay vs Demand)**: Displays the characteristic non-linear delay curve as demand approaches intersection capacity. All controllers maintain LOS B or C at low-to-medium demand ($0.15 - 0.25\text{ veh/s}$). As demand enters oversaturation ($>0.35\text{ veh/s}$), delays escalate toward LOS E and F.
