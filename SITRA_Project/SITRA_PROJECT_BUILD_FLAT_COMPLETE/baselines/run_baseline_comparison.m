@@ -69,6 +69,11 @@ for i = 1:nS
     else
         p.q0 = zeros(1,4);
     end
+    if isfield(s, 'events')
+        p.events = s.events;
+    else
+        p.events = [];
+    end
     
     if s.stochastic, seeds = p.seeds; else, seeds = 0; end
     nSeeds = numel(seeds);
@@ -80,6 +85,9 @@ for i = 1:nS
 
     for j = 1:nSeeds
         A = bl_make_arrivals(s, p, seeds(j));     % SAME arrivals for all controllers
+        if isfield(s, 'events') && ~isempty(s.events)
+            A = bl_inject('apply_demand', A, s.events);
+        end
         
         % Twin run setup if scenario has an event definition
         hasTwin = ~isnan(s.tEvent) && isfield(s, 'twin') && ~isempty(fieldnames(s.twin));
@@ -94,7 +102,15 @@ for i = 1:nS
             else
                 pTwin.q0 = zeros(1,4);
             end
+            if isfield(s.twin, 'events')
+                pTwin.events = s.twin.events;
+            else
+                pTwin.events = [];
+            end
             A_twin = bl_make_arrivals(sTwin, pTwin, seeds(j));
+            if isfield(pTwin, 'events') && ~isempty(pTwin.events)
+                A_twin = bl_inject('apply_demand', A_twin, pTwin.events);
+            end
         end
 
         if j == 1
@@ -395,6 +411,65 @@ if isempty(ymax) || ymax <= 0, ymax = 200; end
 ylim([0, ymax * 1.25 + 20]);
 saveFig(h, fullfile(outDir,'fig7_clearance_time.png'));
 
+% ---- fig8: T9-T14 injection clearance comparison ----------------------------
+clrIds8 = {'T9','T10','T11','T12','T13','T14'};
+scClr8 = [];
+for k = 1:numel(clrIds8)
+    idx = find(strcmp(ids, clrIds8{k}));
+    if ~isempty(idx), scClr8(end+1) = idx; end %#ok<AGROW>
+end
+
+if ~isempty(scClr8)
+    nScClr8 = numel(scClr8);
+    Y_bar8 = zeros(nScClr8, nC);
+    E_bar8 = zeros(nScClr8, nC);
+    for k = 1:nScClr8
+        sIdx = scClr8(k);
+        for c = 1:nC
+            Y_bar8(k,c) = meanClearTime(sIdx,c);
+            if isnan(stdClearTime(sIdx,c))
+                E_bar8(k,c) = 0;
+            else
+                E_bar8(k,c) = stdClearTime(sIdx,c);
+            end
+        end
+    end
+
+    h8 = figure('Name','Injection Clearance Time Comparison','Visible',vis,'Position',[120 120 950 520]);
+    Y_plot8 = Y_bar8;
+    Y_plot8(isnan(Y_plot8)) = 0;
+    bh8 = bar(Y_plot8, 'grouped');
+    for c = 1:nC, set(bh8(c), 'FaceColor', col(c,:)); end
+    hold on;
+
+    groupWidth = min(0.8, nC/(nC + 1.5));
+    for c = 1:nC
+        x = (1:nScClr8) - groupWidth/2 + (2*c - 1) * groupWidth / (2*nC);
+        validMask = ~isnan(Y_bar8(:,c)) & (Y_bar8(:,c) > 0);
+        if any(validMask)
+            errorbar(x(validMask), Y_bar8(validMask,c), E_bar8(validMask,c), ...
+                'k', 'linestyle', 'none', 'LineWidth', 1.2, 'CapSize', 8);
+        end
+        nanMask = isnan(Y_bar8(:,c));
+        for k = find(nanMask(:)')
+            text(x(k), 10, 'Not Cleared', 'Rotation', 90, ...
+                'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', ...
+                'FontSize', 8, 'FontWeight', 'bold', 'Color', [0.8 0.1 0.1]);
+            plot(x(k), 0, 'rx', 'MarkerSize', 10, 'LineWidth', 2);
+        end
+    end
+    hold off; grid on;
+
+    set(gca, 'XTick', 1:nScClr8, 'XTickLabel', clrIds8);
+    xlabel('Scenario'); ylabel('Clearance Time [s] (mean \pm std)');
+    title('Congestion Clearance Time Comparison Across Controllers (T9 - T14 Faults & Events)');
+    legend(ctrls, 'Location', 'northwest');
+    ymax8 = max(Y_bar8(~isnan(Y_bar8)));
+    if isempty(ymax8) || ymax8 <= 0, ymax8 = 200; end
+    ylim([0, ymax8 * 1.25 + 20]);
+    saveFig(h8, fullfile(outDir,'fig8_injection_clearance.png'));
+end
+
 % ---- save --------------------------------------------------------------------
 RES.scenarios = scn; RES.controllers = ctrls;
 RES.mean = mean_; RES.std = std_; RES.LOS = LOS;
@@ -411,10 +486,14 @@ for k = 1:numel(scnSave)
     if isfield(scnSave(k), 'twin') && isfield(scnSave(k).twin, 'demandFcn')
         scnSave(k).twin.demandFcn = [];
     end
+    if isfield(scnSave(k), 'events'), scnSave(k).events = []; end
+    if isfield(scnSave(k), 'twin') && isfield(scnSave(k).twin, 'events')
+        scnSave(k).twin.events = [];
+    end
 end
 RES.scenarios = scnSave;
 save(fullfile(outDir,'baseline_results.mat'), 'RES');
-fprintf('\nSaved table, per-seed CSV, MAT and 7 figures to:\n  %s\n\n', outDir);
+fprintf('\nSaved table, per-seed CSV, MAT and 8 figures to:\n  %s\n\n', outDir);
 end
 
 function saveFig(h, file)

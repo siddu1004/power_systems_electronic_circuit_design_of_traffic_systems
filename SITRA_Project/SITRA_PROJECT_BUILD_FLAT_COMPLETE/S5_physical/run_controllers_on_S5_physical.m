@@ -1,7 +1,7 @@
 %% run_controllers_on_S5_physical.m
 % Runs all 4 controllers (SITRA MPC, Webster, Actuated, MaxPressure)
 % through the real Simscape physical circuit (SITRA_S5_Physical.slx) on
-% scenarios T5, T6, T7, and T8.
+% benchmark scenarios (T5, T6, T7, T8, T9, T10, T11, T14).
 %
 % Clearance time is measured by comparing the congested run queue (measured
 % from capacitor voltages vC_B1..vC_B3) against a twin run without the
@@ -9,7 +9,8 @@
 %
 % Outputs:
 %   - Results/S5_physical/controller_clearance_physical.csv
-%   - Results/S5_physical/fig_clearance_physical.png (2x2 grid)
+%   - Results/S5_physical/fig_clearance_physical.png (4x2 grid)
+%   - Results/dual_domain/*.png (8 synchronized 4-panel figures)
 
 function results = run_controllers_on_S5_physical()
 
@@ -44,11 +45,19 @@ allScn = bl_scenarios(p);
 % T6: deterministic (seed 0)
 % T7: stochastic (seed 101)
 % T8: stochastic (seed 101)
+% T9: incident (seed 101)
+% T10: blockage (seed 101)
+% T11: platoon (seed 101)
+% T14: signal stuck off (seed 101)
 evalRuns = {
-    struct('scnIdx', 5, 'seed', 0,   'name', 'T5 (step 600s)')
-    struct('scnIdx', 6, 'seed', 0,   'name', 'T6 (surge 200-400s)')
-    struct('scnIdx', 7, 'seed', 101, 'name', 'T7 (surge Poisson)')
-    struct('scnIdx', 8, 'seed', 101, 'name', 'T8 (congested start)')
+    struct('scnIdx', 5,  'seed', 0,   'name', 'T5 (step 600s)')
+    struct('scnIdx', 6,  'seed', 0,   'name', 'T6 (surge 200-400s)')
+    struct('scnIdx', 7,  'seed', 101, 'name', 'T7 (surge Poisson)')
+    struct('scnIdx', 8,  'seed', 101, 'name', 'T8 (congested start)')
+    struct('scnIdx', 9,  'seed', 101, 'name', 'T9 (incident B1)')
+    struct('scnIdx', 10, 'seed', 101, 'name', 'T10 (blockage B4 spill-back)')
+    struct('scnIdx', 11, 'seed', 101, 'name', 'T11 (platoon B2)')
+    struct('scnIdx', 14, 'seed', 101, 'name', 'T14 (signal stuck off B3)')
 };
 
 controllers = {'SITRA', 'Webster', 'Actuated', 'MaxPressure'};
@@ -89,8 +98,16 @@ for r = 1:numel(evalRuns)
     else
         pRun.q0 = zeros(1, 4);
     end
+    if isfield(s, 'events') && ~isempty(s.events)
+        pRun.events = s.events;
+    else
+        pRun.events = [];
+    end
     
     A = bl_make_arrivals(s, pRun, target.seed);
+    if isfield(s, 'events') && ~isempty(s.events)
+        A = bl_inject('apply_demand', A, s.events);
+    end
     
     % Twin run setup
     sTwin = s;
@@ -98,12 +115,19 @@ for r = 1:numel(evalRuns)
         sTwin.demandFcn = s.twin.demandFcn;
     end
     pTwin = pRun;
+    pTwin.events = [];
     if isfield(s, 'twin') && isfield(s.twin, 'q0') && ~isempty(s.twin.q0)
         pTwin.q0 = s.twin.q0;
     else
         pTwin.q0 = zeros(1, 4);
     end
     A_twin = bl_make_arrivals(sTwin, pTwin, target.seed);
+    
+    % Network modifications for plant
+    netRun = net;
+    if isfield(s, 'events') && ~isempty(s.events)
+        netRun = bl_inject('apply_network', netRun, s.events);
+    end
     
     plotData.(sprintf('run_%d', r)).name = s.name;
     plotData.(sprintf('run_%d', r)).tEvent = s.tEvent;
@@ -116,7 +140,7 @@ for r = 1:numel(evalRuns)
             rowIdx, numRuns, ctrlName, s.name, target.seed);
         
         % 1. Baseline model simulation (event run and twin run)
-        R = bl_simulate(ctrlName, A, pRun, net);
+        R = bl_simulate(ctrlName, A, pRun, netRun);
         S = bl_export_for_simulink(R);
         
         R_twin = bl_simulate(ctrlName, A_twin, pTwin, net);
@@ -127,9 +151,32 @@ for r = 1:numel(evalRuns)
         t0 = S.arrivals(1, 1);
         S5.arrivals = [S.arrivals(:, 1) - t0, S.arrivals(:, 2:end)];
         S5.gates    = [S.gates(:, 1) - t0,    S.gates(:, 2:end)];
-        S5.hwGates  = S5.gates;
+        
+        hwGates = S5.gates;
+        if isfield(s, 'events') && ~isempty(s.events)
+            hwGates(:, 2:end) = bl_inject('apply_gates', hwGates(:, 2:end), s.events);
+        end
+        S5.hwGates  = hwGates;
         S5.vC0      = pRun.q0;  % Initial capacitor charges
         N = size(S.qRef, 1);
+        tSpan = (0:N-1)';
+        
+        if isfield(netRun, 'capFcn') && isa(netRun.capFcn, 'function_handle')
+            caps = netRun.capFcn(tSpan);
+            if size(caps, 1) == 1
+                caps = repmat(caps, N, 1);
+            end
+            S5.capB = [tSpan, caps];
+        else
+            S5.capB = [tSpan, repmat(netRun.capacity, N, 1)];
+        end
+        
+        if isfield(netRun, 'q4max') && ~isempty(netRun.q4max)
+            S5.q4max = netRun.q4max;
+        else
+            S5.q4max = 1e9;
+        end
+        
         S5.stopTime = N - 1;
         S5.maxStep  = 0.05;
         assignin('base', 'S5', S5);
@@ -158,43 +205,35 @@ for r = 1:numel(evalRuns)
         
         % Consistency assertion
         if isnan(Cm.tClear)
-            assert(isnan(Cc.tClear), 'Clearance state mismatch (model NaN, circuit not NaN)');
+            assert(isnan(Cc.tClear), 'Circuit clearance should be NaN when model clearance is NaN');
         else
             assert(abs(Cc.tClear - Cm.tClear) <= 1.0, ...
-                'Clearance time discrepancy between circuit and model exceeds 1 s');
+                'Circuit clearance (%.1f s) deviates from model clearance (%.1f s) by > 1 s', ...
+                Cc.tClear, Cm.tClear);
         end
         
-        recScenario{rowIdx}    = s.name;
-        recController{rowIdx}  = ctrlName;
-        rectClearModel(rowIdx) = Cm.tClear;
-        rectClearCirc(rowIdx)  = Cc.tClear;
-        recCleared(rowIdx)     = Cc.cleared;
-        recMaxErrV(rowIdx)     = maxErr;
-        recExcessVehS(rowIdx)  = Cc.excessVehS;
-        recPeakExcess(rowIdx)  = Cc.peakExcess;
-        recQpeak(rowIdx)       = Cc.Qpeak;
-        recQbase(rowIdx)       = Cc.Qbase;
+        fprintf('Clearance: Model = %.1f s | Circuit = %.1f s | Cleared = %d | ExcessVehS = %.1f\n', ...
+            Cm.tClear, Cc.tClear, Cc.cleared, Cc.excessVehS);
         
-        if isnan(Cc.tClear)
-            fprintf('Clearance: NOT CLEARED | Excess queue: %.1f veh*s | Peak Excess: %.2f veh\n', ...
-                Cc.excessVehS, Cc.peakExcess);
-        else
-            fprintf('Clearance time: %.1f s | Excess queue: %.1f veh*s | Peak Excess: %.2f veh\n', ...
-                Cc.tClear, Cc.excessVehS, Cc.peakExcess);
-        end
+        % Store records
+        recScenario{rowIdx}      = s.name;
+        recController{rowIdx}    = ctrlName;
+        rectClearModel(rowIdx)   = Cm.tClear;
+        rectClearCirc(rowIdx)    = Cc.tClear;
+        recCleared(rowIdx)       = Cc.cleared;
+        recMaxErrV(rowIdx)       = maxErr;
+        recExcessVehS(rowIdx)    = Cc.excessVehS;
+        recPeakExcess(rowIdx)    = Cc.peakExcess;
+        recQpeak(rowIdx)         = Cc.Qpeak;
+        recQbase(rowIdx)         = Cc.Qbase;
         
-        % Save for plotting
         plotData.(sprintf('run_%d', r)).(ctrlName).t = tv;
         plotData.(sprintf('run_%d', r)).(ctrlName).Q = Qcirc;
-        plotData.(sprintf('run_%d', r)).(ctrlName).Qtwin = Qtwin_model;
         plotData.(sprintf('run_%d', r)).(ctrlName).tClear = Cc.tClear;
-        plotData.(sprintf('run_%d', r)).(ctrlName).cleared = Cc.cleared;
     end
 end
 
-set_param([mdl '/Power_Path'], 'Commented', 'off');
-
-% Sanity check: for T6, Webster excessVehS must be > SITRA excessVehS
+% Sanity check: Webster must have more excess vehicle-seconds than SITRA on T6
 t6WebIdx = find(strcmp(recScenario, allScn(6).name) & strcmp(recController, 'Webster'), 1);
 t6SitIdx = find(strcmp(recScenario, allScn(6).name) & strcmp(recController, 'SITRA'), 1);
 assert(~isempty(t6WebIdx) && ~isempty(t6SitIdx), 'T6 Webster/SITRA records not found');
@@ -216,12 +255,12 @@ topCsvFile = fullfile(topOutDir, 'controller_clearance_physical.csv');
 writetable(T, topCsvFile);
 fprintf('\nSaved results CSV to: %s\n', csvFile);
 
-% Plot 2x2 grid
+% Plot 4x2 grid (8 scenarios)
 fig = figure('Name', 'Circuit Congestion Clearance Comparison', ...
-             'Position', [100 100 1200 800], 'Visible', 'off');
+             'Position', [100 100 1200 1100], 'Visible', 'off');
 
 for r = 1:numel(evalRuns)
-    subplot(2, 2, r);
+    subplot(4, 2, r);
     hold on; grid on; box on;
     d = plotData.(sprintf('run_%d', r));
     
@@ -251,6 +290,13 @@ topFigFile = fullfile(topOutDir, 'fig_clearance_physical.png');
 saveas(fig, topFigFile);
 close(fig);
 fprintf('Saved comparison figure to: %s\n', figFile);
+
+% Generate 8 synchronized dual-domain figures (electrical <-> real-time traffic)
+try
+    plot_dual_domain();
+catch ME
+    warning('Failed to generate dual-domain figures: %s', ME.message);
+end
 
 % Print summary ranking
 fprintf('\n========================================================================\n');

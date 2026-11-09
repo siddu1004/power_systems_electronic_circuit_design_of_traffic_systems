@@ -13,6 +13,8 @@ net = createNetwork();
 
 % ---------------- Layer A: traffic equivalent circuit (facts) -----------
 S5.cap      = net.capacity;   % [A] = [veh/s]  B1 B2 B3 B4 (ASSUMED traffic capacities)
+S5.capB     = [0 net.capacity]; % [t cap(1..4)] default constant capacity time-series
+S5.q4max    = 1e9;            % [V] B4 spill-back voltage clamp (default 1e9 = unconstrained)
 S5.dt       = 1;              % [s] traffic step, same as Part 8
 S5.C_queue  = 1;              % [F] 1 F so that 1 V = 1 vehicle (normalized, not a part)
 S5.vC0      = [0 0 0 0];      % [V] initial capacitor voltages C_B1..C_B4 (default 0 V)

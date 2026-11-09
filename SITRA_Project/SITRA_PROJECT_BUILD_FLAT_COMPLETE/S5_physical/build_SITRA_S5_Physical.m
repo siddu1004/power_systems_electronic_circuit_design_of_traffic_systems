@@ -64,9 +64,11 @@ build_power(power, cal);
 
 fw(mdl, 'Arrivals_veh_per_s', 'S5.arrivals', '1', [60 70 170 100]);
 fw(mdl, 'S4_Gates',           'S5.gates',    '1', [60 150 170 180]);
+fw(mdl, 'Capacity_veh_per_s', 'S5.capB',     '1', [60 230 170 260]);
 fw(mdl, 'HW_Gates',           'S5.hwGates',  '0', [60 330 170 360]);
 add_line(mdl, 'Arrivals_veh_per_s/1', 'Traffic_Equivalent_Circuit/1', 'autorouting', 'on');
 add_line(mdl, 'S4_Gates/1',           'Traffic_Equivalent_Circuit/2', 'autorouting', 'on');
+add_line(mdl, 'Capacity_veh_per_s/1', 'Traffic_Equivalent_Circuit/3', 'autorouting', 'on');
 add_line(mdl, 'HW_Gates/1',           'Power_Path/1',                 'autorouting', 'on');
 note(mdl, 'SITRA S5 physical model. Traffic circuit: queues are 1 F capacitors (1 V = 1 vehicle).', [40 10]);
 note(mdl, 'Power path: AC mains, transformer, diode bridge, DC-link, buck converter, MOSFET signal channels. All ratings PLACEHOLDER (S12).', [40 450]);
@@ -85,6 +87,7 @@ function build_traffic(sys, cal)
 L = libs();
 add_block('built-in/Inport', [sys '/Arrivals'], 'Position', [20 563 50 577]);
 add_block('built-in/Inport', [sys '/Gates'],    'Position', [20 703 50 717]);
+add_block('built-in/Inport', [sys '/Capacity'], 'Position', [20 773 50 787]);
 
 sc = addb(L.SC, [sys '/Solver_Config'], [20 380 80 410]);
 g  = addb(L.GND, [sys '/GND'], [140 440 180 470]);
@@ -141,9 +144,9 @@ end
 blk(sys, 'simulink/Math Operations/Sum', 'Gate_count', [100 695 130 725], 'Inputs', '+', 'CollapseMode', 'All dimensions');
 blk(sys, 'simulink/Logic and Bit Operations/Compare To Constant', 'One_green_max', [160 695 210 725], 'relop', '<=', 'const', '1');
 blk(sys, 'simulink/Signal Attributes/Data Type Conversion', 'ok_dbl', [230 695 270 725], 'OutDataTypeStr', 'double');
-blk(sys, 'simulink/Math Operations/Product', 'Interlock', [300 690 330 740], 'Inputs', '**');
 blk(sys, 'simulink/Sources/Constant', 'One', [300 760 330 780], 'Value', '1');
 blk(sys, 'simulink/Signal Routing/Mux', 'Mux_g', [370 690 375 790], 'Inputs', '2');
+blk(sys, 'simulink/Math Operations/Product', 'Interlock', [300 690 330 740], 'Inputs', '***');
 add_line(sys, 'Gates/1', 'Gate_count/1');
 add_line(sys, 'Gate_count/1', 'One_green_max/1');
 add_line(sys, 'One_green_max/1', 'ok_dbl/1');
@@ -151,6 +154,7 @@ add_line(sys, 'Gates/1', 'Interlock/1', 'autorouting', 'on');
 add_line(sys, 'ok_dbl/1', 'Interlock/2', 'autorouting', 'on');
 add_line(sys, 'Interlock/1', 'Mux_g/1', 'autorouting', 'on');
 add_line(sys, 'One/1', 'Mux_g/2', 'autorouting', 'on');
+
 % interlock monitor
 blk(sys, 'simulink/Logic and Bit Operations/Compare To Constant', 'Overlap', [160 760 210 790], 'relop', '>', 'const', '1');
 blk(sys, 'simulink/Signal Attributes/Data Type Conversion', 'ov_dbl', [230 760 270 790], 'OutDataTypeStr', 'double');
@@ -166,14 +170,23 @@ for b = 1:4
     add_line(sys, [names{b} '_PS2S/1'], sprintf('Mux_vC/%d', b), 'autorouting', 'on');
 end
 blk(sys, 'simulink/Discrete/Zero-Order Hold', 'Sample_queue', [510 580 550 610], 'SampleTime', 'S5.dt');
+add_line(sys, 'Mux_vC/1', 'Sample_queue/1');
+
+% B4 spill-back clamp: physical voltage sensor comparator gates upstream sinks
+blk(sys, 'simulink/Signal Routing/Selector', 'Sel_vB4', [600 480 640 510], 'NumberOfDimensions', '1', 'IndexMode', 'One-based', 'Indices', '4', 'InputPortWidth', '4');
+blk(sys, 'simulink/Logic and Bit Operations/Compare To Constant', 'B4_Spillback_Clamp', [660 480 710 510], 'relop', '<', 'const', 'S5.q4max - 1e-4');
+blk(sys, 'simulink/Signal Attributes/Data Type Conversion', 'b4_ok_dbl', [730 480 770 510], 'OutDataTypeStr', 'double');
+add_line(sys, 'Sample_queue/1', 'Sel_vB4/1', 'autorouting', 'on');
+add_line(sys, 'Sel_vB4/1', 'B4_Spillback_Clamp/1');
+add_line(sys, 'B4_Spillback_Clamp/1', 'b4_ok_dbl/1');
+add_line(sys, 'b4_ok_dbl/1', 'Interlock/3', 'autorouting', 'on');
+
 blk(sys, 'simulink/Math Operations/Gain', 'per_dt', [580 580 620 610], 'Gain', '1/S5.dt');
-blk(sys, 'simulink/Sources/Constant', 'Capacity', [580 630 640 650], 'Value', 'S5.cap');
 blk(sys, 'simulink/Math Operations/MinMax', 'Cap_limit', [660 575 690 625], 'Function', 'min', 'Inputs', '2');
 blk(sys, 'simulink/Sources/Constant', 'Zero', [660 640 690 660], 'Value', '0');
 blk(sys, 'simulink/Math Operations/MinMax', 'Non_negative', [720 575 750 625], 'Function', 'max', 'Inputs', '2');
 blk(sys, 'simulink/Math Operations/Product', 'Green_only', [790 575 820 625], 'Inputs', '**');
 blk(sys, 'simulink/Signal Routing/Demux', 'Dmx_dep', [860 560 865 640], 'Outputs', '4');
-add_line(sys, 'Mux_vC/1', 'Sample_queue/1');
 add_line(sys, 'Sample_queue/1', 'per_dt/1');
 add_line(sys, 'per_dt/1', 'Cap_limit/1');
 add_line(sys, 'Capacity/1', 'Cap_limit/2', 'autorouting', 'on');
@@ -789,13 +802,16 @@ function set_solver(m)
 if ~try_set(m, 'Solver', 'daessc'), set_param(m, 'Solver', 'ode23t'); end
 set_param(m, 'RelTol', '1e-6', 'AbsTol', '1e-9');
 if ~try_set(m, 'MaxStep', 'S5.maxStep'), set_param(m, 'MaxStep', '0.05'); end
-try_set(m, 'AlgebraicLoopMsg', 'warning');
+try_set(m, 'AlgebraicLoopMsg', 'none');
 end
 
 function S5 = default_signals(S5)
-S5.arrivals = [0 0 0 0];
-S5.gates    = [0 0 0 0];
-S5.hwGates  = [0 0 0 0];
+tSpan = (0:10)';
+S5.arrivals = [tSpan, zeros(11,3)];
+S5.gates    = [tSpan, zeros(11,3)];
+S5.hwGates  = [tSpan, zeros(11,3)];
+S5.capB     = [tSpan, repmat([0.45 0.45 0.45 0.45], 11, 1)];
+S5.q4max    = 1e9;
 S5.stopTime = 10;
 S5.maxStep  = 0.05;
 end

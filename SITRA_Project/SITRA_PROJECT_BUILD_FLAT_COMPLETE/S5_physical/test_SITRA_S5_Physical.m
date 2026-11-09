@@ -83,6 +83,8 @@ qRef = S.qRef(:, 2:5);
 N = size(qRef, 1);
 S5.stopTime = N - 1;
 S5.maxStep  = 0.05;
+S5.capB     = [(0:N-1)', repmat(net.capacity, N, 1)];
+S5.q4max    = 1e9;
 assignin('base', 'S5', S5);
 set_param([mdl '/Power_Path'], 'Commented', 'on');   % 600 s of 10 kHz PWM is not needed for the traffic check
 tic; out = sim(mdl, 'ReturnWorkspaceOutputs', 'on'); tTraffic = toc;

@@ -39,7 +39,13 @@ end
 q = p.q0;
 qHist = zeros(N,4); arrHist = zeros(N,4); depHist = zeros(N,4);
 residual = zeros(N,4); activeHist = zeros(1,N); gates = zeros(N,3);
+qSeenHist = zeros(N,4);
 st = [];
+sensorState = [];
+
+if isfield(p, 'events') && ~isempty(p.events)
+    net = bl_inject('apply_network', net, p.events);
+end
 
 for k = 1:N
     t = tVec(k);
@@ -51,11 +57,32 @@ for k = 1:N
         info.vehPrev = zeros(1,3);
     end
 
-    [active, st] = f(t, q, info, st, p, net);
-    gates(k,:) = bl_gates(active);          % S4 contract check every step
-    activeHist(k) = active;
+    % Sensor fault injection: controller sees qSeen, plant keeps true q
+    if isfield(p, 'events') && ~isempty(p.events)
+        [qSeen, sensorState] = bl_inject('apply_sensor', q, t, p.events, sensorState);
+    else
+        qSeen = q;
+    end
+    qSeenHist(k,:) = qSeen;
 
-    [qNext, arr, dep, res] = bl_plant_step(q, A.count(k,:)/dt, active, net, dt);
+    [active, st] = f(t, qSeen, info, st, p, net);
+
+    % Signal fault injection: signal head stuck off forces active to 0
+    if isfield(p, 'events') && ~isempty(p.events)
+        activeEff = bl_inject('apply_active', active, t, p.events);
+    else
+        activeEff = active;
+    end
+
+    rawGate = bl_gates(activeEff);
+    if isfield(p, 'events') && ~isempty(p.events)
+        gates(k,:) = bl_inject('apply_gates', rawGate, t, p.events);
+    else
+        gates(k,:) = rawGate;
+    end
+    activeHist(k) = activeEff;
+
+    [qNext, arr, dep, res] = bl_plant_step(q, A.count(k,:)/dt, activeEff, net, dt, t);
 
     qHist(k,:) = q;
     arrHist(k,:) = arr;
@@ -67,6 +94,7 @@ end
 R.controller = ctrlName;
 R.tVec = tVec;
 R.qHist = qHist;
+R.qSeen = qSeenHist;
 R.qFinal = q;
 R.activeHist = activeHist;
 R.gates = gates;
