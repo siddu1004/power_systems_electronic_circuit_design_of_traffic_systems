@@ -1,0 +1,5 @@
+Controller,PeakVoltage_V,AvgEnergy_J,PeakEnergy_J,ConductionLoss_J,SwitchTransitions
+SITRA,15.210,16.827,77.282,0.8110,91
+Webster,24.540,54.778,253.102,0.8203,66
+Actuated,14.160,10.918,73.206,0.7917,76
+MaxPressure,11.660,8.699,31.930,0.7978,88
