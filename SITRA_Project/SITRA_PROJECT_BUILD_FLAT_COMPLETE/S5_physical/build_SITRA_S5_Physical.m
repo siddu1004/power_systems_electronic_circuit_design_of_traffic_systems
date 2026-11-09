@@ -100,6 +100,8 @@ for b = 1:3
     % queue capacitor
     c  = addb(L.C, [sys '/C_' n], [260 y 300 y+50], 'Orientation', 'down');
     setp(c, '^c$', 'S5.C_queue');
+    setp(c, '^vc_specify$', 'on');
+    setp(c, '^vc$', sprintf('S5.vC0(%d)', b));
     % voltage sensor
     v  = add_vs(sys, ['V_' n], [340 y 380 y+50], cal);
     % departure source (node b -> node B4)
@@ -116,6 +118,8 @@ end
 % B4: the junction everything merges into (KCL node)
 c4 = addb(L.C, [sys '/C_B4'], [650 170 690 220], 'Orientation', 'down');
 setp(c4, '^c$', 'S5.C_queue');
+setp(c4, '^vc_specify$', 'on');
+setp(c4, '^vc$', 'S5.vC0(4)');
 v4 = add_vs(sys, 'V_B4', [730 170 770 220], cal);
 wire(sys, node4, cp(c4, 'L', 1));
 wire(sys, cp(c4, 'R', 1), cp(g, 'L', 1));
@@ -744,7 +748,10 @@ end
 function setp(b, pattern, value)
 dp = fieldnames(get_param(b, 'DialogParameters'));
 hit = dp(~cellfun(@isempty, regexpi(dp, pattern, 'once')));
-hit = hit(cellfun(@isempty, regexpi(hit, '_unit$|_conf$|_priority$|_specify$', 'once')));
+% If pattern is specific (e.g. explicitly targets _specify or _priority), don't filter it out
+if isempty(regexpi(pattern, '_specify|_priority|_unit|_conf', 'once'))
+    hit = hit(cellfun(@isempty, regexpi(hit, '_unit$|_conf$|_priority$|_specify$', 'once')));
+end
 if isempty(hit)
     error('S5:param', '%s: no parameter matching "%s". Available: %s', b, pattern, strjoin(dp', ', '));
 end

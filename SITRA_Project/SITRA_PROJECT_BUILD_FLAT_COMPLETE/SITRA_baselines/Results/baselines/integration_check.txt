@@ -1,6 +1,0 @@
-Queue trajectory = frozen Part 8 qHist (<=1e-9),PASS,0.000e+00
-Active-phase history identical,PASS,0.000e+00
-Demand profile identical,PASS,0.000e+00
-S4 gates: at most one on, states in {0..3},PASS,0.000e+00
-Conservation residual (<=1e-9),PASS,7.216e-16
-INTEGRATION STATUS,PASS

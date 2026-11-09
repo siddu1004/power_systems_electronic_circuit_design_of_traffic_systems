@@ -44,11 +44,8 @@ fprintf('  [2] Run Track 1: Mathematical Equivalent & Multi-Controller Suite (Pa
 fprintf('  [3] Run Track 2: Physical Simscape Circuit & Hardware Suite (S5, S6, S7)\n');
 fprintf('  [4] Run Track 3: Master Traffic Behavioral Simulation & Baselines (T1-T7)\n');
 
-% Default to [1] if running non-interactively
+% Default to [1]
 mode = 1;
-if feature('IsDebugMode') == 0 && ~isempty(getCurrentTask())
-    mode = 1;
-end
 
 fprintf('\nExecuting Mode [%d]...\n', mode);
 tMasterStart = tic;
@@ -83,10 +80,14 @@ if ismember(mode, [1, 3])
     s5Dir = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S5_physical');
     cd(s5Dir);
     run(fullfile(s5Dir, 'test_SITRA_S5_Physical.m'));
+    
+    % Step 2.2: Four-Controller Physical Circuit Clearance-Time Benchmarking
+    fprintf('\n--- [2.2] Running S5 Physical Circuit Clearance-Time Benchmarking ---\n');
+    run(fullfile(s5Dir, 'run_controllers_on_S5_physical.m'));
     cd(rootDir);
     
-    % Step 2.2: S6 & S7 Capacitor Parasitics and Semiconductor Thermal Dynamics
-    fprintf('\n--- [2.2] Running Stages S6 & S7: Parasitics & Thermal Dynamics ---\n');
+    % Step 2.3: S6 & S7 Capacitor Parasitics and Semiconductor Thermal Dynamics
+    fprintf('\n--- [2.3] Running Stages S6 & S7: Parasitics & Thermal Dynamics ---\n');
     s6s7Dir = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S6_S7_parasitics');
     cd(s6s7Dir);
     run(fullfile(s6s7Dir, 'run_all_S6_S7.m'));

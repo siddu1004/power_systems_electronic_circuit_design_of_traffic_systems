@@ -24,7 +24,7 @@ thisDir = fileparts(mfilename('fullpath'));
 if isempty(thisDir), thisDir = pwd; end
 cd(thisDir);
 addpath(thisDir);
-addpath(fullfile(thisDir, 'SITRA_baselines', 'MATLAB', 'baselines'));
+addpath(fullfile(thisDir, 'baselines'));
 
 resultsRoot = fullfile(thisDir, 'Results');
 if exist(resultsRoot, 'dir') ~= 7, mkdir(resultsRoot); end
@@ -42,7 +42,7 @@ run(fullfile(thisDir, 'run_SITRA_Master_Simulation.m'));
 %% PHASE 3: Baseline Controller Comparison Suite
 fprintf('\n>>> PHASE 3: Running Baseline Controller Suite (Webster, Actuated, Max-Pressure, MPC)...\n');
 thisDir = fileparts(mfilename('fullpath')); if isempty(thisDir), thisDir = pwd; end
-cd(fullfile(thisDir, 'SITRA_baselines', 'MATLAB', 'baselines'));
+cd(fullfile(thisDir, 'baselines'));
 blResults = run_baseline_comparison(false);
 cd(thisDir);
 

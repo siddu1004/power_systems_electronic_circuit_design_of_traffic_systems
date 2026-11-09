@@ -9,7 +9,7 @@ clearvars;
 %% ============================================================
 
 model = 'SITRA_S2_test_ControllerCompare';
-assert(isfile([model '.slx']), 'Comparison model file not found.');
+assert(exist(model,'file')==4, 'Comparison model file not found.');
 load_system(model);
 
 fprintf('\n============================================================\n');

@@ -15,6 +15,7 @@ net = createNetwork();
 S5.cap      = net.capacity;   % [A] = [veh/s]  B1 B2 B3 B4 (ASSUMED traffic capacities)
 S5.dt       = 1;              % [s] traffic step, same as Part 8
 S5.C_queue  = 1;              % [F] 1 F so that 1 V = 1 vehicle (normalized, not a part)
+S5.vC0      = [0 0 0 0];      % [V] initial capacitor voltages C_B1..C_B4 (default 0 V)
 
 % ---------------- Layer B: power path (ALL PLACEHOLDER) -----------------
 P = struct();

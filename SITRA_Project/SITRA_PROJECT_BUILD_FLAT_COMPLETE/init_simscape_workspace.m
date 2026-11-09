@@ -4,8 +4,8 @@
 
 thisDir = fileparts(mfilename('fullpath'));
 if isempty(thisDir), thisDir = pwd; end
-addpath(genpath(fullfile(thisDir, 'SITRA_baselines')));
-addpath(genpath(fullfile(thisDir, 'S5_electrical')));
+addpath(fullfile(thisDir, 'baselines'));
+addpath(fullfile(thisDir, 'S5_physical'));
 
 p = bl_config();
 net = createNetwork();

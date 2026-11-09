@@ -17,18 +17,31 @@ This document provides the sizing rationale and exact design procedures for Stag
 
 ---
 
-## 2. DC-Link Decoupling Capacitor ($C_{dc,link} = 1000\,\mu\text{F}$)
-- **Status in S5**: PLACEHOLDER (`1000 uF, 35 V, ESR = 0.02 Ohm`)
+## 2. DC-Link and Output Filter Capacitors
+
+### A. DC-Link Decoupling Capacitor ($C_{dc} = 2200\,\mu\text{F}$)
+- **Status in S5**: PLACEHOLDER (`2200 uF, 63 V, ESR = 0.05 Ohm`)
 - **Governing Simulation Quantities**:
+  - Full-wave rectified 100 Hz ripple from 50 Hz mains.
   - Step load current change during phase commutation: $\Delta I_{load} = 1.0\text{ A}$.
-  - Switch commutation transient duration: $\Delta t_{comm} = 50\,\mu\text{s}$.
-  - Allowable DC bus ripple voltage: $\Delta V_{ripple,max} \le 2\% \cdot 24\text{ V} = 0.48\text{ V}$.
+  - Peak DC-link voltage: $V_{dc,peak} \approx \sqrt{2} \cdot 36\text{ V} \approx 50.9\text{ V}$.
+  - Allowable DC bus ripple voltage: $\Delta V_{ripple,max} \le 5\% \cdot 48\text{ V} \approx 2.4\text{ V}$.
 - **S12 Selection Procedure**:
-  1. Calculate minimum capacitance:
-     $$C_{min} = \frac{\Delta I_{load} \cdot \Delta t_{comm}}{\Delta V_{ripple,max}} = \frac{1.0\text{ A} \cdot 50\times 10^{-6}\text{ s}}{0.48\text{ V}} \approx 104\,\mu\text{F}$$
-  2. Apply safety margin of $5\times$ for electrochemical aging and low-temperature capacitance derating ($-20^\circ\text{C}$):
-     $$C_{selected} \ge 500\,\mu\text{F} \implies \text{Use } 1000\,\mu\text{F}, 50\text{ V, Low-ESR aluminum electrolytic}$$
-  3. Ensure RMS ripple current rating exceeds $I_{rms,ripple} = \sqrt{D(1-D)} I_{load} \approx 0.5\text{ A}_{rms}$.
+  1. Calculate minimum holdup capacitance:
+     $$C_{min} = \frac{I_{load}}{2 f_{ac} \cdot \Delta V_{ripple}} = \frac{1.0\text{ A}}{100\text{ Hz} \cdot 2.4\text{ V}} \approx 416\,\mu\text{F}$$
+  2. Apply a safety factor of $\approx 5\times$ for electrochemical aging, low-temperature derating ($-20^\circ\text{C}$), and converter inrush:
+     $$C_{selected} \ge 2000\,\mu\text{F} \implies \text{Use } 2200\,\mu\text{F}, 63\text{ V or 100 V, Low-ESR aluminum electrolytic}$$
+  3. Ensure RMS ripple current rating exceeds $I_{rms,ripple} \ge 1.2\text{ A}_{rms}$.
+
+### B. Regulated Signal-Head Bus Capacitor ($C_{out} = 3300\,\mu\text{F}$)
+- **Status in S5**: PLACEHOLDER (`3300 uF, 35 V, with RC damper C_damp = 4.7 mF, R_damp = 1 Ohm`)
+- **Governing Simulation Quantities**:
+  - Buck converter switching frequency: $f_{sw} = 10\text{ kHz}$.
+  - Load-step current droop suppression: $\Delta I_{load} = 1.0\text{ A}$ step during green phase switch.
+  - Dynamic regulation requirement: $V_{bus}$ maintained within $24.0\text{ V} \pm 10\%$ ($21.6\text{ V} - 26.4\text{ V}$) under 1 A step loads.
+- **S12 Selection Procedure**:
+  1. Size $C_{out} = 3300\,\mu\text{F}$ to keep maximum transient droop below $1.94\text{ V}$ ($8.1\%$, passing the $10\%$ specification).
+  2. Implement parallel RC damper ($R_{damp} = 1\,\Omega$, $C_{damp} = 4700\,\mu\text{F}$) to suppress LC filter resonance with $L_{buck} = 2\text{ mH}$.
 
 ---
 

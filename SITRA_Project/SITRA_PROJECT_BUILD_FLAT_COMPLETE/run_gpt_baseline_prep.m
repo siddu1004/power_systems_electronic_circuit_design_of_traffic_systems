@@ -4,10 +4,10 @@ clc;
 root = pwd;
 
 % Locate baseline directory
-baselineDir = fullfile(root,'MATLAB','baselines');
+baselineDir = fullfile(root, 'baselines');
 
 if ~isfolder(baselineDir)
-    error('MATLAB/baselines folder not found. Extract SITRA_baselines.zip first.');
+    error('baselines folder not found.');
 end
 
 addpath(root);

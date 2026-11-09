@@ -14,7 +14,7 @@ clear; clc;
 here = fileparts(mfilename('fullpath'));
 if isempty(here), here = pwd; end
 root = fileparts(here);
-addpath(here); addpath(root); addpath(genpath(fullfile(root, 'SITRA_baselines')));
+addpath(here); addpath(root); addpath(genpath(fullfile(root, 'baselines')));
 outDir = fullfile(root, 'Results', 'S5_physical');
 if ~exist(outDir, 'dir'), mkdir(outDir); end
 mdl = 'SITRA_S5_Physical';

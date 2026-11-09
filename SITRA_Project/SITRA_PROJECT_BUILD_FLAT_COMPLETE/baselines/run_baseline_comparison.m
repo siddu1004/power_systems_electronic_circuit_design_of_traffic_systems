@@ -1,10 +1,10 @@
 function RES = run_baseline_comparison(showFigures)
-%RUN_BASELINE_COMPARISON  SITRA vs Webster vs actuated vs max-pressure, T1-T7.
+%RUN_BASELINE_COMPARISON  SITRA vs Webster vs actuated vs max-pressure, T1-T8.
 %
 %   run_baseline_comparison          % figures on screen
 %   run_baseline_comparison(false)   % off-screen (batch), PNGs still saved
 %
-%   For every scenario T1..T7 and every seed in bl_config, ONE arrival
+%   For every scenario T1..T8 and every seed in bl_config, ONE arrival
 %   sequence is generated and fed to every controller (identical arrivals,
 %   capacities, initial queues, duration, seed).  Metrics are averaged
 %   over seeds.  Deterministic T6 uses a single run.
@@ -15,10 +15,11 @@ function RES = run_baseline_comparison(showFigures)
 %     baseline_results.mat            everything, incl. mean queue traces
 %     fig1_queue_vs_time.png          T1-T4 total approach queue
 %     fig2_delay_vs_demand.png        avg delay vs total demand + LOS bands
-%     fig3_throughput.png             throughput bars T1-T7
-%     fig4_max_queue.png              max approach queue bars T1-T7
+%     fig3_throughput.png             throughput bars T1-T8
+%     fig4_max_queue.png              max approach queue bars T1-T8
 %     fig5_step_response.png          T5 step demand: demand + queue
 %     fig6_part8_surge.png            T6/T7 total queue (Part 8 scenario)
+%     fig7_clearance_time.png         Clearance time bars T5-T8 with error bars
 
 if nargin < 1, showFigures = true; end
 
@@ -50,14 +51,32 @@ tAxis = cell(nS,1);
 rateAxis = cell(nS,1);
 perSeed = {};
 
+% Clearance metric storage
+meanClearTime  = nan(nS,nC);
+stdClearTime   = nan(nS,nC);
+clearedSeedsStr = cell(nS,nC);
+meanExcessVehS = nan(nS,nC);
+
 fidSeed = fopen(fullfile(outDir,'baseline_runs_per_seed.csv'),'w');
-fprintf(fidSeed, 'Scenario,Controller,Seed,AvgDelay_s,NetDelay_s,AvgQueue_veh,MaxQueue_veh,MaxQueueB4_veh,Throughput_veh,FinalQueue_veh,LOS\n');
+fprintf(fidSeed, 'Scenario,Controller,Seed,AvgDelay_s,NetDelay_s,AvgQueue_veh,MaxQueue_veh,MaxQueueB4_veh,Throughput_veh,FinalQueue_veh,LOS,ClearTime_s,ExcessVehS,Cleared\n');
 
 for i = 1:nS
     s = scn(i);
+    % A3: Set p.q0 = s.q0 for scenario if specified (e.g. T8), otherwise zeros
+    if isfield(s, 'q0') && ~isempty(s.q0)
+        p.q0 = s.q0;
+    else
+        p.q0 = zeros(1,4);
+    end
+    
     if s.stochastic, seeds = p.seeds; else, seeds = 0; end
-    vals = zeros(numel(seeds), nC, numel(fields));
-    for j = 1:numel(seeds)
+    nSeeds = numel(seeds);
+    vals = zeros(nSeeds, nC, numel(fields));
+    clearVals = nan(nSeeds, nC);
+    excessVals = nan(nSeeds, nC);
+    clearedFlags = false(nSeeds, nC);
+
+    for j = 1:nSeeds
         A = bl_make_arrivals(s, p, seeds(j));     % SAME arrivals for all controllers
         if j == 1
             tAxis{i} = A.tVec(:);
@@ -70,10 +89,19 @@ for i = 1:nS
             for f = 1:numel(fields)
                 vals(j,c,f) = M.(fields{f});
             end
-            traces{i,c} = traces{i,c} + sum(R.qHist(:,1:3),2)/numel(seeds);
-            fprintf(fidSeed, '%s,%s,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.3f,%s\n', ...
+            traces{i,c} = traces{i,c} + sum(R.qHist(:,1:3),2)/nSeeds;
+
+            % A1: Compute clearance metrics
+            Q_total = sum(R.qHist(:,1:3), 2);
+            C_res = bl_clearance(R.tVec, Q_total, s.tEvent, s.tBaseWin);
+            clearVals(j,c) = C_res.tClear;
+            excessVals(j,c) = C_res.excessVehS;
+            clearedFlags(j,c) = C_res.cleared;
+
+            fprintf(fidSeed, '%s,%s,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.3f,%s,%.2f,%.2f,%d\n', ...
                 s.id, ctrls{c}, seeds(j), M.avgDelay, M.netDelay, M.avgQueue, ...
-                M.maxQueue, M.maxQueueB4, M.throughput, M.finalQueue, M.LOS);
+                M.maxQueue, M.maxQueueB4, M.throughput, M.finalQueue, M.LOS, ...
+                C_res.tClear, C_res.excessVehS, double(C_res.cleared));
             if s.stochastic == false || j == 1
                 perSeed{end+1} = bl_export_for_simulink(R); %#ok<AGROW>
                 perSeed{end}.scenario = s.id;
@@ -86,34 +114,94 @@ for i = 1:nS
     end
     for c = 1:nC
         LOS{i,c} = bl_hcm_los(mean_.avgDelay(i,c));
+        
+        % Aggregate clearance across seeds
+        if ~isnan(s.tEvent)
+            cMask = clearedFlags(:, c);
+            nClr = sum(cMask);
+            clearedSeedsStr{i,c} = sprintf('%d/%d', nClr, nSeeds);
+            if nClr > 0
+                meanClearTime(i,c) = mean(clearVals(cMask, c));
+                if nClr > 1
+                    stdClearTime(i,c) = std(clearVals(cMask, c));
+                else
+                    stdClearTime(i,c) = 0;
+                end
+            else
+                meanClearTime(i,c) = NaN;
+                stdClearTime(i,c) = NaN;
+            end
+            meanExcessVehS(i,c) = mean(excessVals(:, c));
+        else
+            clearedSeedsStr{i,c} = 'N/A';
+            meanClearTime(i,c) = NaN;
+            stdClearTime(i,c) = NaN;
+            meanExcessVehS(i,c) = NaN;
+        end
     end
-    fprintf('  %s %-30s done (%d seed%s)\n', s.id, s.name, numel(seeds), plural(numel(seeds)));
+    fprintf('  %s %-30s done (%d seed%s)\n', s.id, s.name, nSeeds, plural(nSeeds));
 end
 fclose(fidSeed);
 
+% Reset p.q0
+p.q0 = zeros(1,4);
+
 % ---- table -----------------------------------------------------------------
 fid = fopen(fullfile(outDir,'baseline_comparison.csv'),'w');
-fprintf(fid, 'Scenario,Name,Controller,AvgDelay_s,AvgDelay_std,LOS,NetDelay_s,AvgQueue_veh,MaxQueue_veh,MaxQueueB4_veh,Throughput_veh,Throughput_vph,FinalQueue_veh,MaxResidual\n');
-hdr = sprintf('%-4s %-12s %9s %4s %9s %9s %9s %9s %10s %9s', ...
-    'Scn','Controller','Delay[s]','LOS','NetDel[s]','AvgQ','MaxQ','MaxQ_B4','Thru[veh]','FinalQ');
+fprintf(fid, 'Scenario,Name,Controller,AvgDelay_s,AvgDelay_std,LOS,NetDelay_s,AvgQueue_veh,MaxQueue_veh,MaxQueueB4_veh,Throughput_veh,Throughput_vph,FinalQueue_veh,MaxResidual,ClearTime_s,ClearTime_std,ClearedSeeds,ExcessVehS\n');
+hdr = sprintf('%-4s %-12s %9s %4s %9s %9s %9s %9s %10s %9s %11s %11s %9s', ...
+    'Scn','Controller','Delay[s]','LOS','NetDel[s]','AvgQ','MaxQ','MaxQ_B4','Thru[veh]','FinalQ','ClearTime[s]','ClearSeeds','ExcessVehS');
 fprintf('\n%s\n%s\n', hdr, repmat('-',1,numel(hdr)));
 for i = 1:nS
     for c = 1:nC
-        fprintf('%-4s %-12s %9.2f %4s %9.2f %9.2f %9.2f %9.2f %10.1f %9.2f\n', ...
+        clearStr = sprintf('%.1f', meanClearTime(i,c));
+        if isnan(meanClearTime(i,c)), clearStr = 'NaN'; end
+        excessStr = sprintf('%.1f', meanExcessVehS(i,c));
+        if isnan(meanExcessVehS(i,c)), excessStr = 'NaN'; end
+        fprintf('%-4s %-12s %9.2f %4s %9.2f %9.2f %9.2f %9.2f %10.1f %9.2f %11s %11s %9s\n', ...
             scn(i).id, ctrls{c}, mean_.avgDelay(i,c), LOS{i,c}, mean_.netDelay(i,c), ...
             mean_.avgQueue(i,c), mean_.maxQueue(i,c), mean_.maxQueueB4(i,c), ...
-            mean_.throughput(i,c), mean_.finalQueue(i,c));
-        fprintf(fid, '%s,%s,%s,%.3f,%.3f,%s,%.3f,%.3f,%.3f,%.3f,%.2f,%.1f,%.3f,%.2e\n', ...
+            mean_.throughput(i,c), mean_.finalQueue(i,c), clearStr, clearedSeedsStr{i,c}, excessStr);
+        fprintf(fid, '%s,%s,%s,%.3f,%.3f,%s,%.3f,%.3f,%.3f,%.3f,%.2f,%.1f,%.3f,%.2e,%.2f,%.2f,%s,%.2f\n', ...
             scn(i).id, scn(i).name, ctrls{c}, mean_.avgDelay(i,c), std_.avgDelay(i,c), ...
             LOS{i,c}, mean_.netDelay(i,c), mean_.avgQueue(i,c), mean_.maxQueue(i,c), ...
             mean_.maxQueueB4(i,c), mean_.throughput(i,c), mean_.throughputRate(i,c), ...
-            mean_.finalQueue(i,c), mean_.maxResidual(i,c));
+            mean_.finalQueue(i,c), mean_.maxResidual(i,c), ...
+            meanClearTime(i,c), stdClearTime(i,c), clearedSeedsStr{i,c}, meanExcessVehS(i,c));
     end
     if i < nS, fprintf('\n'); end
 end
 fclose(fid);
 fprintf('\nDelay = sum(q_B1..B3*dt)/vehicles (LOS basis). NetDel adds the B4 queue.\n');
 fprintf('Stochastic scenarios: mean of %d seeds. Capacities are ASSUMED placeholders.\n', numel(p.seeds));
+
+% ---- clearance ranking table (A4) ------------------------------------------
+fprintf('\n============================================================\n');
+fprintf('CONGESTION CLEARANCE TIME RANKINGS (Fastest to Slowest)\n');
+fprintf('============================================================\n');
+for i = 1:nS
+    if isnan(scn(i).tEvent), continue; end
+    fprintf('\nScenario %s (%s, event at t=%.0f s):\n', scn(i).id, scn(i).name, scn(i).tEvent);
+    cTimes = meanClearTime(i,:);
+    cExcess = meanExcessVehS(i,:);
+    
+    % Sort: valid times first ascending, NaNs last
+    sortKeys = cTimes;
+    sortKeys(isnan(sortKeys)) = 1e9;
+    [~, sortIdx] = sortrows([sortKeys(:), cExcess(:)]);
+    
+    for rank = 1:nC
+        c = sortIdx(rank);
+        if isnan(cTimes(c))
+            timeDisp = 'NOT CLEARED';
+        else
+            timeDisp = sprintf('%.1f s (+/- %.1f s)', cTimes(c), stdClearTime(i,c));
+        end
+        fprintf('  Rank %d: %-14s | Clearance: %-20s | Cleared Seeds: %-5s | Excess: %.1f veh*s\n', ...
+            rank, ctrls{c}, timeDisp, clearedSeedsStr{i,c}, cExcess(c));
+    end
+end
+fprintf('============================================================\n\n');
 
 % ---- figures ---------------------------------------------------------------
 col = [0.10 0.30 0.70; 0.85 0.40 0.10; 0.20 0.60 0.30; 0.55 0.25 0.65];
@@ -207,16 +295,78 @@ for k = 1:2
 end
 saveFig(h, fullfile(outDir,'fig6_part8_surge.png'));
 
+% Fig 7: Clearance time comparison (A4)
+clrIds = {'T5', 'T6', 'T7', 'T8'};
+scClr = [];
+for k = 1:numel(clrIds)
+    idx = find(strcmp(ids, clrIds{k}));
+    if ~isempty(idx), scClr(end+1) = idx; end %#ok<AGROW>
+end
+
+nScClr = numel(scClr);
+Y_bar = zeros(nScClr, nC);
+E_bar = zeros(nScClr, nC);
+for k = 1:nScClr
+    sIdx = scClr(k);
+    for c = 1:nC
+        Y_bar(k,c) = meanClearTime(sIdx,c);
+        if isnan(stdClearTime(sIdx,c))
+            E_bar(k,c) = 0;
+        else
+            E_bar(k,c) = stdClearTime(sIdx,c);
+        end
+    end
+end
+
+h = figure('Name','Clearance time comparison','Visible',vis,'Position',[110 110 950 520]);
+Y_plot = Y_bar;
+Y_plot(isnan(Y_plot)) = 0;
+bh = bar(Y_plot, 'grouped');
+for c = 1:nC, set(bh(c), 'FaceColor', col(c,:)); end
+hold on;
+
+% Add error bars and label "Not Cleared"
+groupWidth = min(0.8, nC/(nC + 1.5));
+for c = 1:nC
+    x = (1:nScClr) - groupWidth/2 + (2*c - 1) * groupWidth / (2*nC);
+    % Error bars for valid numbers
+    validMask = ~isnan(Y_bar(:,c)) & (Y_bar(:,c) > 0);
+    if any(validMask)
+        errorbar(x(validMask), Y_bar(validMask,c), E_bar(validMask,c), ...
+            'k', 'linestyle', 'none', 'LineWidth', 1.2, 'CapSize', 8);
+    end
+    % Not cleared labels
+    nanMask = isnan(Y_bar(:,c));
+    for k = find(nanMask(:)')
+        text(x(k), 10, 'Not Cleared', 'Rotation', 90, ...
+            'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', ...
+            'FontSize', 8, 'FontWeight', 'bold', 'Color', [0.8 0.1 0.1]);
+        plot(x(k), 0, 'rx', 'MarkerSize', 10, 'LineWidth', 2);
+    end
+end
+hold off; grid on;
+
+set(gca, 'XTick', 1:nScClr, 'XTickLabel', clrIds);
+xlabel('Scenario'); ylabel('Clearance Time [s] (mean \pm std)');
+title('Congestion Clearance Time Comparison Across Controllers (T5 - T8)');
+legend(ctrls, 'Location', 'northwest');
+ymax = max(Y_bar(~isnan(Y_bar)));
+if isempty(ymax) || ymax <= 0, ymax = 200; end
+ylim([0, ymax * 1.25 + 20]);
+saveFig(h, fullfile(outDir,'fig7_clearance_time.png'));
+
 % ---- save --------------------------------------------------------------------
 RES.scenarios = scn; RES.controllers = ctrls;
 RES.mean = mean_; RES.std = std_; RES.LOS = LOS;
 RES.traces = traces; RES.tAxis = tAxis; RES.rate = rateAxis;
 RES.simulinkSignals = perSeed;  % first-seed runs, ready for From Workspace
+RES.clearance = struct('meanClearTime', meanClearTime, 'stdClearTime', stdClearTime, ...
+                       'clearedSeeds', {clearedSeedsStr}, 'excessVehS', meanExcessVehS);
 RES.config = rmfield(p, 'controllers');
 scnSave = rmfield(scn, 'demandFcn'); %#ok<NASGU>  (function handles do not save portably)
 RES.scenarios = rmfield(scn, 'demandFcn');
 save(fullfile(outDir,'baseline_results.mat'), 'RES');
-fprintf('\nSaved table, per-seed CSV, MAT and 6 figures to:\n  %s\n\n', outDir);
+fprintf('\nSaved table, per-seed CSV, MAT and 7 figures to:\n  %s\n\n', outDir);
 end
 
 function saveFig(h, file)
