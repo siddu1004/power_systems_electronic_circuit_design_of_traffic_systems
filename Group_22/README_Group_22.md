@@ -17,8 +17,9 @@
 
 | S.No | Student Full Name | Amrita Roll Number | Branch & Section | Institutional Email ID |
 | :---: | :--- | :---: | :---: | :--- |
-| **1** | **Vanguri Satya Sai Siddardh** | `CB.EN.U4EEE24152` | B.Tech EEE | `cb.en.u4eee24152@cb.students.amrita.edu` |
-| **2** | **Sreedev C.** | `CB.EN.U4EEE24142` | B.Tech EEE | `cb.en.u4eee24142@cb.students.amrita.edu` |
+| **1** | **Sreedev C.** | `CB.EN.U4EEE24142` | B.Tech EEE | `cb.en.u4eee24142@cb.students.amrita.edu` |
+| **2** | **Vanguri Satya Sai Siddardh** | `CB.EN.U4EEE24152` | B.Tech EEE | `cb.en.u4eee24152@cb.students.amrita.edu` |
+| **3** | **Vishal S.** | `CB.EN.U4EEE24155` | B.Tech EEE | `cb.en.u4eee24155@cb.students.amrita.edu` |
 
 ---
 

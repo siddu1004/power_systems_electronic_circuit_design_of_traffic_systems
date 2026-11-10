@@ -381,22 +381,30 @@ Project SITRA is developed through the collaborative engineering efforts of:
   - Lead author of the comprehensive IEEE Transactions Journal Paper (`Report/SITRA_IEEE_Journal_Paper.docx`).
   - Creator of the 300 DPI vector flowcharts, dual-domain circuit schematics, and physical replay validation testbenches.
 
+- **Vishal S. (@vishal / Vishal)** — *Hardware & Testing Contributor*
+  - Contributor to semiconductor switching dynamics and dead-time interlock validation.
+  - Verification of power stage protection circuitry, component BOM candidate research, and hardware testing procedures.
+
 ---
 
 ## 📤 Academic Submission Dossier (Amrita EEE — Group 22)
 
 - **Course**: Power Systems & Power Electronics Representation of Urban Traffic Systems
-- **Institution**: Department of Electrical & Electronics Engineering, Amrita Vishwa Vidyapeetham, Coimbatore
+- **Institution**: Department of Electrical & Electronics Engineering, Amrita School of Engineering, Coimbatore
 - **Faculty Evaluator**: **Dr. S. Sampath Kumar**
 - **Group Allocation**: **Group 22**
 - **Student Team**:
-  - **Vanguri Satya Sai Siddardh** (Roll: `CB.EN.U4EEE24152`)
-  - **Sreedev C.** (Roll: `CB.EN.U4EEE24142`)
+  - **Sreedev C.** (Roll No: `CB.EN.U4EEE24142`)
+  - **Vanguri Satya Sai Siddardh** (Roll No: `CB.EN.U4EEE24152`)
+  - **Vishal S.** (Roll No: `CB.EN.U4EEE24155`)
 - **Evaluation Submission Portal**: [Amrita SharePoint Evaluation Folder](https://amritavishwavidyapeetham-my.sharepoint.com/:f:/g/personal/s_sampathkumar_cb_amrita_edu/IgAK4dvf6TUlTKKTGJSpx1OLAXrJC_bJiNnfLnpgnP1RPHk?e=ytyGOd)
 - **Ready Submission Artifacts**:
   - Uncompressed Submission Directory: [`Group_22/`](Group_22/)
-  - Packaged Zip Archive: [`Group_22.zip`](Group_22.zip)
-  - Submission Dossier: [`Group_22/README_Group_22.docx`](Group_22/README_Group_22.docx)
+  - Packaged Group Dossier: [`Group_22.zip`](Group_22.zip)
+  - Dedicated Simulation Models Archive: [`Simulation_Files_Group22.zip`](Simulation_Files_Group22.zip)
+  - Entire Codebase Archive: [`SITRA_Entire_Codebase_Group22.zip`](SITRA_Entire_Codebase_Group22.zip)
+  - Installation & Simulation Guide: [`INSTALLATION_AND_SIMULATION_GUIDE.md`](INSTALLATION_AND_SIMULATION_GUIDE.md) | [PDF](INSTALLATION_AND_SIMULATION_GUIDE.pdf)
+  - Submission Dossier: [`Group_22/README_Group_22.docx`](Group_22/README_Group_22.docx) | [PDF](Group_22/README_Group_22.pdf)
 
 ---
 

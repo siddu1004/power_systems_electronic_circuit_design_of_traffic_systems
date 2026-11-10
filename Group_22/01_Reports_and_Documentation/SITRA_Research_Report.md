@@ -1,10 +1,12 @@
 ---
 title: "Power-Electronic Circuit Modeling and Congestion Clearance Analysis of Urban Traffic Networks: The SITRA Equivalent Architecture"
 author:
-  - "Sai [Author Name Placeholder]"
-  - "Co-Author [Name Placeholder]"
+  - "Sreedev C. (Roll No: CB.EN.U4EEE24142)"
+  - "Vanguri Satya Sai Siddardh (Roll No: CB.EN.U4EEE24152)"
+  - "Vishal S. (Roll No: CB.EN.U4EEE24155)"
+  - "Team 22 | Department of Electrical and Electronics Engineering"
 institute:
-  - "Department of Electrical and Electronics Engineering [Institutional Affiliation Placeholder], Coimbatore, Tamil Nadu, India"
+  - "Amrita School of Engineering, Coimbatore, Amrita Vishwa Vidyapeetham, India"
 date: "November 2026"
 ---
 
