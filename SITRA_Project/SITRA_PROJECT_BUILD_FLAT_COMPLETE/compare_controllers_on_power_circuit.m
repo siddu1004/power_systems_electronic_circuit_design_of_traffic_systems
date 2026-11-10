@@ -24,7 +24,7 @@ thisDir = fileparts(mfilename('fullpath'));
 if isempty(thisDir), thisDir = pwd; end
 cd(thisDir);
 addpath(thisDir);
-addpath(fullfile(thisDir, 'SITRA_baselines', 'MATLAB', 'baselines'));
+addpath(fullfile(thisDir, 'baselines'));
 
 resultsDir = fullfile(thisDir, 'Results', 'power_electronics');
 if exist(resultsDir, 'dir') ~= 7, mkdir(resultsDir); end
