@@ -383,6 +383,23 @@ Project SITRA is developed through the collaborative engineering efforts of:
 
 ---
 
+## 📤 Academic Submission Dossier (Amrita EEE — Group 22)
+
+- **Course**: Power Systems & Power Electronics Representation of Urban Traffic Systems
+- **Institution**: Department of Electrical & Electronics Engineering, Amrita Vishwa Vidyapeetham, Coimbatore
+- **Faculty Evaluator**: **Dr. S. Sampath Kumar**
+- **Group Allocation**: **Group 22**
+- **Student Team**:
+  - **Vanguri Satya Sai Siddardh** (Roll: `CB.EN.U4EEE24152`)
+  - **Sreedev C.** (Roll: `CB.EN.U4EEE24142`)
+- **Evaluation Submission Portal**: [Amrita SharePoint Evaluation Folder](https://amritavishwavidyapeetham-my.sharepoint.com/:f:/g/personal/s_sampathkumar_cb_amrita_edu/IgAK4dvf6TUlTKKTGJSpx1OLAXrJC_bJiNnfLnpgnP1RPHk?e=ytyGOd)
+- **Ready Submission Artifacts**:
+  - Uncompressed Submission Directory: [`Group_22/`](Group_22/)
+  - Packaged Zip Archive: [`Group_22.zip`](Group_22.zip)
+  - Submission Dossier: [`Group_22/README_Group_22.docx`](Group_22/README_Group_22.docx)
+
+---
+
 ## ⚖️ Citation
 
 If you utilize Project SITRA, its dual-domain electrical models, or the Twin-Run Clearance Metric in your research, please cite:
