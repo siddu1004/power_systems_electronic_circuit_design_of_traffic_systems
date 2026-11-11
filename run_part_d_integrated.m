@@ -1,5 +1,5 @@
 clc;
-clearvars -except rootDir mode tMasterStart;
+clearvars -except rootDir mode tMasterStart sw sh screen;
 
 %% ============================================================
 % SITRA PART D
@@ -260,10 +260,12 @@ fprintf('\nResults saved to:\n%s\n',resultDir);
 
 function enableLog(model,subsystem,port,name)
     ph = get_param([model '/' subsystem],'PortHandles');
-    set_param(ph.Outport(port), ...
-        'DataLogging','on', ...
-        'DataLoggingNameMode','Custom', ...
-        'DataLoggingName',name);
+    if port <= length(ph.Outport)
+        set_param(ph.Outport(port), ...
+            'DataLogging','on', ...
+            'DataLoggingNameMode','Custom', ...
+            'DataLoggingName',name);
+    end
 end
 
 function ts = getSignalTS(logs,name)

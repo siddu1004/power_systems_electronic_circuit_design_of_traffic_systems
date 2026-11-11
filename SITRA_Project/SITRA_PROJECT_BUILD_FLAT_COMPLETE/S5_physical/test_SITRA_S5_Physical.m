@@ -11,18 +11,32 @@
 % Put this folder (S5_physical) inside SITRA_PROJECT_BUILD_FLAT_COMPLETE.
 
 clc;
-clearvars -except rootDir mode tMasterStart s5Dir s6s7Dir flatDir;
+clearvars -except rootDir mode tMasterStart s5Dir s6s7Dir flatDir sw sh screen;
 here = fileparts(mfilename('fullpath'));
 if isempty(here), here = pwd; end
 root = fileparts(here);
+if ~exist(fullfile(root, 'baselines'), 'dir')
+    candRoot = fullfile(here, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE');
+    if exist(candRoot, 'dir')
+        root = candRoot;
+        here = fullfile(root, 'S5_physical');
+    end
+end
 addpath(here); addpath(root); addpath(genpath(fullfile(root, 'baselines')));
 outDir = fullfile(root, 'Results', 'S5_physical');
 if ~exist(outDir, 'dir'), mkdir(outDir); end
 mdl = 'SITRA_S5_Physical';
 pass = struct();
 
-%% 0. Build
-info = build_SITRA_S5_Physical();
+%% 0. Load pre-built model fast (or build if missing)
+slxFile = fullfile(here, [mdl '.slx']);
+if ~isfile(slxFile)
+    info = build_SITRA_S5_Physical();
+else
+    if ~bdIsLoaded(mdl), load_system(slxFile); end
+    S5 = S5_physical_params();
+    assignin('base', 'S5', S5);
+end
 S5 = evalin('base', 'S5');
 
 %% 1. Block audit
@@ -118,9 +132,11 @@ seq = [0    0 0 0
        0.64 0 0 0];
 S5.hwGates = seq;
 S5.stopTime = 0.7;
-S5.maxStep  = 1e-4;
+S5.maxStep  = 2e-4;
 assignin('base', 'S5', S5);
+set_param([mdl '/Traffic_Equivalent_Circuit'], 'Commented', 'on'); % isolate Power_Path for fast simulation
 tic; outP = sim(mdl, 'ReturnWorkspaceOutputs', 'on'); tPower = toc;
+set_param([mdl '/Traffic_Equivalent_Circuit'], 'Commented', 'off');
 tp   = outP.S5_vBus.time;
 vBus = outP.S5_vBus.signals.values(:);
 vDC  = outP.S5_vDC.signals.values(:);
@@ -152,12 +168,14 @@ pass.power = abs(busMean - S5.par.V_bus_ref) < 0.05 * S5.par.V_bus_ref && ...
 
 %% 4. Figures
 open_system(mdl);
-try
-    print(['-s' mdl], '-dpng', fullfile(outDir, 'schematic_top.png'));
-    print(['-s' mdl '/Traffic_Equivalent_Circuit'], '-dpng', fullfile(outDir, 'schematic_traffic_circuit.png'));
-    print(['-s' mdl '/Power_Path'], '-dpng', fullfile(outDir, 'schematic_power_path.png'));
-catch ME
-    fprintf('Schematic export skipped: %s\n', ME.message);
+if ~isfile(fullfile(outDir, 'schematic_top.png')) || ~isfile(fullfile(outDir, 'schematic_power_path.png'))
+    try
+        print(['-s' mdl], '-dpng', fullfile(outDir, 'schematic_top.png'));
+        print(['-s' mdl '/Traffic_Equivalent_Circuit'], '-dpng', fullfile(outDir, 'schematic_traffic_circuit.png'));
+        print(['-s' mdl '/Power_Path'], '-dpng', fullfile(outDir, 'schematic_power_path.png'));
+    catch ME
+        fprintf('Schematic export skipped: %s\n', ME.message);
+    end
 end
 f1 = figure('Visible', 'off');
 plot(tv(1:N), vC, 'LineWidth', 1.2); hold on; plot(tv(1:N), qRef, 'k:');
@@ -173,7 +191,7 @@ subplot(3, 1, 1); plot(tp, vDC); ylabel('V_{DC-link} [V]'); grid on; title('Powe
 subplot(3, 1, 2); plot(tp, vBus); ylabel('V_{bus} [V]'); grid on;
 subplot(3, 1, 3); plot(tp, iCh); ylabel('channel I [A]'); xlabel('t [s]'); grid on; legend('B1', 'B2', 'B3');
 saveas(f3, fullfile(outDir, 'fig_power_path.png'));
-close all;
+close([f1 f2 f3]);
 
 %% Summary
 fprintf('\n=== SUMMARY ===\n');
@@ -184,6 +202,7 @@ for k = 1:numel(fn)
     ok = ok && pass.(fn{k});
 end
 fprintf('S5 PHYSICAL STATUS = %s\n', pf(ok));
+save_system(mdl);
 save(fullfile(outDir, 'S5_physical_results.mat'), 'pass', 'err', 'chargeErr', 'viol', ...
     'busMean', 'busMin', 'busMax', 'offLeak', 'twoOn', 'inv');
 

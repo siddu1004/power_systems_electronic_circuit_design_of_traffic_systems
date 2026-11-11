@@ -311,6 +311,14 @@ fprintf('Comparison model saved successfully\n');
 %% ============================================================
 
 function rebuildSubsystem(path, inputNames, outputNames)
+    % Delete existing internal lines first so no dangling red lines remain
+    lines = find_system(path, 'SearchDepth', 1, 'FindAll', 'on', 'Type', 'line');
+    for k = 1:numel(lines)
+        if ishandle(lines(k))
+            try delete_line(lines(k)); catch, end
+        end
+    end
+
     % Delete existing internal blocks
     blocks = find_system(path, ...
         'SearchDepth', 1, ...
