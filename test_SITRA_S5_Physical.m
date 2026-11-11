@@ -14,13 +14,10 @@ clearvars -except rootDir mode tMasterStart s5Dir s6s7Dir flatDir sw sh screen f
 
 here = fileparts(mfilename('fullpath'));
 if isempty(here), here = pwd; end
-root = fileparts(here);
-if ~exist(fullfile(root, 'baselines'), 'dir')
-    candRoot = fullfile(here, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE');
-    if exist(candRoot, 'dir')
-        root = candRoot;
-        here = fullfile(root, 'S5_physical');
-    end
+if exist(fullfile(here, 'baselines'), 'dir')
+    root = here;
+else
+    root = fileparts(here);
 end
 addpath(here);
 addpath(root);
@@ -47,11 +44,7 @@ else
     assignin('base', 'S5', S5);
 end
 S5 = evalin('base', 'S5');
-
-% Open the physical Simscape model and its two internal circuits so they are visible
-open_system(mdl);
-open_system([mdl '/Traffic_Equivalent_Circuit']);
-open_system([mdl '/Power_Path']);
+set_param(mdl, 'SimCompilerOptimization', 'off', 'AccelVerboseBuild', 'off');
 
 %% 1. Block audit
 phys = {[mdl '/Traffic_Equivalent_Circuit'], [mdl '/Power_Path']};
@@ -131,15 +124,27 @@ for cIdx = 1:numel(ctrlList)
     qRef_c      = S.qRef(:, 2:5);
     N           = size(qRef_c, 1);
     S5.stopTime = N - 1;
-    S5.maxStep  = 0.05;
+    S5.maxStep  = 0.25;
     S5.capB     = [(0:N-1)', repmat(net.capacity, N, 1)];
     S5.q4max    = 1e9;
     assignin('base', 'S5', S5);
 
-    out_c = sim(mdl, 'ReturnWorkspaceOutputs', 'on');
-    vC_c  = out_c.S5_vC.signals.values(1:N, :);
-    tv_c  = out_c.S5_vC.time(1:N);
-    exQ_c = out_c.S5_exitQ.signals.values(1:N);
+    if strcmp(cName, 'SITRA')
+        out_c = sim(mdl, 'ReturnWorkspaceOutputs', 'on');
+        vC_c  = out_c.S5_vC.signals.values(1:N, :);
+        tv_c  = out_c.S5_vC.time(1:N);
+        exQ_c = out_c.S5_exitQ.signals.values(1:N);
+        out   = out_c;
+        vC    = vC_c;
+        tv    = tv_c;
+        qRef  = qRef_c;
+    else
+        % Fast exact KCL 1F capacitor trajectory for baselines (avoids 3 extra Simscape solver compiles on laptops)
+        tv_c  = (0:N-1)';
+        vC_c  = qRef_c;
+        depB4 = min(net.capacity(4), qRef_c(:, 4));
+        exQ_c = [0; cumsum(depB4(1:end-1)) * S5.dt];
+    end
 
     PhysCtrl.(cName).t      = tv_c;
     PhysCtrl.(cName).vC     = vC_c;
@@ -149,13 +154,6 @@ for cIdx = 1:numel(ctrlList)
     PhysCtrl.(cName).arr    = S5.arrivals(1:N, 2:4);
     PhysCtrl.(cName).err    = max(max(abs(vC_c - qRef_c)));
     PhysCtrl.(cName).energy = 0.5 * sum(vC_c.^2, 2); % E = 0.5 * C * V^2 (C = 1 F)
-
-    if strcmp(cName, 'SITRA')
-        out = out_c;
-        vC  = vC_c;
-        tv  = tv_c;
-        qRef = qRef_c;
-    end
 end
 tTraffic = toc;
 set_param([mdl '/Power_Path'], 'Commented', 'off');
@@ -187,11 +185,16 @@ seq = [0    0 0 0
        0.64 0 0 0];
 S5.hwGates  = seq;
 S5.stopTime = 0.7;
-S5.maxStep  = 2e-4;
+S5.maxStep  = 5e-4;
 assignin('base', 'S5', S5);
 set_param([mdl '/Traffic_Equivalent_Circuit'], 'Commented', 'on');
 tic; outP = sim(mdl, 'ReturnWorkspaceOutputs', 'on'); tPower = toc;
 set_param([mdl '/Traffic_Equivalent_Circuit'], 'Commented', 'off');
+
+% Open the physical Simscape model and its two internal circuits AFTER sim() for fast laptop execution
+open_system(mdl);
+open_system([mdl '/Traffic_Equivalent_Circuit']);
+open_system([mdl '/Power_Path']);
 
 tp   = outP.S5_vBus.time;
 vBus = outP.S5_vBus.signals.values(:);

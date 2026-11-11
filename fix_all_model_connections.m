@@ -240,13 +240,9 @@ if isfile([hwModel '.slx'])
     fprintf('Updated PreLoadFcn/InitFcn and clean layout on %s.slx\n', hwModel);
 end
 
-%% 5. COMPILE, UPDATE, EXPORT SCHEMATIC & SAVE MODEL
+%% 5. COMPILE, UPDATE & SAVE MODEL
 set_param(model, 'SimulationCommand', 'update');
 save_system(model);
-try
-    print(['-s' model], '-dpng', 'schematic_s2_compare.png');
-catch
-end
 
 fprintf('\nRunning 600 s test simulation to verify full wiring integrity...\n');
 simOut = sim(model, 'StopTime', '600');

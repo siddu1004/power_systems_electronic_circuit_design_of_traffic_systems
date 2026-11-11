@@ -1,9 +1,0 @@
-# Dependencies and temporary large archives
-SFP.zip
-SFP/
-SFP_extracted/
-.matlab_pref/
-slprj/
-*.asv
-*.slxc
-SITRA_S2_test_BACKUP_ORIGINAL.slx

@@ -247,94 +247,77 @@ Across 32 physical Simscape runs replaying controller gate commands:
 │   ├── SITRA_IEEE_Journal_Paper.md   # Source markdown of the IEEE Journal Paper
 │   ├── SITRA_Research_Report.docx    # Complete 34k-word engineering research report
 │   ├── SITRA_Research_Report.md      # Source markdown of research report
-│   ├── figures/                      # High-resolution 300 DPI figures
-│   │   ├── fig_ieee_project_flowchart.png       # 8-Stage engineering methodology flowchart
-│   │   ├── fig_ieee_five_layer_architecture.png # Five-layer cyber-physical architecture
-│   │   ├── fig_ieee_dual_domain_schematic.png   # Dual-domain circuit schematic
-│   │   ├── fig_ieee_power_flow.png              # 230V AC to 24V DC power distribution network
-│   │   ├── fig_site_map.png                     # SITRA Junction OpenStreetMap layout
-│   │   └── fig01 to fig38                       # All 38 evaluation & validation figures
-│   ├── generate_ieee_flowcharts.py   # Script to regenerate vector flowcharts at 300 DPI
-│   └── generate_ieee_manuscript.py   # Script to recompile IEEE manuscript to DOCX
+├── Report/                           # Final Publications, Presentation Slides & Guides
+│   ├── SITRA_IEEE_Journal_Paper.pdf  # Final IEEE Transactions Journal Paper (PDF & DOCX)
+│   ├── SITRA_Research_Report.pdf     # Comprehensive Technical Research Report (PDF & DOCX)
+│   ├── SITRA_Team22_Presentation.pptx# Live Defense Presentation Deck (PPTX & PDF)
+│   ├── INSTALLATION_AND_SIMULATION_GUIDE.pdf # Step-by-step Simulation Guide (PDF & DOCX)
+│   └── figures/                      # High-resolution 300 DPI publication figures
 │
-├── Results/                       # Validation MAT files, CSVs, and waveform plots
-│   ├── S6_S7/                     # S6 ESR compensation & S7 thermal loss data
-│   ├── PartC_Deadtime_Validation/ # 5 us gate switching waveforms
-│   ├── PartD_Integrated_Validation/ # Controller comparison CSVs & metrics
-│   ├── S5_physical/               # Physical Simscape replay clearance data (32 runs)
-│   └── T6_Simulink_Exports/       # Controller phase actuation histories
+├── Results/                          # Unified Validation MAT files, CSVs, and Plots
+│   ├── baselines/                    # 14-Scenario 4-Controller Benchmark CSVs & Figures
+│   ├── PartB_Electrical_Validation/  # KCL & Charge Conservation Validation
+│   ├── PartC_Deadtime_Validation/    # 5 us Semiconductor Dead-Time Waveforms
+│   ├── PartD_Integrated_Validation/  # 4-Controller S9 Integrated Validation
+│   ├── S5_physical/                  # 7 Multi-Panel Physical Simscape Figures & Metrics
+│   ├── S6_S7/                        # Capacitor ESR & MOSFET Thermal Loss Results
+│   └── T6_Simulink_Exports/          # Pre-exported Controller Signals for Instant Loading
 │
-├── SITRA_Project/
-│   ├── SITRA_Final_Technical_Report.md # Extended technical report
-│   └── SITRA_PROJECT_BUILD_FLAT_COMPLETE/
-│       ├── S5_physical/           # Track 2: Pure Simscape physical circuit implementation
-│       │   ├── SITRA_S5_Physical.slx     # Physical Simscape circuit model
-│       │   ├── build_SITRA_S5_Physical.m # Script-driven Simscape model builder
-│       │   ├── test_SITRA_S5_Physical.m  # Acceptance test suite
-│       │   ├── run_controllers_on_S5_physical.m # 32-run physical clearance replayer
-│       │   └── SIZING_NOTE_S12.md        # Hardware BOM & candidate specifications
-│       ├── S6_S7_parasitics/      # Capacitor ESR & MOSFET thermal dynamics suite
-│       │   ├── test_stage6_parasitics.m  # S6 ESR testbench
-│       │   ├── test_stage7_semiconductors.m # S7 thermal testbench
-│       │   └── run_all_S6_S7.m           # S6/S7 master runner
-│       ├── baselines/             # Multi-controller baseline harness & metrics
-│       │   ├── bl_clearance.m     # Non-circular Twin-Run Clearance Metric
-│       │   ├── bl_inject.m        # General congestion, disturbance & fault injector
-│       │   ├── bl_ctrl_sitra.m    # SITRA Receding-Horizon MPC controller
-│       │   ├── bl_ctrl_webster.m  # Webster optimal fixed-time controller
-│       │   ├── bl_ctrl_actuated.m # NEMA vehicle-actuated controller
-│       │   ├── bl_ctrl_maxpressure.m # Decentralized MaxPressure controller
-│       │   └── run_baseline_comparison.m # Master baseline benchmark runner
-│       └── BUILD_LOG.md           # Master verification ledger & test audit trail
+├── baselines/                        # Multi-controller baseline harness (T1 to T14)
+│   ├── bl_clearance.m                # Non-circular Twin-Run Clearance Metric
+│   ├── bl_inject.m                   # General congestion, disturbance & fault injector
+│   ├── bl_ctrl_sitra.m               # SITRA Receding-Horizon MPC controller
+│   ├── bl_ctrl_webster.m             # Webster optimal fixed-time controller
+│   ├── bl_ctrl_actuated.m            # NEMA vehicle-actuated controller
+│   ├── bl_ctrl_maxpressure.m         # Decentralized MaxPressure controller
+│   └── run_baseline_comparison.m     # Master baseline benchmark runner
 │
-├── src/                           # Interactive React 19 + Tailwind v4 Web Research Platform
-│   ├── App.tsx                    # Master web application component tree
-│   ├── data.ts                    # Research formulas, dataset records & BOM
-│   └── main.tsx                   # React entrypoint
-└── package.json                   # Web platform configuration & dependencies
+├── S6_S7_parasitics/                 # Capacitor ESR & MOSFET thermal dynamics suite
+│   ├── params_parasitics.m           # Physical parasitic & thermal parameters
+│   ├── sim_parasitic_circuit.m       # Stage S6/S7 parasitic & thermal solver
+│   ├── test_stage6_parasitics.m      # Stage S6 ESR & leakage acceptance testbench
+│   ├── test_stage7_semiconductors.m  # Stage S7 MOSFET thermal acceptance testbench
+│   └── run_all_S6_S7.m               # Stages S6 & S7 master runner
+│
+├── src/                              # Interactive React 19 + Tailwind v4 Web Platform
+│   ├── App.tsx                       # Master web application component tree
+│   ├── data.ts                       # Research formulas, dataset records & BOM
+│   └── main.tsx                      # React entrypoint
+└── package.json                      # Web platform configuration & dependencies
 ```
 
 ---
 
-## 🚀 How to Run Simulations
+## 🚀 How to Run Simulations (Optimized for Fast Laptop Execution)
 
 ### Prerequisites
-- **MATLAB R2024b or newer**
-- **Simulink**
-- **Simscape** & **Simscape Electrical**
+- **MATLAB R2024b – R2026a**
+- **Simulink**, **Simscape**, & **Simscape Electrical**
 
-### 1. Complete Unified Master Execution
-Open MATLAB, set the current directory to the repository root, and run:
+### 1. Live Presentation & Defense Demo (Recommended)
+Open MATLAB in the repository root and run:
 ```matlab
-% Launches the unified master runner (prompts for Mode 1: All, Mode 2: Track 1, Mode 3: Track 2):
+run_presentation_demo;
+```
+Automatically opens the Simulink & Simscape hardware models and pops up **all 11 live engineering figure windows** (4 Mathematical/Controller windows + 7 Multi-Panel Physical Simscape Network windows) in ~15 seconds.
+
+### 2. Complete Unified Master Execution
+```matlab
 run_master_all;
 ```
 
-### 2. Targeted Subsystem Validation
+### 3. Targeted Subsystem Validation
 ```matlab
-% Track 1: Verify 4-controller integration & S9 validation gate (100% PASS):
+% Track 1: Verify electrical conservation & 4-controller integration (Zero MEX compile):
+run_part_b;
+run_part_c;
 run_part_d_integrated;
 
-% Track 1: Verify 5.0 us gate dead-time interlock protection:
-run_part_c;
-
-% Track 1: Automated model wiring check & dangling line repair:
-fix_all_model_connections;
-
-% Track 2: Test pure Simscape physical circuit (SITRA_S5_Physical.slx):
-cd('SITRA_Project/SITRA_PROJECT_BUILD_FLAT_COMPLETE/S5_physical');
+% Track 2: Run pure Simscape physical circuit + display all 7 Physical Network Graphs:
 test_SITRA_S5_Physical;
 
-% Track 2: Replay 32 controller runs through Simscape physical circuit:
-run_controllers_on_S5_physical;
-
 % Track 2: Validate capacitor ESR compensation & MOSFET thermal rise:
-cd('../S6_S7_parasitics');
-run_all_S6_S7;
-
-% Run comprehensive 14-scenario baseline clearance comparison (T1 to T14):
-cd('../baselines');
-run_baseline_comparison;
+run('S6_S7_parasitics/run_all_S6_S7.m');
 ```
 
 ### 3. Running the Interactive Web Research Platform

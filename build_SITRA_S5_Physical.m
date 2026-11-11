@@ -12,7 +12,11 @@ function info = build_SITRA_S5_Physical()
 mdl  = 'SITRA_S5_Physical';
 here = fileparts(mfilename('fullpath'));
 if isempty(here), here = pwd; end
-root = fileparts(here);
+if exist(fullfile(here, 'baselines'), 'dir')
+    root = here;
+else
+    root = fileparts(here);
+end
 addpath(here); addpath(root);
 bl = fullfile(root, 'baselines');
 if exist(bl, 'dir'), addpath(genpath(bl)); end

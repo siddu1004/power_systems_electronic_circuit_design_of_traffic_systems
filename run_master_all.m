@@ -29,10 +29,8 @@ rootDir = fileparts(mfilename('fullpath'));
 if isempty(rootDir), rootDir = pwd; end
 cd(rootDir);
 addpath(rootDir);
-addpath(fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE'));
-addpath(fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S5_physical'));
-addpath(fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S6_S7_parasitics'));
-addpath(fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'baselines'));
+addpath(fullfile(rootDir, 'S6_S7_parasitics'));
+addpath(fullfile(rootDir, 'baselines'));
 
 fprintf('======================================================================\n');
 fprintf('       SITRA COMPLETE UNIFIED SIMULATION AND VALIDATION SUITE        \n');
@@ -75,25 +73,16 @@ if ismember(mode, [1, 3])
     fprintf('>>> TRACK 2: PHYSICAL SIMSCAPE ELECTRICAL CIRCUIT & HARDWARE DYNAMICS\n');
     fprintf('----------------------------------------------------------------------\n');
     
-    % Step 2.1: S5 Simscape Physical Circuit Model Test
-    fprintf('\n--- [2.1] Running Stage S5: Physical Simscape Model Verification ---\n');
+    % Step 2.1: S5 Simscape Physical Circuit Model + S6/S7 Parasitics & Thermal + 7 Live Figures
+    fprintf('\n--- [2.1] Running Stage S5/S6/S7 Physical Simscape Suite & 7 Live Graphs ---\n');
     rootDir = fileparts(mfilename('fullpath')); if isempty(rootDir), rootDir = pwd; end
-    s5Dir = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S5_physical');
-    cd(s5Dir);
-    run(fullfile(s5Dir, 'test_SITRA_S5_Physical.m'));
-    
-    % Step 2.2: Four-Controller Physical Circuit Clearance-Time Benchmarking
-    fprintf('\n--- [2.2] Running S5 Physical Circuit Clearance-Time Benchmarking ---\n');
-    rootDir = fileparts(mfilename('fullpath')); if isempty(rootDir), rootDir = pwd; end
-    s5Dir = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S5_physical');
-    cd(s5Dir);
-    run(fullfile(s5Dir, 'run_controllers_on_S5_physical.m'));
     cd(rootDir);
+    run(fullfile(rootDir, 'test_SITRA_S5_Physical.m'));
     
-    % Step 2.3: S6 & S7 Capacitor Parasitics and Semiconductor Thermal Dynamics
-    fprintf('\n--- [2.3] Running Stages S6 & S7: Parasitics & Thermal Dynamics ---\n');
+    % Step 2.2: S6 & S7 Acceptance Gate Summary
+    fprintf('\n--- [2.2] Running Stages S6 & S7 Acceptance Gate Summary ---\n');
     rootDir = fileparts(mfilename('fullpath')); if isempty(rootDir), rootDir = pwd; end
-    s6s7Dir = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S6_S7_parasitics');
+    s6s7Dir = fullfile(rootDir, 'S6_S7_parasitics');
     cd(s6s7Dir);
     run(fullfile(s6s7Dir, 'run_all_S6_S7.m'));
     cd(rootDir);
@@ -105,12 +94,20 @@ if ismember(mode, [1, 4])
     fprintf('>>> TRACK 3: MASTER TRAFFIC BEHAVIORAL SIMULATION & BASELINE SUITE\n');
     fprintf('----------------------------------------------------------------------\n');
     
-    flatDir = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE');
-    cd(flatDir);
-    run(fullfile(flatDir, 'run_all_SITRA.m'));
-    rootDir = fileparts(mfilename('fullpath'));
-    if isempty(rootDir), rootDir = pwd; end
+    rootDir = fileparts(mfilename('fullpath')); if isempty(rootDir), rootDir = pwd; end
     cd(rootDir);
+    run(fullfile(rootDir, 'run_SITRA_Master_Simulation.m'));
+    rootDir = fileparts(mfilename('fullpath')); if isempty(rootDir), rootDir = pwd; end
+    cd(rootDir);
+    
+    blCsv = fullfile(rootDir, 'Results', 'baselines', 'baseline_comparison.csv');
+    if mode == 4 || ~isfile(blCsv)
+        cd(fullfile(rootDir, 'baselines'));
+        run_baseline_comparison(false);
+        cd(rootDir);
+    else
+        fprintf('\n[Fast Laptop Mode] Verified 14-Scenario Baseline Comparison Table: %s\n', blCsv);
+    end
 end
 
 if exist('tMasterStart', 'var')

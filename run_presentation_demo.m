@@ -20,10 +20,8 @@ rootDir = fileparts(mfilename('fullpath'));
 if isempty(rootDir), rootDir = pwd; end
 cd(rootDir);
 addpath(rootDir);
-addpath(fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE'));
-addpath(fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S5_physical'));
-addpath(fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S6_S7_parasitics'));
-addpath(fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'baselines'));
+addpath(fullfile(rootDir, 'S6_S7_parasitics'));
+addpath(fullfile(rootDir, 'baselines'));
 
 screen = get(0, 'ScreenSize');
 sw = screen(3);
@@ -149,8 +147,7 @@ pause(1.5);
 %% =========================================================================
 fprintf('\n>>> [ACT 3/4] OPENING 230V AC PURE SIMSCAPE PHYSICAL CIRCUIT ON SCREEN...\n');
 s5Model = 'SITRA_S5_Physical';
-s5Dir = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'S5_physical');
-cd(s5Dir);
+cd(rootDir);
 load_system(s5Model);
 open_system(s5Model);
 open_system([s5Model '/Traffic_Equivalent_Circuit']);
@@ -173,10 +170,7 @@ pause(1.5);
 %% =========================================================================
 fprintf('\n>>> [ACT 4/4] DEMONSTRATING SLIDE 14: SENSOR NOISE BREAKDOWN & REVERSAL...\n');
 cd(rootDir);
-csvPath = fullfile(rootDir, 'SITRA_Project', 'SITRA_PROJECT_BUILD_FLAT_COMPLETE', 'Results', 'baselines', 'baseline_comparison.csv');
-if ~isfile(csvPath)
-    csvPath = fullfile(rootDir, 'Group_22', '03_Supplementary_Results_and_Figures', 'baseline_comparison.csv');
-end
+csvPath = fullfile(rootDir, 'Results', 'baselines', 'baseline_comparison.csv');
 
 if isfile(csvPath)
     T = readtable(csvPath);
