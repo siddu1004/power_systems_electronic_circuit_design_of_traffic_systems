@@ -1,5 +1,5 @@
 clc;
-clearvars -except rootDir mode tMasterStart sw sh screen;
+clearvars -except rootDir mode tMasterStart sw sh screen f_act1 f_act2 f_act3 f_act4;
 
 %% ============================================================
 % SITRA PART C

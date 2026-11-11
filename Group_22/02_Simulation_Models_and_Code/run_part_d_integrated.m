@@ -1,5 +1,5 @@
 clc;
-clearvars -except rootDir mode tMasterStart sw sh screen;
+clearvars -except rootDir mode tMasterStart sw sh screen f_act1 f_act2 f_act3 f_act4;
 
 %% ============================================================
 % SITRA PART D
@@ -101,7 +101,7 @@ for k = 1:numel(controllers)
     I = orientData(iTS.Data,numel(t));
     Vdc = orientData(vdcTS.Data,numel(t));
     Idc = orientData(idcTS.Data,numel(t));
-    sw = orientData(swTS.Data,numel(t));
+    swValid = orientData(swTS.Data,numel(t));
     s9 = orientData(s9TS.Data,numel(t));
 
     %% Traffic metrics
@@ -134,7 +134,7 @@ for k = 1:numel(controllers)
     gateViolations = sum(sum(G,2)>1);
 
     %% S5 and S9 validation
-    switchValid = all(sw==1);
+    switchValid = all(swValid==1);
     validSamples = sum(s9==1);
     invalidSamples = sum(s9~=1);
     S9Passed = invalidSamples==0;
