@@ -161,37 +161,10 @@ set_param(s5Model, 'Location', [30, 60, round(sw*0.50), round(sh*0.88)]);
 drawnow;
 
 fprintf('Simscape Physical Model "%s" and both physical circuits are now open and visible!\n', s5Model);
-fprintf('Simulating Layer A (1F Capacitive Road Network) & Layer B (230V AC -> 47V DC-Link -> 24V Buck -> MOSFETs)...\n');
+fprintf('Simulating Layer A (1F Capacitive Road Network), Layer B (230V AC -> 47V DC-Link -> 24V Buck -> MOSFETs), & S6/S7 Parasitics...\n');
 
+% test_SITRA_S5_Physical automatically generates and displays Physical Graphs 1 to 7 on screen!
 test_SITRA_S5_Physical;
-
-screen = get(0, 'ScreenSize'); sw = screen(3); sh = screen(4);
-f_act3 = figure('Name', 'ACT 3: Simscape Physical Circuit Verification (Layer A & Layer B)', ...
-    'Position', [round(sw*0.03), round(sh*0.06), round(sw*0.48), round(sh*0.82)], ...
-    'Color', 'w', 'NumberTitle', 'off');
-
-subplot(3, 1, 1);
-plot(tv(1:N), vC, 'LineWidth', 1.6); hold on;
-plot(tv(1:N), qRef, 'k:', 'LineWidth', 1.2);
-grid on; xlabel('Time [s]'); ylabel('Capacitor V_C [V] = Queue [veh]');
-title(sprintf('Layer A Simscape Capacitive Voltages vs Part 8 Reference (Max Error = %.2e V)', err), 'FontSize', 10, 'FontWeight', 'bold');
-legend({'C_{B1}', 'C_{B2}', 'C_{B3}', 'C_{B4}', 'Part 8 q_{ref}'}, 'Location', 'northeast', 'FontSize', 8);
-
-subplot(3, 1, 2);
-plot(tp, vDC, 'Color', [0.85 0.33 0.10], 'LineWidth', 1.5, 'DisplayName', 'Rectified DC-Link (~47.2 V)');
-hold on; grid on;
-plot(tp, vBus, 'Color', [0.00 0.45 0.74], 'LineWidth', 1.8, 'DisplayName', 'Regulated Buck Bus (24.0 V)');
-yline(24.0, 'k--', '24V Target');
-xlabel('Time [s]'); ylabel('Voltage [V]');
-title(sprintf('Layer B Power Conversion: 230V AC -> 47.2V DC-Link -> %.2fV Buck Bus', busMean), 'FontSize', 10, 'FontWeight', 'bold');
-legend('Location', 'southeast', 'FontSize', 8);
-
-subplot(3, 1, 3);
-plot(tp, iCh, 'LineWidth', 1.5);
-grid on; xlabel('Time [s]'); ylabel('MOSFET Load Current [A]');
-title(sprintf('MOSFET Signal-Head Currents (Illegal 2-Green Command at t=0.62s Blocked: Overlap=%d)', twoOn), 'FontSize', 10, 'FontWeight', 'bold');
-legend({'Branch B1 (1A)', 'Branch B2 (1A)', 'Branch B3 (1A)'}, 'Location', 'northeast', 'FontSize', 8);
-drawnow;
 
 pause(1.5);
 
