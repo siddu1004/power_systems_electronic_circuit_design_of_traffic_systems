@@ -417,7 +417,7 @@ class CircuitSim:
                 self.last_served[gg] = t
                 self.discharged[gg] = q
                 self.sent[ex] += q
-        if self.ctrl in ("scats", "scoot"):
+        if self.ctrl in ("scats", "scoot", "sitra"):
             arm_busy = self.discharged.reshape(n.J, 4, 4).sum(2) > 0
             for j in range(n.J):
                 if self.state[j] == "G":
@@ -692,6 +692,25 @@ class CircuitSim:
         ok = self._arm_ok[j]
         nA = int(ok.sum())
         L = 5.0 * nA
+        if self.ctrl == "sitra":
+            # SITRA MPC (repo mpcSignalModel.m) generalised to n arms: min 12 s, max 30 s,
+            # total green 18 s per arm; the spare seconds go greedily to score = q + 10*demand
+            # (+0.25 for non-first arms), with 0.985 diminishing returns
+            arms = [a for a in range(4) if ok[a]]
+            g = {a: 12.0 for a in arms}
+            score = {a: self._arm_q(j, a) + 10.0 * self.q_arm[j, a] + (0.25 if i else 0.0)
+                     for i, a in enumerate(arms)}
+            for _ in range(int(round(6 * len(arms)))):
+                cand = [a for a in arms if g[a] < 30.0]
+                if not cand:
+                    break
+                a = max(cand, key=lambda x: score[x])
+                if score[a] <= 0:
+                    break
+                g[a] += 1.0
+                score[a] = score[a] * 0.985 + 1e-12
+            self.plan_g[j] = np.array([g.get(a, 0.0) for a in range(4)])
+            return
         if self.ctrl == "scats":
             ds = np.where(self.green_s[j] > 0, self.busy_s[j] / np.maximum(self.green_s[j], 1), 0.0)
             dmax = ds[ok].max() if nA else 0.0
@@ -889,7 +908,7 @@ class CircuitSim:
             return el >= 20.0                        # give-way / dark signal: short alternation
         if self.ctrl == "actuated":                  # NEMA-style: gap-out when the arm empties
             return el >= 40.0 or self._arm_q(j, self.k_fixed[j]) < 0.5
-        if self.ctrl in ("scats", "scoot"):
+        if self.ctrl in ("scats", "scoot", "sitra"):
             return el >= max(10.0, self.plan_g[j, self.k_fixed[j]])
         if self.ctrl == "bt" and self._blind_fixed(j):
             return el >= 40.0
@@ -968,7 +987,7 @@ class CircuitSim:
                 q[self.k_fixed[j]] = -1
             self.k_fixed[j] = int(np.argmax(q))
             return SPLIT_IDX[self.k_fixed[j]]
-        if self.ctrl in ("fixed", "actuated", "scats", "scoot") or j in self._priority or j in self._dark or \
+        if self.ctrl in ("fixed", "actuated", "scats", "scoot", "sitra") or j in self._priority or j in self._dark or \
                 (self.ctrl == "bt" and (self.em or self._blind_fixed(j))):
             prev = self.k_fixed[j]
             for _ in range(4):                       # next arm that physically exists
@@ -981,7 +1000,7 @@ class CircuitSim:
                 break
             else:
                 self.k_fixed[j] = prev
-            if self.ctrl in ("scats", "scoot") and self.k_fixed[j] <= prev:
+            if self.ctrl in ("scats", "scoot", "sitra") and self.k_fixed[j] <= prev:
                 self._replan(j, t)                   # a cycle has completed
             return SPLIT_IDX[self.k_fixed[j]]
         s, extra = self._scores(j, t, occ)

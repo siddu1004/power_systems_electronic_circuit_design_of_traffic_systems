@@ -29,7 +29,8 @@ from .city import CityNet
 from .circuit import CircuitSim, Incident, V3_OPTS, V6_OPTS, V7_OPTS, V7P_OPTS, V7F_OPTS
 
 OSM = "data/osm/coimbatore_peelamedu.json"
-CTRL = {"Fixed-40": ("fixed", None), "SCOOT-like": ("scoot", None), "SCATS-like": ("scats", None),
+CTRL = {"Fixed-40": ("fixed", None), "SITRA-MPC": ("sitra", None), "SCOOT-like": ("scoot", None),
+        "SCATS-like": ("scats", None),
         "Actuated": ("actuated", None), "MaxPressure": ("maxp", None),
         "Block-Tetris v3": ("bt", V3_OPTS), "Block-Tetris v6": ("bt", V6_OPTS),
         "Block-Tetris v7": ("bt", V7_OPTS),
@@ -63,12 +64,16 @@ def incident(ev, tg):
             "CCTV failure": Incident("cam_fail", tuple(tg["junc2"]), t0=T0, t1=T1)}[ev]
 
 
+HORIZON = 5400
+
+
 def _job(a):
     name, ev, seed, d, tg = a
     net = CityNet.from_osm(OSM)
     ctrl, o = CTRL[name]
     o = dict(o or {}, peak_profile=True)
-    sim = CircuitSim(net, ctrl, seed=seed, demand=d, opts=o, incident=incident(ev, tg), record=(seed == 11))
+    sim = CircuitSim(net, ctrl, seed=seed, demand=d, opts=o, incident=incident(ev, tg), record=(seed == 11),
+                     horizon=HORIZON)
     r = sim.run()
     out = dict(name=name, ev=ev, seed=seed, delay=float(r["delay_s"]), served=float(r["served"] / r["arrived"]),
                peak=float(r["peak_stored"]), series=r["series"], special=int(sim.special_s),
@@ -99,14 +104,15 @@ def plots(rows, net, out):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     names = list(CTRL)
-    col = dict(zip(names, ["#9a9893", "#6250d6", "#e87ba4", "#1baf7a", "#eb6834", "#2a78d6", "#008300",
-                           "#eda100", "#52514e", "#e34948", "#0b0b0b"]))
+    pal = ["#9a9893", "#7f3f98", "#6250d6", "#e87ba4", "#1baf7a", "#eb6834", "#2a78d6", "#008300",
+           "#eda100", "#52514e", "#e34948", "#0b0b0b"]
+    col = dict(zip(names, pal))
     mean = lambda nm, ev, key: float(np.mean([r[key] for r in rows if r["name"] == nm and r["ev"] == ev]))
-    w = 0.075
+    w = 0.8 / len(names)
     fig, ax = plt.subplots(figsize=(16, 5), facecolor="#fcfcfb")
     x = np.arange(len(EVENTS))
     for i, nm in enumerate(names):
-        ax.bar(x + (i - 5) * w, [mean(nm, ev, "delay") for ev in EVENTS], w * 0.92, color=col[nm], label=nm)
+        ax.bar(x + (i - (len(names) - 1) / 2) * w, [mean(nm, ev, "delay") for ev in EVENTS], w * 0.92, color=col[nm], label=nm)
     ax.set_xticks(x, EVENTS)
     ax.set_ylabel("Average delay per unit of traffic (s)")
     ax.set_title("Coimbatore e-twin: real-time congestion events x real-world controllers", fontweight="bold")
@@ -151,7 +157,7 @@ def plots(rows, net, out):
     evs = EVENTS[1:]
     x = np.arange(len(evs))
     for i, nm in enumerate(names):
-        ax.bar(x + (i - 5) * w, [mean(nm, ev, "clear") / 60 for ev in evs], w * 0.92, color=col[nm], label=nm)
+        ax.bar(x + (i - (len(names) - 1) / 2) * w, [mean(nm, ev, "clear") / 60 for ev in evs], w * 0.92, color=col[nm], label=nm)
     ax.set_xticks(x, evs)
     ax.set_ylabel("Minutes to clear after the event")
     ax.set_title("How fast each controller clears the congestion (twin-run metric)", fontweight="bold")
@@ -169,11 +175,18 @@ def plots(rows, net, out):
 
 
 def main():
+    global OSM, HORIZON, CTRL
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="Results/BlockTetris/realtime")
     ap.add_argument("--seeds", type=int, default=4)
     ap.add_argument("--demand", type=float, default=0.06)
+    ap.add_argument("--osm", default="data/osm/coimbatore_peelamedu.json")
+    ap.add_argument("--horizon", type=int, default=5400)
+    ap.add_argument("--controllers", default="", help="comma list of names to run (default all)")
     a = ap.parse_args()
+    OSM, HORIZON = a.osm, a.horizon
+    if a.controllers:
+        CTRL = {k: v for k, v in CTRL.items() if k in a.controllers.split(",")}
     os.makedirs(a.out, exist_ok=True)
     net = CityNet.from_osm(OSM)
     tg = targets(net, a.demand)
