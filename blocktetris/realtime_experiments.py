@@ -26,7 +26,7 @@ import numpy as np
 
 from .outputs import keep
 from .city import CityNet
-from .circuit import CircuitSim, Incident, V3_OPTS, V6_OPTS, V7_OPTS, V7P_OPTS
+from .circuit import CircuitSim, Incident, V3_OPTS, V6_OPTS, V7_OPTS, V7P_OPTS, V7F_OPTS
 
 OSM = "data/osm/coimbatore_peelamedu.json"
 CTRL = {"Fixed-40": ("fixed", None), "SCOOT-like": ("scoot", None), "SCATS-like": ("scats", None),
@@ -34,7 +34,8 @@ CTRL = {"Fixed-40": ("fixed", None), "SCOOT-like": ("scoot", None), "SCATS-like"
         "Block-Tetris v3": ("bt", V3_OPTS), "Block-Tetris v6": ("bt", V6_OPTS),
         "Block-Tetris v7": ("bt", V7_OPTS),
         "Fixed-40 + police": ("fixed", {"police": True, "officers": 3, "police_delay": 300.0}),
-        "Block-Tetris v7 + police": ("bt", V7P_OPTS)}
+        "Block-Tetris v7 + police": ("bt", V7P_OPTS),
+        "Block-Tetris v7-final": ("bt", V7F_OPTS)}
 EVENTS = ["normal peak", "accident", "monsoon rain", "festival surge", "VIP closure",
           "signal power failure", "CCTV failure"]
 T0, T1 = 1500, 2700          # event window (min 25-45, inside the peak)
@@ -99,13 +100,13 @@ def plots(rows, net, out):
     import matplotlib.pyplot as plt
     names = list(CTRL)
     col = dict(zip(names, ["#9a9893", "#6250d6", "#e87ba4", "#1baf7a", "#eb6834", "#2a78d6", "#008300",
-                           "#eda100", "#52514e", "#e34948"]))
+                           "#eda100", "#52514e", "#e34948", "#0b0b0b"]))
     mean = lambda nm, ev, key: float(np.mean([r[key] for r in rows if r["name"] == nm and r["ev"] == ev]))
-    w = 0.08
-    fig, ax = plt.subplots(figsize=(15, 5), facecolor="#fcfcfb")
+    w = 0.075
+    fig, ax = plt.subplots(figsize=(16, 5), facecolor="#fcfcfb")
     x = np.arange(len(EVENTS))
     for i, nm in enumerate(names):
-        ax.bar(x + (i - 4.5) * w, [mean(nm, ev, "delay") for ev in EVENTS], w * 0.92, color=col[nm], label=nm)
+        ax.bar(x + (i - 5) * w, [mean(nm, ev, "delay") for ev in EVENTS], w * 0.92, color=col[nm], label=nm)
     ax.set_xticks(x, EVENTS)
     ax.set_ylabel("Average delay per unit of traffic (s)")
     ax.set_title("Coimbatore e-twin: real-time congestion events x real-world controllers", fontweight="bold")
@@ -150,7 +151,7 @@ def plots(rows, net, out):
     evs = EVENTS[1:]
     x = np.arange(len(evs))
     for i, nm in enumerate(names):
-        ax.bar(x + (i - 4.5) * w, [mean(nm, ev, "clear") / 60 for ev in evs], w * 0.92, color=col[nm], label=nm)
+        ax.bar(x + (i - 5) * w, [mean(nm, ev, "clear") / 60 for ev in evs], w * 0.92, color=col[nm], label=nm)
     ax.set_xticks(x, evs)
     ax.set_ylabel("Minutes to clear after the event")
     ax.set_title("How fast each controller clears the congestion (twin-run metric)", fontweight="bold")

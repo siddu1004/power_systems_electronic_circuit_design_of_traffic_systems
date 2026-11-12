@@ -912,6 +912,11 @@ class CircuitSim:
             _, elig, age = extra
             if (elig & ~ph & (age > self.opts["max_wait"])).any():
                 return True                          # starving movement waiting: hand over now
+        cap = self.opts.get("wait_guarantee")
+        if cap and el >= G_MIN:
+            waited = t - self.wait_since[sl]
+            if (~ph & (waited > cap)).any():
+                return True                          # service guarantee (pedestrians / side roads)
         if j not in self.blind and self.blocked_now[sl][ph & (self.V[sl] > 0.05)].any():
             self.blocked_run[j] += 1
         else:
@@ -986,6 +991,16 @@ class CircuitSim:
             ps[cur] = -1.0
         if self.ctrl == "bt":
             _, elig, age = extra
+            if self.opts.get("wait_guarantee"):
+                waited = t - self.wait_since[j * 16:(j + 1) * 16]
+                late = np.where(waited > self.opts["wait_guarantee"])[0]
+                if late.size:
+                    worst = late[np.argmax(waited[late])]
+                    cand = np.where(PM[:, worst])[0]
+                    if forced:
+                        cand = cand[cand != cur]
+                    if cand.size:
+                        return int(cand[np.argmax(ps[cand])])
             starving = np.where(elig & (age > self.opts["max_wait"]))[0]
             if starving.size:
                 worst = starving[np.argmax(age[starving])]
@@ -1068,3 +1083,7 @@ VERSIONS["v7"] = V7_OPTS
 # v7 with the traffic-police failsafe (3 officers, 5-min response)
 V7P_OPTS = dict(V7_OPTS, police=True, officers=3, police_delay=300.0)
 VERSIONS["v7+police"] = V7P_OPTS
+
+# final: v7 + police failsafe + 120 s service guarantee (pedestrians / side roads)
+V7F_OPTS = dict(V7P_OPTS, wait_guarantee=120.0)
+VERSIONS["v7-final"] = V7F_OPTS
