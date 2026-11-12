@@ -732,7 +732,7 @@ class CircuitSim:
                     continue
                 r = self.base_ratio[n.in_line[j, a]]
                 sat = n.g_lanes[j * 16 + a * 4: j * 16 + a * 4 + 4] / (TAU_TRUE * TURN_F)
-                s_arm = min(sat[k] / r[k] for k in range(4) if r[k] > 1e-9)
+                s_arm = min((sat[k] / r[k] for k in range(4) if r[k] > 1e-9), default=float(sat.sum()))
                 y[a] = self.q_arm[j, a] / max(s_arm, 1e-6)
             Y = y.sum()
             C = (1.5 * L + 5.0) / (1.0 - Y) if Y < 0.9 else 150.0

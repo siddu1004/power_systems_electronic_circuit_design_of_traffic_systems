@@ -20,6 +20,7 @@ Events (all on a morning-peak demand profile):
 import argparse
 import json
 import os
+import pickle
 from multiprocessing import Pool
 
 import numpy as np
@@ -191,8 +192,26 @@ def main():
     net = CityNet.from_osm(OSM)
     tg = targets(net, a.demand)
     jobs = [(nm, ev, s, a.demand, tg) for nm in CTRL for ev in EVENTS for s in range(11, 11 + a.seeds)]
+    cache = os.path.join(a.out, "jobs")          # per-job checkpoint: a crash loses nothing
+    os.makedirs(cache, exist_ok=True)
+    key = lambda j: f"{j[0]}|{j[1]}|{j[2]}|{j[3]}|{HORIZON}".replace("/", "_").replace(" ", "_")
+    rows, todo = [], []
+    for j in jobs:
+        fp = os.path.join(cache, key(j) + ".pkl")
+        if os.path.exists(fp):
+            with open(fp, "rb") as f:
+                rows.append(pickle.load(f))
+        else:
+            todo.append(j)
+    print(f"{len(rows)} cached, {len(todo)} to run", flush=True)
     with Pool() as p:
-        rows = p.map(_job, jobs, chunksize=1)
+        for i, r in enumerate(p.imap_unordered(_job, todo, chunksize=1)):
+            with open(os.path.join(cache, key((r["name"], r["ev"], r["seed"], a.demand)) + ".pkl"), "wb") as f:
+                pickle.dump(r, f)
+            rows.append(r)
+            print(f"[{i + 1}/{len(todo)}] {r['name']} | {r['ev']} | seed {r['seed']}: delay {r['delay']:.0f} s", flush=True)
+    order = {(j[0], j[1], j[2]): i for i, j in enumerate(jobs)}
+    rows.sort(key=lambda r: order[(r["name"], r["ev"], r["seed"])])
     base = {(r["name"], r["seed"]): r["series"] for r in rows if r["ev"] == "normal peak"}
     ends = {"normal peak": T1, "accident": T1, "monsoon rain": T1 + 600, "festival surge": T1,
             "VIP closure": T0 + 600, "signal power failure": T1, "CCTV failure": T1}
