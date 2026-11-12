@@ -149,3 +149,4 @@
 Results/BlockTetris/*.png -filter -diff -merge binary
 Results/BlockTetris/circuit/*.png -filter -diff -merge binary
 Results/BlockTetris/sitra/*.png -filter -diff -merge binary
+Results/BlockTetris/city/*.png -filter -diff -merge binary
