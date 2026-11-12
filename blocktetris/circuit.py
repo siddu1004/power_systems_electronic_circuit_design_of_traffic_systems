@@ -163,6 +163,9 @@ class CircuitSim:
         self.green = np.zeros(n.G, bool)
         self.startup = np.zeros(n.G)
         self.last_served = np.zeros(n.G)
+        self.wait_since = np.zeros(n.G)        # fairness: time a movement has had demand without service
+        self.max_wait = 0.0
+        self.wait_hist = []
         self.blocked_now = np.zeros(n.G, bool)
         self.discharged = np.zeros(n.G)
         self.state = ["C"] * n.J
@@ -209,6 +212,15 @@ class CircuitSim:
         self.busy_s = np.zeros((n.J, 4))
         self.q_arm = np.zeros((n.J, 4))
         self.last_plan_t = np.zeros(n.J)
+        # police failsafe (v7): alert -> officer dispatched -> manual control on arrival
+        self.police_on = bool(self.opts.get("police"))
+        self.officers_free = int(self.opts.get("officers", 3))
+        self.police = {}            # j -> dict(arrive, calm_since)
+        self.police_alerts = []     # (t, j, reason)
+        self.police_log = []        # (t_arrive, t_leave, j)
+        self._jam_since = np.full(n.J, -1.0)
+        self._grid_since = np.full(n.J, -1.0)
+        self._alerted = {}
         # v7: v6 protections only in special cases
         self.special = False
         self.special_until = -1.0
@@ -271,7 +283,8 @@ class CircuitSim:
             elif inc.kind == "dark":
                 self._dark = set(np.atleast_1d(inc.target).tolist())
                 for j in self._dark:
-                    self.isat_mult[j * 16:(j + 1) * 16] = inc.mult
+                    on_duty = j in self.police and self.police[j]["arrive"] <= t
+                    self.isat_mult[j * 16:(j + 1) * 16] = 0.9 if on_duty else inc.mult
             elif inc.kind == "slow":
                 j, a = inc.target
                 self.isat_mult[j * 16 + a * 4: j * 16 + a * 4 + 4] = inc.mult
@@ -310,6 +323,9 @@ class CircuitSim:
         Vm = self.V[lm[has]]
         R = self.ratio[has]
         headroom = np.where(R > 1e-9, (n.g_pocket[lm[has]] - Vm) / np.maximum(R, 1e-9), np.inf)
+        if self.police:
+            pj = np.array([n.dst[l][0] in self.police and self.police[n.dst[l][0]]["arrive"] <= t for l in has])
+            headroom[pj] = np.inf                       # officer waves blocked vehicles past the full pocket
         x = np.minimum(self.entry[has], np.clip(headroom.min(1), 0, None))
         x[blocked[has]] = 0.0
         self.entry[has] -= x
@@ -345,7 +361,7 @@ class CircuitSim:
         if self.opts.get("special_only"):
             # event triggers: dead camera, network-wide overload, or >= 2 roads predicted
             # to overflow (load at t+H >= 1) continuously for 30 s
-            trig = bool(self.blind) or self.acc_c >= 0.40
+            trig = bool(self.blind) or (self.opts.get("special_acc", True) and self.acc_c >= 0.40)
             if self.est is not None and self.opts["atc"]:
                 over = int((self.est.load_pred[n.inner] >= 1.0).sum()) >= 2
                 self._over_run = getattr(self, "_over_run", 0) + 1 if over else 0
@@ -372,6 +388,8 @@ class CircuitSim:
                     self.em = False
         if self.ctrl == "bt":
             self._cameras(t, occ_c)
+        if self.police_on:
+            self._police(t)
         for j in range(n.J):
             self._interlock(j, t, occ_c)
         # 6. MOSFET taps discharge into Zener-clamped lines
@@ -408,6 +426,15 @@ class CircuitSim:
                     self.busy_s[j, a] += int(arm_busy[j, a])
             land = np.array([[self.landed[n.in_line[j, a]] for a in range(4)] for j in range(n.J)])
             self.q_arm += (land - self.q_arm) / 300.0
+        # fairness: how long has each movement with demand gone without green?
+        # count only waits a signal could have served (exit road not full)
+        has_dem = (self.V > 0.5) & (n.cap0[n.g_exit] - occ[n.g_exit] >= BLOCK_W)
+        served_now = self.discharged > 0
+        self.wait_since = np.where(~has_dem | served_now, t, self.wait_since)
+        w = t - self.wait_since
+        self.max_wait = max(self.max_wait, float(w.max()))
+        if t % 30 == 0:
+            self.wait_hist.append(float(np.percentile(w[has_dem], 95)) if has_dem.any() else 0.0)
         # 7. metrics
         self.em_seconds += int(self.em)
         stored = self.V.sum() + self.entry.sum() + self.gateq.sum()
@@ -605,6 +632,59 @@ class CircuitSim:
             self.blind_err2 += float(e2.sum())
             self.blind_n += 16
 
+    def _police(self, t):
+        """Failsafe. A junction alerts the traffic police when the situation is
+        beyond automatic control:
+          dark signal (power failure)                       -> immediate
+          gridlock: its green taps blocked >= 60 s
+          local jam: stacked load >= 70 % of its approach storage for >= 120 s
+        Free officers are dispatched (worst first) and arrive after the response
+        delay; on duty they run longest-queue-first and wave vehicles past blocked
+        pockets; they leave after 300 s of calm (load < 40 %, no gridlock)."""
+        n, o = self.n, self.opts
+        if t % 5:
+            return
+        delay = float(o.get("police_delay", 300.0))
+        for j in range(n.J):
+            ok = self._arm_ok[j]
+            q = sum(self._arm_q(j, a) for a in range(4) if ok[a])
+            cap = sum(n.cap0[n.in_line[j, a]] for a in range(4) if ok[a])
+            ratio = q / max(cap, 1e-9)
+            sl = slice(j * 16, (j + 1) * 16)
+            grid = bool((self.blocked_now[sl] & self.green[sl]).any()) and \
+                not bool((self.discharged[sl] > 0).any())
+            self._jam_since[j] = (self._jam_since[j] if self._jam_since[j] >= 0 else t) if ratio >= 0.7 else -1
+            self._grid_since[j] = (self._grid_since[j] if self._grid_since[j] >= 0 else t) if grid else -1
+            reason = None
+            if j in self._dark:
+                reason, sev = "signal dark", 3
+            elif self._grid_since[j] >= 0 and t - self._grid_since[j] >= 60:
+                reason, sev = "gridlock", 2
+            elif self._jam_since[j] >= 0 and t - self._jam_since[j] >= 120:
+                reason, sev = "jam beyond control", 1
+            if j in self.police:
+                cop = self.police[j]
+                calm = reason is None and ratio < 0.4
+                cop["calm_since"] = (cop["calm_since"] if cop["calm_since"] >= 0 else t) if calm else -1
+                if cop["calm_since"] >= 0 and t - cop["calm_since"] >= 300:
+                    self.police_log.append((cop["arrive"], t, j))
+                    del self.police[j]
+                    self.officers_free += 1
+            elif reason is not None:
+                if j not in self._alerted or t - self._alerted[j] > 600:
+                    self.police_alerts.append((t, j, reason))
+                    self._alerted[j] = t
+                self._pending = getattr(self, "_pending", {})
+                self._pending[j] = max(self._pending.get(j, 0), sev)
+        pend = getattr(self, "_pending", {})
+        for j in sorted(pend, key=lambda x: -pend[x]):
+            if self.officers_free <= 0:
+                break
+            if j not in self.police:
+                self.police[j] = dict(arrive=t + delay, calm_since=-1.0)
+                self.officers_free -= 1
+        self._pending = {j: v for j, v in pend.items() if j not in self.police}
+
     def _replan(self, j, t):
         """SCATS-like: cycle length follows the worst degree of saturation (DS) and
         splits follow each arm's DS. SCOOT-like: every 5 min a Webster plan from the
@@ -799,7 +879,12 @@ class CircuitSim:
     def _arm_q(self, j, a):
         return self.V[j * 16 + a * 4: j * 16 + a * 4 + 4].sum() + self.entry[self.n.in_line[j, a]]
 
+    def _manual(self, j, t):
+        return j in self.police and self.police[j]["arrive"] <= t
+
     def _wants_end(self, j, t, el, occ):
+        if self._manual(j, t):                       # officer: hold until the arm clears, max 60 s
+            return el >= 60.0 or self._arm_q(j, self.k_fixed[j]) < 0.5
         if j in self._priority or j in self._dark:
             return el >= 20.0                        # give-way / dark signal: short alternation
         if self.ctrl == "actuated":                  # NEMA-style: gap-out when the arm empties
@@ -822,6 +907,11 @@ class CircuitSim:
         if self.ctrl == "maxp":
             w, _ = self._scores(j, t, occ)
             return (PM @ w).max() > 1.1 * (w * ph).sum() + 0.75
+        if self.opts.get("hard_wait_cap") and el >= G_MIN:
+            _, extra = self._scores(j, t, occ)
+            _, elig, age = extra
+            if (elig & ~ph & (age > self.opts["max_wait"])).any():
+                return True                          # starving movement waiting: hand over now
         if j not in self.blind and self.blocked_now[sl][ph & (self.V[sl] > 0.05)].any():
             self.blocked_run[j] += 1
         else:
@@ -867,6 +957,12 @@ class CircuitSim:
         return med > 40.0
 
     def _choose(self, j, t, occ, forced):
+        if self._manual(j, t):                       # officer: longest queue first
+            q = [self._arm_q(j, a) if self._arm_ok[j, a] else -1 for a in range(4)]
+            if forced:
+                q[self.k_fixed[j]] = -1
+            self.k_fixed[j] = int(np.argmax(q))
+            return SPLIT_IDX[self.k_fixed[j]]
         if self.ctrl in ("fixed", "actuated", "scats", "scoot") or j in self._priority or j in self._dark or \
                 (self.ctrl == "bt" and (self.em or self._blind_fixed(j))):
             prev = self.k_fixed[j]
@@ -915,6 +1011,10 @@ class CircuitSim:
             "stored_end": self.series[-1],
             "peak_stored": max(self.series),
             "spill": self.spill,
+            "max_wait_s": self.max_wait,
+            "police_alerts": len(self.police_alerts),
+            "police_dispatches": len(self.police_log) + len(self.police),
+            "p95_wait_s": float(np.mean(self.wait_hist)) if self.wait_hist else 0.0,
             "series": self.series,
             "est_rmse": (self.est_err2 / self.est_n) ** 0.5 if self.est_n else 0.0,
             "blind_rmse": (self.blind_err2 / self.blind_n) ** 0.5 if self.blind_n else 0.0,
@@ -963,3 +1063,8 @@ VERSIONS["v6"] = V6_OPTS
 V7_OPTS = dict(V6_OPTS, special_only=True)
 V7_IDEAL_OPTS = dict(V7_OPTS, cctv_view_m=float("inf"))
 VERSIONS["v7"] = V7_OPTS
+
+
+# v7 with the traffic-police failsafe (3 officers, 5-min response)
+V7P_OPTS = dict(V7_OPTS, police=True, officers=3, police_delay=300.0)
+VERSIONS["v7+police"] = V7P_OPTS

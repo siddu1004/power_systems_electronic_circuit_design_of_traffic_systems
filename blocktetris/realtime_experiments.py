@@ -26,13 +26,15 @@ import numpy as np
 
 from .outputs import keep
 from .city import CityNet
-from .circuit import CircuitSim, Incident, V3_OPTS, V6_OPTS, V7_OPTS
+from .circuit import CircuitSim, Incident, V3_OPTS, V6_OPTS, V7_OPTS, V7P_OPTS
 
 OSM = "data/osm/coimbatore_peelamedu.json"
 CTRL = {"Fixed-40": ("fixed", None), "SCOOT-like": ("scoot", None), "SCATS-like": ("scats", None),
         "Actuated": ("actuated", None), "MaxPressure": ("maxp", None),
         "Block-Tetris v3": ("bt", V3_OPTS), "Block-Tetris v6": ("bt", V6_OPTS),
-        "Block-Tetris v7": ("bt", V7_OPTS)}
+        "Block-Tetris v7": ("bt", V7_OPTS),
+        "Fixed-40 + police": ("fixed", {"police": True, "officers": 3, "police_delay": 300.0}),
+        "Block-Tetris v7 + police": ("bt", V7P_OPTS)}
 EVENTS = ["normal peak", "accident", "monsoon rain", "festival surge", "VIP closure",
           "signal power failure", "CCTV failure"]
 T0, T1 = 1500, 2700          # event window (min 25-45, inside the peak)
@@ -68,7 +70,9 @@ def _job(a):
     sim = CircuitSim(net, ctrl, seed=seed, demand=d, opts=o, incident=incident(ev, tg), record=(seed == 11))
     r = sim.run()
     out = dict(name=name, ev=ev, seed=seed, delay=float(r["delay_s"]), served=float(r["served"] / r["arrived"]),
-               peak=float(r["peak_stored"]), series=r["series"], special=int(sim.special_s))
+               peak=float(r["peak_stored"]), series=r["series"], special=int(sim.special_s),
+               max_wait=float(r["max_wait_s"]), p95_wait=float(r["p95_wait_s"]),
+               alerts=int(r["police_alerts"]), dispatches=int(r["police_dispatches"]))
     if seed == 11:
         out["load"] = np.mean(sim.load_series[T0 // 10:T1 // 10], axis=0).tolist()
     return out
@@ -94,13 +98,14 @@ def plots(rows, net, out):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     names = list(CTRL)
-    col = dict(zip(names, ["#9a9893", "#6250d6", "#e87ba4", "#1baf7a", "#eb6834", "#2a78d6", "#008300", "#eda100"]))
+    col = dict(zip(names, ["#9a9893", "#6250d6", "#e87ba4", "#1baf7a", "#eb6834", "#2a78d6", "#008300",
+                           "#eda100", "#52514e", "#e34948"]))
     mean = lambda nm, ev, key: float(np.mean([r[key] for r in rows if r["name"] == nm and r["ev"] == ev]))
-    w = 0.1
-    fig, ax = plt.subplots(figsize=(14, 5), facecolor="#fcfcfb")
+    w = 0.08
+    fig, ax = plt.subplots(figsize=(15, 5), facecolor="#fcfcfb")
     x = np.arange(len(EVENTS))
     for i, nm in enumerate(names):
-        ax.bar(x + (i - 3.5) * w, [mean(nm, ev, "delay") for ev in EVENTS], w * 0.92, color=col[nm], label=nm)
+        ax.bar(x + (i - 4.5) * w, [mean(nm, ev, "delay") for ev in EVENTS], w * 0.92, color=col[nm], label=nm)
     ax.set_xticks(x, EVENTS)
     ax.set_ylabel("Average delay per unit of traffic (s)")
     ax.set_title("Coimbatore e-twin: real-time congestion events x real-world controllers", fontweight="bold")
@@ -145,7 +150,7 @@ def plots(rows, net, out):
     evs = EVENTS[1:]
     x = np.arange(len(evs))
     for i, nm in enumerate(names):
-        ax.bar(x + (i - 3.5) * w, [mean(nm, ev, "clear") / 60 for ev in evs], w * 0.92, color=col[nm], label=nm)
+        ax.bar(x + (i - 4.5) * w, [mean(nm, ev, "clear") / 60 for ev in evs], w * 0.92, color=col[nm], label=nm)
     ax.set_xticks(x, evs)
     ax.set_ylabel("Minutes to clear after the event")
     ax.set_title("How fast each controller clears the congestion (twin-run metric)", fontweight="bold")
@@ -192,9 +197,16 @@ def main():
                                        peak=float(np.mean([x["peak"] for x in v])),
                                        clear_s=float(np.mean([x["clear"] for x in v])),
                                        cleared=float(np.mean([x["cleared"] for x in v])),
-                                       special_s=float(np.mean([x["special"] for x in v])))
+                                       special_s=float(np.mean([x["special"] for x in v])),
+                                       max_wait_s=float(np.max([x["max_wait"] for x in v])),
+                                       p95_wait_s=float(np.mean([x["p95_wait"] for x in v])),
+                                       police_alerts=float(np.mean([x["alerts"] for x in v])),
+                                       police_dispatches=float(np.mean([x["dispatches"] for x in v])))
             cells.append(f"{table[f'{ev}|{nm}']['delay']:11.1f}")
         print(f"{ev:22s} " + " ".join(cells))
+    print("\nworst servable wait (s) / police alerts:")
+    for ev in EVENTS:
+        print(f"{ev:22s} " + " ".join(f"{table[f'{ev}|{nm}']['max_wait_s']:6.0f}/{table[f'{ev}|{nm}']['police_alerts']:4.1f}" for nm in CTRL))
     print("\nminutes to clear:")
     for ev in EVENTS[1:]:
         print(f"{ev:22s} " + " ".join(f"{table[f'{ev}|{nm}']['clear_s'] / 60:11.1f}" for nm in CTRL))

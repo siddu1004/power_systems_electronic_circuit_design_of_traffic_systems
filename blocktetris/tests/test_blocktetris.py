@@ -272,3 +272,18 @@ def test_city_builder_topology_and_physics(tmp_path):
         inside = sim.V.sum() + sim.entry.sum() + sim.gateq.sum() + sim.ring.sum()
         assert sim.arrived == pytest.approx(sim.served_out + inside, rel=1e-9)   # KCL on a real graph
         assert sim.V[[g for g in range(net.G) if net.g_exit[g] == net.dummy]].sum() == pytest.approx(0.0)
+
+
+# ── v7 police failsafe ───────────────────────────────────────────────────────
+def test_police_failsafe_alerts_dispatches_and_conserves():
+    from blocktetris.circuit import V7P_OPTS
+    net = Net(3, 3)
+    sim = CircuitSim(net, "bt", seed=2, demand=0.1, horizon=1800, opts=V7P_OPTS,
+                     incident=Incident("dark", [4], t0=300, t1=1500))
+    sim.run()
+    assert any(r == "signal dark" and j == 4 for _, j, r in sim.police_alerts)
+    arrived = [p for p in sim.police_log if p[2] == 4] or [(v["arrive"], None, 4) for k, v in sim.police.items() if k == 4]
+    assert arrived and arrived[0][0] >= 300 + V7P_OPTS["police_delay"] - 5   # response delay respected
+    assert sim.officers_free + len(sim.police) == V7P_OPTS["officers"]       # officers accounted for
+    inside = sim.V.sum() + sim.entry.sum() + sim.gateq.sum() + sim.ring.sum()
+    assert sim.arrived == pytest.approx(sim.served_out + inside, rel=1e-9)
