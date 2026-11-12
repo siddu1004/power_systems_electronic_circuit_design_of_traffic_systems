@@ -30,3 +30,6 @@ slprj/
 # Python
 __pycache__/
 .pytest_cache/
+
+# partial downloads
+*.tmp
