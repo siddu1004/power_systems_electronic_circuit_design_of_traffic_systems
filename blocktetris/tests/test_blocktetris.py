@@ -218,3 +218,18 @@ def test_lookahead_throttles_inflow_two_hops_before_a_downstream_jam():
     est_shallow.z[:], est_shallow.lam[:], est_shallow.mu[:] = est.z, est.lam, est.mu
     est_shallow.atc(sim.ratio, sim.gateq)
     assert est.Cd[two_hops] < est_shallow.Cd[two_hops]       # depth 3 sees it, depth 1 does not
+
+
+# ── camera failure: neighbour reconstruction ────────────────────────────────
+def test_blind_junction_rebuilt_from_neighbours_beats_frozen_camera():
+    from blocktetris.circuit import V4_OPTS
+    net = Net(4, 4)
+    inc = lambda: Incident("cam_fail", (5, 6), t0=300, t1=1200)
+    nb = CircuitSim(net, "bt", seed=2, demand=0.13, horizon=1300, incident=inc(),
+                    opts=dict(V4_OPTS, blind_mode="neighbour"))
+    fr = CircuitSim(net, "bt", seed=2, demand=0.13, horizon=1300, incident=inc(),
+                    opts=dict(V4_OPTS, blind_mode="frozen"))
+    a, b = nb.run(), fr.run()
+    assert a["blind_rmse"] < 0.6 * b["blind_rmse"]
+    inside = nb.V.sum() + nb.entry.sum() + nb.gateq.sum() + nb.ring.sum()
+    assert nb.arrived == pytest.approx(nb.served_out + inside, rel=1e-9)   # physics untouched

@@ -49,7 +49,7 @@ DEFAULT_OPTS = dict(alarm_on=0.80, alarm_off=0.60, attenuation=0.5, ramp=0.02, a
                     backpressure=False, bp_exp=2.0, emergency=False, em_on=0.50, em_off=0.40,
                     em_green=40.0, em_actuated=False, divert=False, compliance=0.7,
                     divert_on=0.9, divert_off=0.4,
-                    estimator="oracle", atc=False, pred_pressure=False, atc_apply=False, atc_depth=3, atc_H=120.0,
+                    estimator="oracle", atc=False, pred_pressure=False, blind_mode="hybrid", hybrid_acc=0.40, atc_apply=False, atc_depth=3, atc_H=120.0,
                     sensor_cover=0.5, sensor_sigma=3.0, count_noise=0.05, stuck=2, phantom_p=0.002)
 
 
@@ -120,7 +120,8 @@ class Net:
 
 class Incident:
     """kind: line_block (crash at the end of a road), sink_cut (exit accepts 5 %),
-    gate_surge (demand x mult), slow (approach saturation current x mult)."""
+    gate_surge (demand x mult), slow (approach saturation current x mult),
+    cam_fail (camera of junction(s) `target` dead: that junction is blind)."""
 
     def __init__(self, kind, target, t0=1200, t1=2100, mult=None):
         self.kind, self.target, self.t0, self.t1 = kind, target, t0, t1
@@ -186,6 +187,14 @@ class CircuitSim:
                                 sigma=o["sensor_sigma"], count_noise=o["count_noise"], stuck=o["stuck"],
                                 phantom_p=o["phantom_p"], seed=seed + 99, H=o["atc_H"], depth=o["atc_depth"])
         self.occ_c = np.zeros(n.L)
+        # camera layer: what the controllers SEE (aliases of the truth unless a camera is dead)
+        self.Vo, self.Eo = self.V, self.entry
+        self.blind = set()
+        self.blind_est = {}         # j -> dict(V=16, E=4 per arm)
+        self.landed = np.zeros(n.L)
+        self.sent = np.zeros(n.L)
+        self.pred_ring = np.zeros((n.L, n.D))     # predicted sends of blind junctions
+        self.blind_err2, self.blind_n = 0.0, 0
         self.est_err2, self.est_n = 0.0, 0
         self.raw_err2 = 0.0
         self.warn_start = {}
@@ -242,7 +251,10 @@ class CircuitSim:
         tail = (self.head - 1) % n.D
         self.ring[g, tail] += mv
         # 2. delay lines deliver
-        self.entry += self.ring[:, self.head]
+        self.landed = self.ring[:, self.head].copy()     # blocks landing on the stacks now
+        self._pred_landing = self.pred_ring[:, self.head].copy()   # predicted D s ago
+        self.pred_ring[:, self.head] = 0.0
+        self.entry += self.landed
         self.ring[:, self.head] = 0.0
         self.head = (self.head + 1) % n.D
         # 3. shared section -> pockets (head-of-line blocking)
@@ -279,6 +291,7 @@ class CircuitSim:
             self.est_err2 += float((e ** 2).sum())
             self.est_n += len(e)
             self.occ_c = occ_c.copy()
+        self.acc_c = occ_c[n.inner].sum() / n.cap0[n.inner].sum()
         load_c = occ_c / n.cap0
         if self.est is not None and self.opts["atc"] and self.opts["pred_pressure"]:
             # protections act on the PREDICTED load (t + H), i.e. before the overload arrives
@@ -295,6 +308,8 @@ class CircuitSim:
                     self.em = True
                 elif acc <= self.opts["em_off"]:
                     self.em = False
+        if self.ctrl == "bt":
+            self._cameras(t, occ_c)
         for j in range(n.J):
             self._interlock(j, t, occ_c)
         # 6. MOSFET taps discharge into Zener-clamped lines
@@ -307,6 +322,7 @@ class CircuitSim:
         want = np.minimum(self.V[on], isat * np.minimum(1.0, self.V[on] / V_KNEE) * DT)
         self.blocked_now[:] = False
         self.discharged[:] = 0.0
+        self.sent = np.zeros(n.L)
         for k, gg in enumerate(on):
             ex = n.g_exit[gg]
             q = min(want[k], max(0.0, n.cap0[ex] - occ[ex]))
@@ -321,6 +337,7 @@ class CircuitSim:
                 self.c_out[n.g_in[gg]] += q
                 self.last_served[gg] = t
                 self.discharged[gg] = q
+                self.sent[ex] += q
         # 7. metrics
         self.em_seconds += int(self.em)
         stored = self.V.sum() + self.entry.sum() + self.gateq.sum()
@@ -351,22 +368,114 @@ class CircuitSim:
             trig |= (load + rise * o["rate_horizon"] >= on) & (load >= 0.5)
         self.latched = np.where(trig, True, np.where(load < off, False, self.latched))
         local = np.where(self.latched, np.clip((load - off) / (1 - off), 0.15, 1.0), 0.0)
-        prop = np.array([max((self.p[x] for x in n.down_out[l]), default=0.0) for l in range(n.L)])
+        if not hasattr(n, "down_idx"):
+            n.down_idx = np.array([(n.down_out[l] + [-1, -1, -1])[:3] for l in range(n.L)])
+        pe = np.append(self.p, 0.0)                    # index -1 -> 0
+        prop = pe[n.down_idx].max(1)
         target = np.maximum(local, o["attenuation"] * prop)
         self.p = np.where(target >= self.p, target, np.maximum(target, self.p - o["ramp"]))
+
+    # ── camera layer and neighbour-based reconstruction of a blind junction ──
+    def _cameras(self, t, occ_c):
+        """Each junction's camera sees its own stacks (landed blocks) and counts
+        blocks leaving. If a camera dies, the junction's stacks are rebuilt from
+        the messages of the connected junctions:
+          inflow  = upstream cameras' send counts (they arrive D s later = now)
+          outflow = predicted from the known signal state and learned tau,
+                    corrected by downstream cameras' landing counts D s later."""
+        n, o, inc = self.n, self.opts, self.inc
+        now = set()
+        if inc and inc.kind == "cam_fail" and inc.on(t):
+            now = set(inc.target if isinstance(inc.target, (list, tuple)) else [inc.target])
+        for j in now - self.blind:                     # camera just died: start from last frame
+            self.blind_est[j] = dict(V=self.V[j * 16:(j + 1) * 16].copy(),
+                                     E=np.array([self.entry[n.in_line[j, a]] for a in range(4)]),
+                                     frozenV=self.V[j * 16:(j + 1) * 16].copy(),
+                                     frozenE=np.array([self.entry[n.in_line[j, a]] for a in range(4)]))
+        for j in self.blind - now:
+            self.blind_est.pop(j, None)
+        self.blind = now
+        if self.est is not None:
+            cov = self.est.cover
+            if not hasattr(self, "_cover0"):
+                self._cover0 = cov.copy()
+            cov[:] = self._cover0
+            for j in now:                                # its road cameras are gone too
+                cov[n.in_line[j]] = False
+        if not now:
+            self.Vo, self.Eo = self.V, self.entry
+            return
+        self.Vo, self.Eo = self.V.copy(), self.entry.copy()
+        slot = (self.head - 1) % n.D                     # ring slot of sends made D s ago
+        for j in now:
+            est = self.blind_est[j]
+            sl = slice(j * 16, (j + 1) * 16)
+            if o["blind_mode"] == "frozen":
+                self.Vo[sl] = est["frozenV"]
+                for a in range(4):
+                    self.Eo[n.in_line[j, a]] = est["frozenE"][a]
+            elif o["blind_mode"] in ("neighbour", "hybrid"):
+                Ve, Ee = est["V"], est["E"]
+                for a in range(4):
+                    l = n.in_line[j, a]
+                    src = n.src[l][0]
+                    if src >= 0 and src in now:
+                        arr = self._pred_landing[l]               # upstream also blind: its prediction
+                    else:
+                        arr = self.landed[l] * (1 + 0.03 * self.rng.normal())   # upstream count message
+                    Ee[a] += max(0.0, arr)
+                    r = self.ratio[l]
+                    g = slice(a * 4, a * 4 + 4)
+                    head = np.where(r > 1e-9, (POCKET - Ve[g]) / np.maximum(r, 1e-9), np.inf)
+                    x = min(Ee[a], max(0.0, head.min()))
+                    Ee[a] -= x
+                    Ve[g] += x * r
+                # predicted discharge with the junction's own (known) signal state
+                tau = self.tau[j, n.g_turn[sl]] * TURN_F[n.g_turn[sl]]
+                isat = n.g_lanes[sl] / tau
+                on = self.green[sl] & (self.startup[sl] <= 0)
+                q = np.where(on, np.minimum(Ve, isat * np.minimum(1.0, Ve / V_KNEE)), 0.0)
+                ex = n.g_exit[sl]
+                room = np.maximum(0.0, n.cap0[ex] - occ_c[ex])
+                q = np.minimum(q, room)
+                Ve -= q
+                for k in range(16):
+                    if q[k] > 0:
+                        self.pred_ring[ex[k], slot] += q[k]
+                # downstream landing counts correct the sends predicted D s ago
+                for b in range(4):
+                    e = n.out_line[j, b]
+                    d = n.dst[e][0]
+                    if d < 0 or d in now:
+                        continue
+                    meas = self.landed[e] * (1 + 0.03 * self.rng.normal())
+                    err = meas - self._pred_landing[e]
+                    m = np.where(ex == e)[0]
+                    tot = Ve[m].sum()
+                    if tot > 1e-6:
+                        Ve[m] = np.maximum(0.0, Ve[m] - err * Ve[m] / tot)
+                np.maximum(Ve, 0.0, out=Ve)
+                self.Vo[sl] = Ve
+                for a in range(4):
+                    self.Eo[n.in_line[j, a]] = Ee[a]
+            e2 = (self.Vo[sl] - self.V[sl]) ** 2
+            self.blind_err2 += float(e2.sum())
+            self.blind_n += 16
 
     def _divert(self):
         """Diversion orders (VMS / police): when an exit road trips, the share of
         approaching traffic that wanted it is re-routed to the other exits
         (current redistributes over parallel paths). Partial compliance."""
         n, o = self.n, self.opts
-        for l in range(n.L):
-            if n.src[l][0] < 0:
-                continue
-            if not self.diverted[l] and self.p[l] >= o["divert_on"]:
-                self.diverted[l] = True
-            elif self.diverted[l] and self.p[l] <= o["divert_off"]:
-                self.diverted[l] = False
+        if not hasattr(n, "from_junction"):
+            n.from_junction = np.array([n.src[l][0] >= 0 for l in range(n.L)])
+        prev = self.diverted.copy()
+        self.diverted = np.where(n.from_junction & (self.p >= o["divert_on"]), True,
+                                 np.where(self.p <= o["divert_off"], False, self.diverted))
+        self.diverted &= n.from_junction
+        if (self.diverted == prev).all() and getattr(self, "_ratio_ready", False):
+            return                                     # nothing changed: keep the split
+        self._ratio_ready = True
         for l in range(n.L):
             j, a = n.dst[l]
             if j < 0:
@@ -390,6 +499,8 @@ class CircuitSim:
         n, d = self.n, self.discharged
         ok = np.where((d > 0) & ~self.blocked_now & (self.V > V_KNEE))[0]
         for gg in ok:
+            if n.g_j[gg] in self.blind:
+                continue                      # no camera, no measurement
             j, k = n.g_j[gg], n.g_turn[gg]
             meas = n.g_lanes[gg] * DT / d[gg] / TURN_F[k]
             self.tau[j, k] += 0.05 * (meas - self.tau[j, k])
@@ -399,9 +510,9 @@ class CircuitSim:
         """Charge stuck in an arm's shared section is charged to the pocket
         that blocks it (fault current traced to the faulted element)."""
         n = self.n
-        V = self.V[j * 16:j * 16 + 16].copy()
+        V = self.Vo[j * 16:j * 16 + 16].copy()
         for a in range(4):
-            e = self.entry[n.in_line[j, a]]
+            e = self.Eo[n.in_line[j, a]]
             if e > 1e-6:
                 g = slice(a * 4, a * 4 + 4)
                 head = (POCKET - V[g]) / RATIO
@@ -475,7 +586,7 @@ class CircuitSim:
             return
         el = t - self.g_start[j]
         gmin = G_MIN
-        if self.ctrl == "bt" and self.opts["sat_gmin"] > G_MIN and self._saturated(j, occ):
+        if self.ctrl == "bt" and G_MIN <= el < self.opts["sat_gmin"] and self._saturated(j, occ):
             gmin = self.opts["sat_gmin"]
         if el < gmin:
             return
@@ -494,7 +605,19 @@ class CircuitSim:
             self.planned[j] = float(np.clip(Ts.max() if Ts.size else G_MIN, G_MIN, G_MAX))
         self.blocked_run[j] = 0
 
+    def _blind_fixed(self, j):
+        if j not in self.blind:
+            return False
+        m = self.opts["blind_mode"]
+        if m == "hybrid":
+            # saturated network: a blind junction meters best with a fixed rotation;
+            # otherwise it runs Block-Tetris on the neighbour-rebuilt stacks
+            return self.acc_c >= self.opts["hybrid_acc"]
+        return m == "fixed"
+
     def _wants_end(self, j, t, el, occ):
+        if self.ctrl == "bt" and self._blind_fixed(j):
+            return el >= 40.0
         if self.ctrl == "bt" and self.em:
             # emergency: rotate through every arm (no movement can be starved into a loop)
             if self.opts["em_actuated"]:
@@ -509,11 +632,11 @@ class CircuitSim:
         if self.ctrl == "maxp":
             w, _ = self._scores(j, t, occ)
             return (PM @ w).max() > 1.1 * (w * ph).sum() + 0.75
-        if self.blocked_now[sl][ph & (self.V[sl] > 0.05)].any():
+        if j not in self.blind and self.blocked_now[sl][ph & (self.V[sl] > 0.05)].any():
             self.blocked_run[j] += 1
         else:
             self.blocked_run[j] = 0
-        Vph = (self._hol_V(j) if self.opts["hol_low"] else self.V[sl])[ph].sum()
+        Vph = (self._hol_V(j) if self.opts["hol_low"] else self.Vo[sl])[ph].sum()
         if Vph < 0.5 or self.blocked_run[j] >= 3:
             return True
         if int(el) % 5 == 0:
@@ -545,12 +668,16 @@ class CircuitSim:
         sl = slice(j * 16, j * 16 + 16)
         V = self._hol_V(j)
         isat = n.g_lanes[sl] / (self.tau[j, n.g_turn[sl]] * TURN_F[n.g_turn[sl]])
-        need = V / isat
         busy = V > 0.5
-        return busy.sum() >= 6 and np.median(need[busy]) > 40.0
+        nb = int(busy.sum())
+        if nb < 6:
+            return False
+        need = np.sort(V[busy] / isat[busy])
+        med = need[nb // 2] if nb % 2 else 0.5 * (need[nb // 2 - 1] + need[nb // 2])
+        return med > 40.0
 
     def _choose(self, j, t, occ, forced):
-        if self.ctrl == "fixed" or (self.ctrl == "bt" and self.em):
+        if self.ctrl == "fixed" or (self.ctrl == "bt" and (self.em or self._blind_fixed(j))):
             self.k_fixed[j] = (self.k_fixed[j] + 1) % 4
             return SPLIT_IDX[self.k_fixed[j]]
         s, extra = self._scores(j, t, occ)
@@ -587,6 +714,7 @@ class CircuitSim:
             "spill": self.spill,
             "series": self.series,
             "est_rmse": (self.est_err2 / self.est_n) ** 0.5 if self.est_n else 0.0,
+            "blind_rmse": (self.blind_err2 / self.blind_n) ** 0.5 if self.blind_n else 0.0,
             "warn": self.warning_stats() if (self.est is not None and self.opts["atc"]) else None,
         }
 
