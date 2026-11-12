@@ -144,3 +144,6 @@
 *.stl                filter=lfs diff=lfs merge=lfs -text
 *.nc                 filter=lfs diff=lfs merge=lfs -text
 *.mat                filter=lfs diff=lfs merge=lfs -text
+
+# Block-Tetris figures are small; stored as plain git blobs (LFS upload unavailable from the cloud session)
+Results/BlockTetris/*.png -filter -diff -merge binary

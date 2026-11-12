@@ -26,3 +26,7 @@ logs/
 slprj/
 *.slxc
 *.asv
+
+# Python
+__pycache__/
+.pytest_cache/
