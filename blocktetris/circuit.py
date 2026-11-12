@@ -86,6 +86,8 @@ class Net:
         self.cap0 = np.array(cap0)
         self.src, self.dst, self.kind = src, dst, np.array(kind)
         self.D = int(round(link_m / speed))
+        self.Dl = np.full(self.L, self.D)          # per-road travel delay (s); city graphs differ
+        self.Dmax = self.D
         self.G = self.J * 16
         m_arm = np.array([MOVES[m][0] for m in range(16)])
         m_turn = np.array([m % 4 for m in range(16)])
@@ -143,12 +145,14 @@ class CircuitSim:
         self.opts.update(opts or {})
         n = net
         self.V = np.zeros(n.G)
-        self.ring = np.zeros((n.L, n.D))
+        self.ring = np.zeros((n.L, n.Dmax))
         self.head = 0
         self.entry = np.zeros(n.L)
         self.gateq = np.zeros(n.L)
         self.lam = np.zeros(n.L)
         self.lam[n.gates] = demand
+        if hasattr(n, "lanes_l"):                  # city: demand per entering lane
+            self.lam[n.gates] = demand * n.lanes_l[n.gates]
         self.noise = np.zeros(n.L)
         self.sink_rate = np.full(n.L, sink_rate)
         self.isat_mult = np.ones(n.G)
@@ -191,13 +195,15 @@ class CircuitSim:
                                 sigma=o["sensor_sigma"], count_noise=o["count_noise"], stuck=o["stuck"],
                                 phantom_p=o["phantom_p"], seed=seed + 99, H=o["atc_H"], depth=o["atc_depth"])
         self.occ_c = np.zeros(n.L)
+        self._priority = getattr(n, "priority", set())
+        self._arm_ok = getattr(n, "arm_present", np.ones((n.J, 4), bool))
         # camera layer: what the controllers SEE (aliases of the truth unless a camera is dead)
         self.Vo, self.Eo = self.V, self.entry
         self.blind = set()
         self.blind_est = {}         # j -> dict(V=16, E=4 per arm)
         self.landed = np.zeros(n.L)
         self.sent = np.zeros(n.L)
-        self.pred_ring = np.zeros((n.L, n.D))     # predicted sends of blind junctions
+        self.pred_ring = np.zeros((n.L, n.Dmax))  # predicted sends of blind junctions
         self.blind_err2, self.blind_n = 0.0, 0
         self.est_err2, self.est_n = 0.0, 0
         self.raw_err2 = 0.0
@@ -205,7 +211,9 @@ class CircuitSim:
         self.warn_eps = []          # (line, start, end)
         self.spill_events = []      # (line, t)
         self.leads = []
-        self.ratio = np.tile(RATIO, (n.L, 1))      # turn split of each road's arrivals
+        # turn split of each road's arrivals (city graphs zero impossible turns)
+        self.base_ratio = n.base_ratio.copy() if hasattr(n, "base_ratio") else np.tile(RATIO, (n.L, 1))
+        self.ratio = self.base_ratio.copy()
         self.diverted = np.zeros(n.L, bool)        # exit roads under a diversion order
 
     def occ(self):
@@ -260,15 +268,14 @@ class CircuitSim:
         mv = np.minimum(np.minimum(self.gateq[g], np.clip(n.cap0[g] - occ[g], 0, None)), 1.0 * DT * meter)
         self.c_in[g] += mv
         self.gateq[g] -= mv
-        tail = (self.head - 1) % n.D
-        self.ring[g, tail] += mv
+        self.ring[g, (self.head - 1 + n.Dl[g] - n.Dmax) % n.Dmax] += mv
         # 2. delay lines deliver
         self.landed = self.ring[:, self.head].copy()     # blocks landing on the stacks now
         self._pred_landing = self.pred_ring[:, self.head].copy()   # predicted D s ago
         self.pred_ring[:, self.head] = 0.0
         self.entry += self.landed
         self.ring[:, self.head] = 0.0
-        self.head = (self.head + 1) % n.D
+        self.head = (self.head + 1) % n.Dmax
         # 3. shared section -> pockets (head-of-line blocking)
         lm = n.line_moves
         has = np.where(lm[:, 0] >= 0)[0]
@@ -331,7 +338,6 @@ class CircuitSim:
         gi = np.where(self.green)[0]
         on = gi[self.startup[gi] <= 0]
         self.startup[gi] = np.maximum(0, self.startup[gi] - DT)
-        tail = (self.head - 1) % n.D
         isat = n.g_lanes[on] / (TAU_TRUE * TURN_F[n.g_turn[on]]) * self.isat_mult[on] \
             * (1 + 0.1 * self.rng.normal(size=len(on)))
         want = np.minimum(self.V[on], isat * np.minimum(1.0, self.V[on] / V_KNEE) * DT)
@@ -345,7 +351,7 @@ class CircuitSim:
                 self.blocked_now[gg] = True
             if q > 0:
                 self.V[gg] -= q
-                self.ring[ex, tail] += q
+                self.ring[ex, (self.head - 1 + n.Dl[ex] - n.Dmax) % n.Dmax] += q
                 occ[ex] += q
                 occ[n.g_in[gg]] -= q
                 self.c_in[ex] += q
@@ -402,11 +408,11 @@ class CircuitSim:
         q[has] += self.V[n.line_moves[has]].sum(1)
         if not hasattr(self, "out_ema"):
             self.out_ema = np.full(n.L, 0.1)
-            self.gm_g = np.full(n.L, float(n.D))
+            self.gm_g = n.Dl.astype(float).copy()
             self.gm_T = None
         self.out_ema += (self.c_out - self.out_ema) / 60.0
         # Google Maps: lagged average travel time, refreshed every period, noisy
-        T_true = n.D + np.minimum(q / np.maximum(self.out_ema, 0.02), 3600.0)
+        T_true = n.Dl + np.minimum(q / np.maximum(self.out_ema, 0.02), 3600.0)
         self.gm_g += (T_true - self.gm_g) * DT / o["gmaps_tau"]
         if o["gmaps"] and t % int(o["gmaps_period"]) == 0:
             if not hasattr(self, "gm_rng"):          # own stream: sensors never shift the physics noise
@@ -420,7 +426,7 @@ class CircuitSim:
             self.cam_rng = np.random.default_rng(self.seed + 5555)
         vis = np.minimum(q, W) * (1 + o["cctv_noise"] * self.cam_rng.normal(size=n.L))
         return self.est.update_v6(t, self.c_in, self.c_out, np.maximum(vis, 0), sat, has_cam, W,
-                                  self.gm_T if o["gmaps"] else None, float(n.D),
+                                  self.gm_T if o["gmaps"] else None, n.Dl.astype(float),
                                   gm_queue=o["gmaps_queue"])
 
     def _cctv_view(self):
@@ -494,7 +500,7 @@ class CircuitSim:
             self.Vo, self.Eo = self.V.copy(), self.entry.copy()
         if not now:
             return
-        slot = (self.head - 1) % n.D                     # ring slot of sends made D s ago
+        slot_of = lambda e: (self.head - 1 + n.Dl[e] - n.Dmax) % n.Dmax   # arrives D_e s later
         for j in now:
             est = self.blind_est[j]
             sl = slice(j * 16, (j + 1) * 16)
@@ -529,7 +535,7 @@ class CircuitSim:
                 Ve -= q
                 for k in range(16):
                     if q[k] > 0:
-                        self.pred_ring[ex[k], slot] += q[k]
+                        self.pred_ring[ex[k], slot_of(ex[k])] += q[k]
                 # downstream landing counts correct the sends predicted D s ago
                 for b in range(4):
                     e = n.out_line[j, b]
@@ -568,15 +574,17 @@ class CircuitSim:
             j, a = n.dst[l]
             if j < 0:
                 continue
-            r = RATIO.copy()
+            base = self.base_ratio[l]
+            r = base.copy()
             for k in range(4):
                 b = MOVES[a * 4 + k][2]
-                if self.diverted[n.out_line[j, b]] and b != a:
+                if r[k] > 0 and self.diverted[n.out_line[j, b]] and b != a:
                     moved = r[k] * o["compliance"]
                     r[k] -= moved
-                    ok = [i for i in range(4) if i != k and not self.diverted[n.out_line[j, MOVES[a * 4 + i][2]]]]
+                    ok = [i for i in range(4) if i != k and base[i] > 0
+                          and not self.diverted[n.out_line[j, MOVES[a * 4 + i][2]]]]
                     if ok:
-                        w = RATIO[ok] / RATIO[ok].sum()
+                        w = base[ok] / base[ok].sum()
                         r[ok] += moved * w
                     else:
                         r[k] += moved
@@ -704,6 +712,8 @@ class CircuitSim:
         return m == "fixed"
 
     def _wants_end(self, j, t, el, occ):
+        if j in self._priority:
+            return el >= 20.0                        # give-way junction: short alternation
         if self.ctrl == "bt" and self._blind_fixed(j):
             return el >= 40.0
         if self.ctrl == "bt" and self.em:
@@ -765,8 +775,12 @@ class CircuitSim:
         return med > 40.0
 
     def _choose(self, j, t, occ, forced):
-        if self.ctrl == "fixed" or (self.ctrl == "bt" and (self.em or self._blind_fixed(j))):
-            self.k_fixed[j] = (self.k_fixed[j] + 1) % 4
+        if self.ctrl == "fixed" or j in self._priority or \
+                (self.ctrl == "bt" and (self.em or self._blind_fixed(j))):
+            for _ in range(4):                       # next arm that physically exists
+                self.k_fixed[j] = (self.k_fixed[j] + 1) % 4
+                if self._arm_ok[j, self.k_fixed[j]]:
+                    break
             return SPLIT_IDX[self.k_fixed[j]]
         s, extra = self._scores(j, t, occ)
         ps = PM.astype(float) @ s

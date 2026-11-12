@@ -172,6 +172,7 @@ def update_v6(self, t, c_in, c_out, cctv_q, cctv_sat, has_cam, view_W, gm_T, D, 
     queued[n.sinks] = sim.entry[n.sinks] > 0.5
     self.mu = np.where(queued, self.mu + 0.01 * (co - self.mu), self.mu)
     self.lam += 0.01 * (ci - self.lam)
+    D = np.asarray(D, float)
     if not hasattr(self, "out_avg"):
         self.out_avg = np.full(n.L, 0.1)
     self.out_avg += (co - self.out_avg) / 60.0          # time-averaged discharge (Little's law)

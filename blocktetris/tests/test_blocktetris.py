@@ -233,3 +233,42 @@ def test_blind_junction_rebuilt_from_neighbours_beats_frozen_camera():
     assert a["blind_rmse"] < 0.6 * b["blind_rmse"]
     inside = nb.V.sum() + nb.entry.sum() + nb.gateq.sum() + nb.ring.sum()
     assert nb.arrived == pytest.approx(nb.served_out + inside, rel=1e-9)   # physics untouched
+
+
+# ── city builder (OpenStreetMap -> circuit) ─────────────────────────────────
+def _toy_osm(tmp_path):
+    import json as _j
+    # 4-way signalised crossing A (11.0, 77.0); T-junction B 400 m east; one-way link
+    N = {1: (11.0, 77.0), 2: (11.0036, 77.0), 3: (10.9964, 77.0), 4: (11.0, 76.9963),
+         5: (11.0, 77.00366), 6: (11.0036, 77.00366), 7: (11.0, 77.0073), 8: (11.0036, 76.9963)}
+    el = [{"type": "node", "id": k, "lat": v[0], "lon": v[1]} for k, v in N.items()]
+    el[0]["tags"] = {"highway": "traffic_signals"}
+    ways = [(10, [4, 1, 5, 7], {"highway": "primary", "name": "Avinashi Road"}),
+            (11, [3, 1, 2], {"highway": "secondary", "name": "Cross Road"}),
+            (12, [5, 6], {"highway": "tertiary", "name": "Side Road"}),
+            (13, [2, 8], {"highway": "tertiary", "oneway": "yes", "name": "One Way"})]
+    el += [{"type": "way", "id": i, "nodes": ns, "tags": t} for i, ns, t in ways]
+    p = tmp_path / "toy.json"
+    p.write_text(_j.dumps({"elements": el}))
+    return p
+
+
+def test_city_builder_topology_and_physics(tmp_path):
+    from blocktetris.city import CityNet
+    from blocktetris.circuit import V6_OPTS
+    net = CityNet.from_osm(str(_toy_osm(tmp_path)))
+    s = net.summary()
+    assert s["junctions"] >= 2 and s["signalised"] == 1
+    assert len(net.priority) == s["junctions"] - 1                 # unsignalised = give-way
+    # T-junction: one arm slot is the dead dummy line, its turns are impossible
+    assert (~net.arm_present).sum() >= 1
+    for l in range(net.L):
+        if net.dst[l][0] >= 0:
+            assert abs(net.base_ratio[l].sum() - 1.0) < 1e-9
+    assert len(set(net.Dl[net.inner])) >= 1 and net.Dmax >= 2       # real travel delays
+    for ctrl, o in (("fixed", None), ("bt", V6_OPTS)):
+        sim = CircuitSim(net, ctrl, seed=1, demand=0.05, horizon=900, opts=o)
+        r = sim.run()
+        inside = sim.V.sum() + sim.entry.sum() + sim.gateq.sum() + sim.ring.sum()
+        assert sim.arrived == pytest.approx(sim.served_out + inside, rel=1e-9)   # KCL on a real graph
+        assert sim.V[[g for g in range(net.G) if net.g_exit[g] == net.dummy]].sum() == pytest.approx(0.0)
