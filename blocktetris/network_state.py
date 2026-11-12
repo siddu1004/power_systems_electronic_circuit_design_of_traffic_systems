@@ -206,7 +206,10 @@ def update_v6(self, t, c_in, c_out, cctv_q, cctv_sat, has_cam, view_W, gm_T, D, 
     if gm_T is not None:
         # Google congestion flag: travel time > free-flow + 60 s means the stack
         # reaches beyond any camera's view (works on roads with no camera too)
-        lb = np.where(gm_T > D + 60.0, np.maximum(lb, view_W + 0.5 * transit), lb)
+        # applied only where no working camera watches the road: tested on all roads,
+        # it over-holds traffic where CCTV already sees the stack
+        flag = (gm_T > D + 60.0) & ~has_cam & (n.kind == "inner")
+        lb = np.where(flag, np.maximum(lb, view_W + 0.5 * transit), lb)
     z = np.maximum(z, lb)
     self.z = np.clip(z, 0, n.cap0)
     self.P = P

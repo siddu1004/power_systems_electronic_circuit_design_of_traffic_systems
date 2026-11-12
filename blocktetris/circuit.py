@@ -138,6 +138,7 @@ class CircuitSim:
                  sink_rate=0.55, record=False):
         self.n, self.ctrl, self.T, self.inc = net, ctrl, horizon, incident
         self.rng = np.random.default_rng(seed)
+        self.seed = seed
         self.opts = dict(DEFAULT_OPTS)
         self.opts.update(opts or {})
         n = net
@@ -217,6 +218,14 @@ class CircuitSim:
     def step(self, t):
         n, inc = self.n, self.inc
         lam = self.lam.copy()
+        if self.opts.get("heldout_pattern"):
+            # held-out demand: N-S corridors x1.4, E-W x0.7, and a peak bump 20-60 min
+            if not hasattr(self, "_gm"):
+                self._gm = np.ones(n.L)
+                for l in n.gates:
+                    self._gm[l] = 1.4 if n.dst[l][1] in (0, 2) else 0.7
+            peak = 0.8 + 0.5 * np.exp(-((t - 2400.0) / 900.0) ** 2)
+            lam = lam * self._gm * peak
         sink_rate = self.sink_rate.copy()
         blocked_line = -1
         self.isat_mult[:] = 1.0
@@ -400,12 +409,16 @@ class CircuitSim:
         T_true = n.D + np.minimum(q / np.maximum(self.out_ema, 0.02), 3600.0)
         self.gm_g += (T_true - self.gm_g) * DT / o["gmaps_tau"]
         if o["gmaps"] and t % int(o["gmaps_period"]) == 0:
-            self.gm_T = self.gm_g * (1 + o["gmaps_sigma"] * self.rng.normal(size=n.L))
+            if not hasattr(self, "gm_rng"):          # own stream: sensors never shift the physics noise
+                self.gm_rng = np.random.default_rng(self.seed + 7777)
+            self.gm_T = self.gm_g * (1 + o["gmaps_sigma"] * self.gm_rng.normal(size=n.L))
         # CCTV at the downstream junction of each road (not on roads into blind junctions)
         W = self._view_W()
         has_cam = np.array([n.dst[l][0] >= 0 and n.dst[l][0] not in self.blind for l in range(n.L)])
         sat = q > W
-        vis = np.minimum(q, W) * (1 + o["cctv_noise"] * self.rng.normal(size=n.L))
+        if not hasattr(self, "cam_rng"):
+            self.cam_rng = np.random.default_rng(self.seed + 5555)
+        vis = np.minimum(q, W) * (1 + o["cctv_noise"] * self.cam_rng.normal(size=n.L))
         return self.est.update_v6(t, self.c_in, self.c_out, np.maximum(vis, 0), sat, has_cam, W,
                                   self.gm_T if o["gmaps"] else None, float(n.D),
                                   gm_queue=o["gmaps_queue"])
@@ -417,7 +430,9 @@ class CircuitSim:
         n, o = self.n, self.opts
         W = self._view_W()
         Vo, Eo = self.V.copy(), self.entry.copy()
-        rng = self.rng
+        if not hasattr(self, "cam_rng"):
+            self.cam_rng = np.random.default_rng(self.seed + 5555)
+        rng = self.cam_rng
         est = self.est
         for j in range(n.J):
             if j in self.blind:
