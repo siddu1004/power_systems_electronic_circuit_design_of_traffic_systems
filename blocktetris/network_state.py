@@ -145,3 +145,72 @@ class NetState:
         self.tau = np.where(grow > 1e-4, np.maximum(0.0, 0.95 * n.cap0 - z) / np.maximum(grow, 1e-9), np.inf)
         self.warn = self.tau < self.warn_H
         return self.phi
+
+
+# ── v6: CCTV + Google Maps measurement model (added; `update` above is unchanged) ──
+def update_v6(self, t, c_in, c_out, cctv_q, cctv_sat, has_cam, view_W, gm_T, D, gm_queue=False):
+    """Kalman update with the inputs that exist on real Indian roads.
+
+    Process (unchanged): z+ = z + c_in - c_out, counts from CCTV counting lines.
+    Moving blocks on a road are estimated as transit = lam * D (falling blocks);
+    the stack (landed blocks) is z - transit.
+
+    Measurement 1, CCTV (junction camera, sees ~view_W of each approach):
+        stack visible and short   ->  y = q_vis + transit,   R = (0.08 q + 0.5)^2 + (0.3 transit)^2
+        stack runs out of view    ->  inequality  z >= view_W + 0.5 transit
+    Measurement 2, Google Maps travel time T (lagged, every road):
+        Little's law on the stack:  q_g = max(0, T - D) * (time-averaged discharge)
+        y = q_g + transit,          R = (0.5 q_g + 3)^2 + (0.3 transit)^2
+    Each scalar update passes the chi-square bad-data test (nu^2/S <= 9).
+    """
+    n, rng, sim = self.n, self.rng, self.sim
+    ci = np.maximum(0.0, c_in * (1 + self.cn * rng.normal(size=n.L)))
+    co = np.maximum(0.0, c_out * (1 + self.cn * rng.normal(size=n.L)))
+    queued = np.zeros(n.L, bool)
+    hm = n.line_moves[:, 0] >= 0
+    queued[hm] = sim.Vo[n.line_moves[hm]].sum(1) + sim.Eo[hm] > 1.0
+    queued[n.sinks] = sim.entry[n.sinks] > 0.5
+    self.mu = np.where(queued, self.mu + 0.01 * (co - self.mu), self.mu)
+    self.lam += 0.01 * (ci - self.lam)
+    if not hasattr(self, "out_avg"):
+        self.out_avg = np.full(n.L, 0.1)
+    self.out_avg += (co - self.out_avg) / 60.0          # time-averaged discharge (Little's law)
+    transit = np.clip(self.lam * D, 0, n.cap0)
+    self.transit = transit
+    z = self.z + ci - co
+    P = self.P + (self.cn ** 2) * (ci + co) + 0.01
+
+    def fuse(z, P, y, R, mask):
+        nu = y - z
+        S = P + R
+        ok = mask & (nu ** 2 / S <= 9.0)
+        self.rejects += int((mask & ~ok).sum())
+        K = np.where(ok, P / S, 0.0)
+        return z + K * nu, (1 - K) * P
+
+    # CCTV
+    m1 = has_cam & ~cctv_sat
+    y1 = cctv_q + transit
+    R1 = (0.08 * cctv_q + 0.5) ** 2 + (0.3 * transit) ** 2
+    z, P = fuse(z, P, y1, R1, m1)
+    # Google Maps as a quantity (Little's law). Tested: correlation with the true
+    # stack only ~0.3 under signal cycling and 3-min lag -> made control worse.
+    # Kept as an option (gm_queue=True); the default uses Google as a flag below.
+    if gm_T is not None and gm_queue:
+        qg = np.maximum(0.0, gm_T - D) * np.maximum(self.out_avg, 0.02)
+        y2 = qg + transit
+        R2 = (0.5 * qg + 3.0) ** 2 + (0.3 * transit) ** 2   # lagged, coarse
+        z, P = fuse(z, P, y2, R2, np.ones(n.L, bool))
+    # CCTV saturated: the stack is at least as long as the view
+    lb = np.where(has_cam & cctv_sat, view_W + 0.5 * transit, 0.0)
+    if gm_T is not None:
+        # Google congestion flag: travel time > free-flow + 60 s means the stack
+        # reaches beyond any camera's view (works on roads with no camera too)
+        lb = np.where(gm_T > D + 60.0, np.maximum(lb, view_W + 0.5 * transit), lb)
+    z = np.maximum(z, lb)
+    self.z = np.clip(z, 0, n.cap0)
+    self.P = P
+    return self.z
+
+
+NetState.update_v6 = update_v6

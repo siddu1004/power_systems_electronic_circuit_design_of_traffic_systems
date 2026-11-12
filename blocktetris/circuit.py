@@ -49,7 +49,9 @@ DEFAULT_OPTS = dict(alarm_on=0.80, alarm_off=0.60, attenuation=0.5, ramp=0.02, a
                     backpressure=False, bp_exp=2.0, emergency=False, em_on=0.50, em_off=0.40,
                     em_green=40.0, em_actuated=False, divert=False, compliance=0.7,
                     divert_on=0.9, divert_off=0.4,
-                    estimator="oracle", atc=False, pred_pressure=False, blind_mode="hybrid", hybrid_acc=0.40, atc_apply=False, atc_depth=3, atc_H=120.0,
+                    estimator="oracle", atc=False, pred_pressure=False, blind_mode="hybrid", hybrid_acc=0.40,
+                    cctv_view_m=float("inf"), cctv_noise=0.08, gmaps=False, gmaps_tau=180.0,
+                    gmaps_period=60.0, gmaps_sigma=0.10, gmaps_queue=False, atc_apply=False, atc_depth=3, atc_H=120.0,
                     sensor_cover=0.5, sensor_sigma=3.0, count_noise=0.05, stuck=2, phantom_p=0.002)
 
 
@@ -182,6 +184,7 @@ class CircuitSim:
         self.est = None
         o = self.opts
         if ctrl == "bt" and (o["estimator"] != "oracle" or o["atc"]):
+            # (estimator "kf6" = v6 CCTV + Google Maps fusion, NetState.update_v6)
             from .network_state import NetState
             self.est = NetState(self, mode=o["estimator"], coverage=o["sensor_cover"],
                                 sigma=o["sensor_sigma"], count_noise=o["count_noise"], stuck=o["stuck"],
@@ -281,7 +284,10 @@ class CircuitSim:
         load = occ / n.cap0
         occ_c = occ
         if self.est is not None:
-            occ_c = self.est.update(t, occ, self.c_in, self.c_out)
+            if self.opts["estimator"] == "kf6":
+                occ_c = self._update_v6(t)
+            else:
+                occ_c = self.est.update(t, occ, self.c_in, self.c_out)
             self.c_in[:] = 0.0
             self.c_out[:] = 0.0
             if self.opts["atc"]:
@@ -375,6 +381,67 @@ class CircuitSim:
         target = np.maximum(local, o["attenuation"] * prop)
         self.p = np.where(target >= self.p, target, np.maximum(target, self.p - o["ramp"]))
 
+    # ── v6 inputs: CCTV with a limited view, Google Maps travel times ────────
+    def _view_W(self):
+        return self.opts["cctv_view_m"] * 2 * W_PER_M        # 2 lanes of view
+
+    def _update_v6(self, t):
+        n, o = self.n, self.opts
+        # true stack (landed blocks) of every road and its true outflow rate
+        q = self.entry.copy()
+        has = n.line_moves[:, 0] >= 0
+        q[has] += self.V[n.line_moves[has]].sum(1)
+        if not hasattr(self, "out_ema"):
+            self.out_ema = np.full(n.L, 0.1)
+            self.gm_g = np.full(n.L, float(n.D))
+            self.gm_T = None
+        self.out_ema += (self.c_out - self.out_ema) / 60.0
+        # Google Maps: lagged average travel time, refreshed every period, noisy
+        T_true = n.D + np.minimum(q / np.maximum(self.out_ema, 0.02), 3600.0)
+        self.gm_g += (T_true - self.gm_g) * DT / o["gmaps_tau"]
+        if o["gmaps"] and t % int(o["gmaps_period"]) == 0:
+            self.gm_T = self.gm_g * (1 + o["gmaps_sigma"] * self.rng.normal(size=n.L))
+        # CCTV at the downstream junction of each road (not on roads into blind junctions)
+        W = self._view_W()
+        has_cam = np.array([n.dst[l][0] >= 0 and n.dst[l][0] not in self.blind for l in range(n.L)])
+        sat = q > W
+        vis = np.minimum(q, W) * (1 + o["cctv_noise"] * self.rng.normal(size=n.L))
+        return self.est.update_v6(t, self.c_in, self.c_out, np.maximum(vis, 0), sat, has_cam, W,
+                                  self.gm_T if o["gmaps"] else None, float(n.D),
+                                  gm_queue=o["gmaps_queue"])
+
+    def _cctv_view(self):
+        """What a CCTV sees: the stack within view_m of the stop line (short pockets
+        first, then the straight lane, then the shared section). The hidden tail of
+        an overflowing stack is filled in from the road estimate (z - moving blocks)."""
+        n, o = self.n, self.opts
+        W = self._view_W()
+        Vo, Eo = self.V.copy(), self.entry.copy()
+        rng = self.rng
+        est = self.est
+        for j in range(n.J):
+            if j in self.blind:
+                continue
+            for a in range(4):
+                l = n.in_line[j, a]
+                g = j * 16 + a * 4
+                budget = W
+                for k in (0, 2, 3, 1):                     # L, R, U pockets, then S
+                    v = min(self.V[g + k], budget)
+                    Vo[g + k] = v
+                    budget -= v
+                Eo[l] = min(self.entry[l], max(budget, 0.0))
+                stack = self.V[g:g + 4].sum() + self.entry[l]
+                if stack > W and est is not None and hasattr(est, "transit"):
+                    hidden = max(0.0, est.z[l] - est.transit[l] - W)
+                    if Eo[l] > 0:
+                        Eo[l] += hidden                        # queue behind a blocked lane
+                    else:
+                        Vo[g + 1] += hidden                    # long straight queue
+            sl = slice(j * 16, (j + 1) * 16)
+            Vo[sl] *= np.clip(1 + o["cctv_noise"] * rng.normal(size=16), 0, None)
+        return Vo, Eo
+
     # ── camera layer and neighbour-based reconstruction of a blind junction ──
     def _cameras(self, t, occ_c):
         """Each junction's camera sees its own stacks (landed blocks) and counts
@@ -402,10 +469,16 @@ class CircuitSim:
             cov[:] = self._cover0
             for j in now:                                # its road cameras are gone too
                 cov[n.in_line[j]] = False
-        if not now:
+        limited = np.isfinite(o["cctv_view_m"])
+        if not now and not limited:
             self.Vo, self.Eo = self.V, self.entry
             return
-        self.Vo, self.Eo = self.V.copy(), self.entry.copy()
+        if limited:
+            self.Vo, self.Eo = self._cctv_view()
+        else:
+            self.Vo, self.Eo = self.V.copy(), self.entry.copy()
+        if not now:
+            return
         slot = (self.head - 1) % n.D                     # ring slot of sends made D s ago
         for j in now:
             est = self.blind_est[j]
@@ -747,3 +820,9 @@ VERSIONS = {
     "v4": V4_OPTS,                  # + Kalman state estimator, 3-level look-ahead, predictive protection
     "v5": V5_OPTS,                  # + camera layer, blind junction rebuilt from neighbour messages
 }
+
+
+# v6 = v5 + realistic inputs: CCTV with a limited view (hidden queue tail inferred)
+# and Google Maps travel times fused into the network Kalman filter
+V6_OPTS = dict(V5_OPTS, estimator="kf6", cctv_view_m=60.0, gmaps=True)
+VERSIONS["v6"] = V6_OPTS
