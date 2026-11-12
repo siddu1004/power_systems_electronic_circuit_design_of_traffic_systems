@@ -96,3 +96,58 @@ Officers then work as follows:
 | Clearance metric is relative to each controller's own normal day | BT's normal day is much lower | Use delay and peak queue as the headline measures | Documented |
 | Dark-signal model | A 20 s give-way alternation flatters Fixed | Police restore dark junctions | Documented |
 | Worst wait is still above the ~100 s of fixed cycles | 147–163 s | — | **Open:** a cyclic-order variant would trade a little delay for predictability |
+
+---
+
+## FULL CITY: all of Coimbatore, all algorithms
+
+**What was simulated**
+- **Map:** OpenStreetMap, bbox 76.90–77.08 E, 10.95–11.08 N (`data/osm/coimbatore_city.json`).
+- **Network:** 521 junctions, of which 348 are signalised (20 tagged in OSM, the rest inferred); 1,055 directed roads (758.7 km); 55 gates and 57 exits.
+- **Runs:** 12 controllers × 7 events × 2 seeds = 168 runs of 90 min each.
+- **Figures:** `city_full__*.png`. **Raw data:** `Results/BlockTetris/city_full/results.json`.
+
+**Average delay per unit of traffic (s)**
+
+| Event | Fixed-40 | SITRA-MPC | SCOOT-like | SCATS-like | Actuated | MaxPressure | Fixed + police | BT v3 | BT v6 | BT v7 | BT v7 + police | **BT v7-final** |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Normal peak | 486 | 388 | 392 | 458 | 336 | 416 | 490 | 282 | 269 | 269 | **268** | 277 |
+| Accident | 496 | 396 | 398 | 462 | 361 | 426 | 494 | 300 | 298 | 293 | **285** | 293 |
+| Monsoon rain | 520 | 426 | 453 | 489 | 356 | 445 | 523 | 305 | 302 | **300** | 312 | 312 |
+| Festival surge | 572 | 458 | 462 | 535 | 386 | 480 | 582 | 311 | 329 | 310 | **310** | 316 |
+| VIP closure | 496 | 399 | 402 | 470 | 345 | 426 | 482 | 294 | 287 | 293 | **282** | 291 |
+| Signal power failure | 476 | 381 | 376 | 444 | 341 | 411 | 488 | 295 | **276** | 283 | 287 | 281 |
+| CCTV failure | 486 | 388 | 392 | 458 | 336 | 416 | 490 | 277 | 275 | **271** | 278 | 271 |
+
+**Worst servable wait (s) and police alerts per run**
+
+| Controller | Worst wait (s) | Police alerts |
+|---|---|---|
+| SITRA-MPC | 88–96 | 0 |
+| Actuated | 95–98 | 0 |
+| SCOOT-like | 103 | 0 |
+| SCATS-like | 134 | 0 |
+| Fixed-40 | 143 | 0 |
+| BT v3 | 179–226 | 0 |
+| BT v7 | 188–227 | 0 |
+| BT v7 + police | 189–231 | 10–17 |
+| **BT v7-final** | **146–161** | **9–17** |
+| MaxPressure | 2,400–3,100 (starves side movements) | 0 |
+| Fixed + police | 143 | 44–51 |
+
+**Findings**
+- **Block-Tetris wins every event on the full city.** All BT versions beat every existing controller. Against the best existing controller (Actuated):
+  - v7-final has 12–19 % less delay;
+  - the best BT variant has 16–21 % less delay.
+
+  Against SITRA-MPC the reduction is 26–31 %, and against Fixed-40 it is 40–45 %.
+- **The margin is smaller than on the corridor (2.3–3.7×).** On the 36-junction corridor every arm was signalised and loaded. The city network is mostly lightly loaded, so many junctions are not the bottleneck (see the delay breakdown below).
+- **SITRA-MPC** ranks 2nd–3rd among the existing controllers in the city (its cycle optimiser suits light, distributed load), but it lost to Fixed on the congested corridor.
+- **No BT variant dominates in the city.** v7 + police, v6, v7 and v7-final all fall within about 5 % of one another. v7-final trades 1–3 % delay for a worst wait about 50 s shorter than v7.
+- **Fixed + police is worse than Fixed alone in the city.** With 3 officers for 348 signals, 44–51 alerts swamp the pool.
+- **Police sizing:** v7-final raises 9–17 alerts across the whole city in 90 min. That is manageable with 3 officers, but the city needs a larger pool or zone allocation; the officer count is still the corridor default.
+- **Clearance minutes are not meaningful at city scale.** One local event barely moves a 759 km total, so the measure is noise-dominated. Use delay.
+
+**Open items**
+- The worst wait of v7-final (146–161 s) is still above Actuated and SITRA-MPC (~90–100 s).
+- Demand is uniform per gate (0.06). Real OD and turn counts would sharpen the city picture.
