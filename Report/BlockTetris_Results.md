@@ -331,3 +331,39 @@ Builds on v4; all earlier versions remain runnable (`blocktetris/README.md`, *Ve
 - **Hybrid** is best in 5 of 6 cases. With 4 central cameras dead under overload it is 2 % behind a pure fixed fallback.
 - **Holding the last camera frame** is the worst choice everywhere: 17–34 % more delay than the fixed fallback.
 - **Speed:** the solver runs about 1.7× faster with identical results (checked against the previous commit).
+
+---
+
+# Part 6: v6 with realistic inputs, and validation that fills the plot holes
+
+## 13. v6: CCTV with a limited view and Google Maps
+
+- **CCTV sees about 60 m of each approach.** When a stack overflows the view, the camera only proves the queue is at least that long. The Kalman filter uses that as a lower bound, and the hidden tail is filled in from the road estimate minus the moving blocks.
+- **Google Maps travel time as a queue length (Little's law): rejected.** Under signal cycling and about a 3-minute lag it correlated only 0.3 with the true stack, and it made control much worse (2.3×, road closed: 802 s vs 373 s).
+- **Google Maps as a congestion flag: kept.** When travel time exceeds free-flow by more than 60 s, the flag is used on interior roads that have no working camera.
+
+| 2.3× load (2 seeds) | normal | road closed | exit cut | camera dead |
+|---|---|---|---|---|
+| v5, ideal cameras | 329 | 346 | 343 | 334 |
+| v5, real 60 m CCTV | 465 | 495 | 478 | 479 |
+| **v6**, CCTV + estimator | 353 | 373 | 385 | 397 |
+
+On held-out seeds 11–20 with a held-out demand pattern, v6 beats v5-with-CCTV by 10.9 % (normal) and 13.6 % (road closed); it is better in 10 of 10 runs, p = 0.002.
+
+## 14. Plot holes found and filled
+
+| Hole | How it was filled | Outcome |
+|---|---|---|
+| 2–8 seeds, no significance tests | 30 paired seeds on the published bench; Wilcoxon + bootstrap 95 % CI; held-out seeds 11–20 on the grid | SITRA bench: Block-Tetris beats Actuated in 12/13 scenarios (p < 0.05). **T12 (stuck sensor) is not significant**, which corrects the 5-seed claim |
+| Thresholds tuned on the test scenarios | Held-out demand pattern (N–S ×1.4, E–W ×0.7, Gaussian peak) | v3, v4 and v6 beat Fixed and MaxPressure in 10/10 runs (p = 0.002); v3 252 s vs Fixed 474 s and MaxPressure 577 s |
+| v4 claimed −7 to −23 % overall | Held-out overload test | **Corrected:** v4's gain is specific to road closures (−33 % at 2.9×, p = 0.006). On fault-free days the difference is not significant |
+| Sensors shared the physics noise stream, so variants were not comparable | Separate random streams per sensor (common random numbers) | Variants now differ only by their decisions |
+| Spill-back and pressure normalisation (Gregoire et al. 2015) | Smooth back-pressure (1 − load²) is in that family | Cited |
+| Travel-time inputs (Mercader 2020; Ban 2011) | Explains why lagged, averaged Google data can't measure queues | Google used only as a flag |
+| Two-wheeler saturation flow (Indo-HCM critiques) | Discharge rate per block class is learned | Calibration with field counts is still required |
+| No stability proof (unlike max-pressure, Varaiya 2013) | Stated as a limitation; the exhaustive-service ↔ polling-system link noted | Open |
+| Acyclic phases (Levin 2020) | The age term and emergency rotation bound waiting | A cyclic variant is future work |
+
+## 15. Journal paper
+
+`Report/BlockTetris_Paper/main.tex` (IEEEtran) with `refs.bib`; all 18 references were checked against publisher or indexing records.
