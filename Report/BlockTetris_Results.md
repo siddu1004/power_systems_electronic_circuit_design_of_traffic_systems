@@ -255,3 +255,44 @@ The first port of v3 lost to Actuated under heavy load (T3: 57 vs 40 s). The cau
 4. Hold green while a platoon is crossing the upstream detector.
 
 **Caveat:** the bench is a fluid model with assumed capacities and no start-up loss. Real-traffic validation (SUMO with measured counts, then a field pilot) is the next step.
+
+---
+
+# Part 4: v4, network state estimator and 3-level look-ahead
+
+Code: `blocktetris/network_state.py`, integrated in `circuit.py` (`V4_OPTS`). Study: `estimator_experiments.py`. Data: `Results/BlockTetris/estimator/results.json`.
+
+## 9. The math
+
+**State estimator.** A Kalman filter per road, as in power-system state estimation.
+- *Process model* (charge conservation from stop-line loop counts, with 5 % count error):
+  `z(k+1) = z(k) + c_in − c_out + w`, where `Q = ε²(c_in + c_out) + q₀`.
+- *Measurement:* cameras on only 50 % of roads, with σ = 3 W noise, 2 cameras freezing at t = 600 s, and phantom ghost queues.
+- *Bad-data test:* reject a reading when ν²/S > 9 (chi-square, 1 dof). If a road rejects 60 readings in a row, re-initialise it from the camera.
+
+**Look-ahead transfer capability**, recursed D = 3 levels downstream over horizon H = 120 s:
+- `A_e = μ_e + (0.9 C_e − z_e)/H`: how fast road e can accept traffic.
+- `C_u = min(μ_u, min_k (f_uk/F_ek) · A_ek / r_k)`: what road u can really discharge. The fixed turn split means the tightest exit limits the whole road (head-of-line blocking).
+- *Prediction:* `load(t+H) = (z + H·(F − C))/capacity`, and `time-to-spill = (0.95 C − z)/(F − C)`.
+
+**How it's used.** v3's protection chain (pressure relay, diversion, emergency rotation) now acts on the **predicted** load at t + 120 s rather than the present load. Because the recursion looks 3 roads downstream, a restriction 2–3 hops away slows the inflow here before the queue arrives.
+
+**Tested and rejected:** using the transfer-capability throttle directly on the phase scores and gate meters. It gave no gain beyond predictive protection.
+
+## 10. Results (4×4 grid, faulty sensors, 33 fault cases × 2 seeds per load)
+
+| Load | v3 (perfect sensors) | v3 (raw faulty sensors) | v3 + Kalman | **v4** |
+|---|---|---|---|---|
+| 1.9× | 179 s, 93.2 % out | 177 s | 186 s | **175 s, 93.3 %** |
+| 2.3× | 366 s, 87.1 % | 349 s | 389 s | **342 s, 89.6 %** |
+| 2.9× | 799 s, 66.8 % | 737 s | 745 s | **614 s, 78.3 %** |
+
+- **Road closures:** 417 → **340 s** at 2.3× and 980 → **634 s** at 2.9×. That's 18 % and 35 % less delay than v3 with perfect sensors.
+- **Estimator error:** the filter cuts the road-load error by 15–45 % against raw sensors (2.64 → 1.48 W at 1.9× load).
+- **Early warning, measured with the prediction running but not acting:**
+  - 88–96 % of spillbacks predicted, 66–131 s ahead;
+  - precision 7–15 %, so most warnings are precautionary.
+  
+  With v4 acting on the warnings, many spills never happen, so the recall and lead numbers from those runs are not comparable.
+- **Cost:** on a no-fault day at 2.3× load, v4 is about 10 % slower than v3 (329 vs 299 s), and slower on gate surges (356 vs 330 s). Predictive protection holds traffic back that sometimes didn't need holding.
+- **Note:** v3 itself is barely affected by faulty road sensors, because its signal decisions use the stop-line queues. The estimator pays off once those queues are used for *prediction*.
