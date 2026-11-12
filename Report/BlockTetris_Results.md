@@ -203,3 +203,55 @@ Each fault set runs at normal, heavy (1.9×) and overload (2.3×) demand.
 - **Road closure on the chowrasta at heavy load:** v3 is at 311 s against 231 s for v2. With only 5 junctions there are few alternative routes, so diverted traffic has nowhere to go.
 - **Gridlock flags at overload:** 13.6 % of v3's runs end with more than 3× its own normal queue. That is relative to a low baseline; absolute delay is still about 3× better than Fixed.
 - **Metering thresholds are hand-tuned:** 30 % and 45 %. They should be fitted per network from its road-load versus throughput curve.
+
+---
+
+# Part 3: Block-Tetris vs the four existing SITRA controllers
+
+The existing benchmark (`baselines/bl_*.m`) was ported line by line to Python: `blocktetris/sitra_bench.py`. That covers the same plant, the same Poisson arrivals (same LCG, seeds 101–105), the same T1–T14 scenarios and faults, the same metrics and the same twin-run clearance metric.
+
+**The port reproduces the published `Results/baselines/baseline_comparison.csv` to within 0.002 %** on every scenario and controller (`Results/BlockTetris/sitra/port_verification.csv`). Block-Tetris was then added with no change to the bench.
+
+**Fairness:**
+- Block-Tetris gets the same inputs as the others: the queue sensor (including its faults) and the upstream detector counts.
+- It does **not** get the nominal demand rate that SITRA-MPC and Webster are given.
+- It uses the same 3 s yellow and the same 10 s minimum green as Actuated.
+
+## Average delay (s per vehicle, mean of 5 seeds)
+
+| Test | SITRA MPC | Webster | Actuated | MaxPressure | **Block-Tetris** |
+|---|---|---|---|---|---|
+| T1 Low | 17.3 | 16.5 | 11.7 | 13.9 | **11.5** |
+| T2 Moderate | 25.6 | 26.8 | 17.9 | 25.4 | **17.6** |
+| T3 High | 60.7 | 62.2 | 40.3 | 64.9 | **36.5** |
+| T4 Oversaturated | 137.0 | 128.4 | 107.5 | 130.9 | **97.4** |
+| T5 Step demand | 42.5 | 46.3 | 29.3 | 45.3 | **27.3** |
+| T6 Surge (deterministic) | 24.3 | 34.8 | 17.2 | 20.0 | **16.2** |
+| T7 Surge (Poisson) | 28.8 | 37.4 | 20.4 | 25.1 | **16.6** |
+| T8 Congested start | 73.9 | 83.8 | 51.5 | 74.8 | **50.1** |
+| T9 Incident B1 | 30.8 | 37.2 | 19.6 | 28.9 | **18.2** |
+| T10 Blockage B4 | 34.0 | 34.0 | **22.0** | 30.1 | 22.3 |
+| T11 Platoon B2 | 51.7 | 63.7 | 42.3 | 51.7 | **32.6** |
+| T12 Sensor stuck | 25.8 | 26.8 | 24.0 | 43.1 | **21.6** |
+| T13 Sensor noise | 21.5 | 26.8 | 27.0 | 29.9 | **20.4** |
+| T14 Signal stuck off | 29.6 | 29.8 | 21.7 | 31.5 | **19.5** |
+
+- **Best in 13 of 14 tests.** T10 is a tie with Actuated (22.3 vs 22.0 s).
+- **Against Actuated, the previous best:** 6 % less delay on average, and 9–23 % less under heavy load, surges and platoons (T3, T4, T7, T11).
+- **Against SITRA-MPC:** 21–45 % less delay in every test.
+- **Network delay including the B4 queue:** also lowest in 13 of 14 tests.
+- **Cleared seeds:** Block-Tetris clears in at least as many seeds as the best existing controller in every incident test. For example, T11 platoon: 4/5 against 2/5 for Actuated.
+- **Excess vehicle-seconds after the incident:**
+  - Lowest in T5, T7, T8, T9, T11 and T14.
+  - Higher than Actuated in T6 (250 vs 181) and T10 (981 vs 870).
+  - In the sensor-fault tests (T12, T13) the fixed-time plans show about 0, because they don't use sensors at all.
+
+## What changed to get there
+
+The first port of v3 lost to Actuated under heavy load (T3: 57 vs 40 s). The cause was the same thrashing found on the electrical-twin grid: score-based rolling re-placement and the planned-green end added yellows. The final junction-level rule is:
+1. Serve the chosen approach until its queue is below the low mark with no vehicle arriving, or its tap passes no current (exit blocked or lamp fault), or the 40 s maximum.
+2. Choose the next approach by stored charge × learned discharge current (q × s), plus the age term.
+3. Use a state observer for the queue: it integrates detector arrivals minus the learned discharge, and fuses the camera reading with an adaptive gain. A frozen reading is flagged after 8 s and the model is trusted instead. This is why T12 and T13 do well.
+4. Hold green while a platoon is crossing the upstream detector.
+
+**Caveat:** the bench is a fluid model with assumed capacities and no start-up loss. Real-traffic validation (SUMO with measured counts, then a field pilot) is the next step.

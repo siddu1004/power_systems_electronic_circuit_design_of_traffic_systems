@@ -167,3 +167,16 @@ def test_v3_beats_fixed_under_overload():
     f = CircuitSim(net, "fixed", seed=1, demand=0.2).run()
     b = CircuitSim(net, "bt", seed=1, demand=0.2, opts=V3_OPTS).run()
     assert b["delay_s"] < f["delay_s"]
+
+
+# ── existing SITRA benchmark port ───────────────────────────────────────────
+def test_sitra_port_reproduces_published_matlab_numbers():
+    from blocktetris import sitra_bench as B
+    s = [x for x in B.scenarios() if x["id"] == "T6"][0]
+    t, rate, count = B.make_arrivals(s["f"], s["T"], s["stoch"], 0)
+    ref = {"SITRA": 24.281, "Webster": 34.807, "Actuated": 17.233, "MaxPressure": 20.049}
+    for c, v in ref.items():
+        got = B.metrics(B.simulate(c, t, rate, count, s["q0"], s["events"]))["avgDelay"]
+        assert got == pytest.approx(v, abs=1e-3)
+    bt = B.metrics(B.simulate("BlockTetris", t, rate, count, s["q0"], s["events"]))["avgDelay"]
+    assert bt < ref["Actuated"]
