@@ -256,7 +256,7 @@ def _toy_osm(tmp_path):
 def test_city_builder_topology_and_physics(tmp_path):
     from blocktetris.city import CityNet
     from blocktetris.circuit import V6_OPTS
-    net = CityNet.from_osm(str(_toy_osm(tmp_path)))
+    net = CityNet.from_osm(str(_toy_osm(tmp_path)), signal_policy="osm")
     s = net.summary()
     assert s["junctions"] >= 2 and s["signalised"] == 1
     assert len(net.priority) == s["junctions"] - 1                 # unsignalised = give-way

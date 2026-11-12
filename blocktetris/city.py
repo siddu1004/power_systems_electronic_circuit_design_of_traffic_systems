@@ -53,18 +53,40 @@ class CityNet:
     """Same interface as circuit.Net, built from a real road graph."""
 
     @staticmethod
-    def from_osm(path, merge_m=30.0, boundary_m=300.0, min_seg_m=15.0):
+    def from_osm(path, merge_m=30.0, boundary_m=300.0, min_seg_m=15.0, signal_policy="major"):
+        """signal_policy: "osm" = only junctions OSM tags as traffic_signals;
+        "major" = also every junction with >= 3 arms of which >= 2 are
+        secondary-class or above (OSM signal tagging is incomplete in Coimbatore)."""
         d = json.load(open(path))
         nodes = {e["id"]: (e["lat"], e["lon"]) for e in d["elements"] if e["type"] == "node" and "lat" in e}
         signals = {e["id"] for e in d["elements"] if e["type"] == "node"
                    and e.get("tags", {}).get("highway") == "traffic_signals"}
         ways = [e for e in d["elements"] if e["type"] == "way" and e.get("tags", {}).get("highway") in CLASS_SPEED]
-        use = defaultdict(int)
+        # node graph: consecutive way nodes are edges (direction kept for one-ways)
+        adj = defaultdict(dict)       # u -> {v: attrs}  (traversable u->v)
+        nbr = defaultdict(set)        # undirected neighbours (topology)
         for w in ways:
-            ns = w["nodes"]
-            for i, nid in enumerate(ns):
-                use[nid] += 1 if i in (0, len(ns) - 1) else 2
-        cand = [nid for nid, c in use.items() if c >= 3 and nid in nodes]
+            t = w["tags"]
+            ow = t.get("oneway", "no")
+            if t.get("junction") == "roundabout":
+                ow = "yes"
+            ns = [x for x in w["nodes"] if x in nodes]
+            if ow == "-1":
+                ns, ow = ns[::-1], "yes"
+            try:
+                lanes_total = max(1, int(str(t.get("lanes")).split(";")[0]))
+            except ValueError:
+                lanes_total = None
+            at = dict(cls=t["highway"], oneway=(ow == "yes"), name=t.get("name", ""), lanes=lanes_total)
+            for u, v in zip(ns, ns[1:]):
+                if u == v:
+                    continue
+                nbr[u].add(v)
+                nbr[v].add(u)
+                adj[u][v] = at
+                if ow != "yes":
+                    adj[v][u] = at
+        cand = [u for u in nbr if len(nbr[u]) >= 3]
         cl_of, clusters = {}, []
         for nid in cand:
             p = nodes[nid]
@@ -78,37 +100,54 @@ class CityNet:
             else:
                 cl_of[nid] = len(clusters)
                 clusters.append({"ids": [nid], "pos": p})
-        segs = []
-        for w in ways:
-            t = w["tags"]
-            cls = t["highway"]
-            ow = t.get("oneway", "no")
-            if t.get("junction") == "roundabout":
-                ow = "yes"
-            ns = [x for x in w["nodes"] if x in nodes]
-            if ow == "-1":
-                ns, ow = ns[::-1], "yes"
-            try:
-                lanes_total = max(1, int(str(t.get("lanes")).split(";")[0]))
-            except ValueError:
-                lanes_total = None
-            start = 0
-            for i in range(1, len(ns)):
-                if ns[i] in cl_of or i == len(ns) - 1:
-                    piece = ns[start:i + 1]
-                    length = sum(haversine(nodes[piece[k]], nodes[piece[k + 1]]) for k in range(len(piece) - 1))
-                    a, b = cl_of.get(piece[0]), cl_of.get(piece[-1])
-                    if not (a is not None and a == b) and length >= min_seg_m and len(piece) >= 2:
-                        segs.append(dict(a=a, b=b, pa=nodes[piece[0]], pa2=nodes[piece[1]],
-                                         pb=nodes[piece[-1]], pb2=nodes[piece[-2]], length=length,
-                                         cls=cls, oneway=(ow == "yes"), name=t.get("name", ""),
-                                         lanes=lanes_total))
-                    start = i
+        stop = lambda u: u in cl_of or len(nbr[u]) == 1      # junction or open end
+        segs, seen = [], set()
+        for u0 in list(nbr):
+            if not stop(u0):
+                continue
+            for v0 in nbr[u0]:
+                if (u0, v0) in seen:
+                    continue
+                path = [u0, v0]
+                while not stop(path[-1]) and len(path) < 10000:
+                    nxt = [x for x in nbr[path[-1]] if x != path[-2]]
+                    if not nxt:
+                        break
+                    path.append(nxt[0])
+                seen.add((u0, v0))
+                seen.add((path[-1], path[-2]))
+                a, b = cl_of.get(path[0]), cl_of.get(path[-1])
+                if a is not None and a == b:
+                    continue                                  # internal link of a merged junction
+                length = sum(haversine(nodes[path[k]], nodes[path[k + 1]]) for k in range(len(path) - 1))
+                if length < min_seg_m and (a is None or b is None):
+                    continue
+                fwd = all(path[k + 1] in adj[path[k]] for k in range(len(path) - 1))
+                bwd = all(path[k] in adj[path[k + 1]] for k in range(len(path) - 1))
+                if not (fwd or bwd):
+                    continue
+                if not fwd:                                   # one-way running b -> a
+                    path = path[::-1]
+                    a, b = b, a
+                at = adj[path[0]][path[1]]
+                segs.append(dict(a=a, b=b, pa=nodes[path[0]], pa2=nodes[path[1]],
+                                 pb=nodes[path[-1]], pb2=nodes[path[-2]], length=max(length, 20.0),
+                                 cls=at["cls"], oneway=not (fwd and bwd), name=at["name"],
+                                 lanes=at["lanes"]))
         net = CityNet()
         net.J = len(clusters)
         net.pos = [c["pos"] for c in clusters]
         net.signalised = np.array([any(i in signals for i in c["ids"]) for c in clusters])
         net._build(segs, boundary_m)
+        net.osm_signalised = net.signalised.copy()
+        if signal_policy == "major":
+            major = {"trunk", "primary", "secondary", "trunk_link", "primary_link"}
+            for j in range(net.J):
+                arms = [net.arm_cls[j].get(s_) for s_ in range(4)]
+                arms = [c for c in arms if c]
+                if len(arms) >= 3 and sum(c in major for c in arms) >= 2:
+                    net.signalised[j] = True
+            net.priority = set(np.where(~net.signalised)[0].tolist())
         return net
 
     def _build(self, segs, boundary_m):
@@ -227,6 +266,8 @@ class CityNet:
             self.down_out.append([self.out_line[j, b] for b in range(4)
                                   if b != a and self.out_line[j, b] != dummy] if j >= 0 else [])
         self.arm_present = self.in_line != dummy
+        self.arm_cls = [{sl: info["cls"] for sl, info in arms[j].items()
+                         if self.in_line[j, sl] != dummy or self.out_line[j, sl] != dummy} for j in range(J)]
         self.priority = set(np.where(~self.signalised)[0].tolist())
 
     def line_name(self, l):
@@ -236,6 +277,7 @@ class CityNet:
         inner = self.inner
         km = float(sum(self.cap0[l] / (W_PER_M * self.lanes_l[l]) for l in inner) / 1000)
         return {"junctions": int(self.J), "signalised": int(self.signalised.sum()),
+                "osm_tagged_signals": int(getattr(self, "osm_signalised", self.signalised).sum()),
                 "directed_roads": int(len(inner)), "gates": int(len(self.gates)),
                 "exits": int(len(self.sinks)), "dropped_arms": int(self.dropped_arms),
                 "directed_road_km": round(km, 1), "max_travel_delay_s": int(self.Dmax)}
