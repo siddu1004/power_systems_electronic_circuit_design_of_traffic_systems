@@ -138,3 +138,32 @@ def test_v2_beats_fixed_on_normal_day():
     f = run_one("Fixed-40", "S0", 5, horizon=3000)
     b = run_one("BT-v2 (fixed)", "S0", 5, horizon=3000)
     assert b["avg_delay_s"] < f["avg_delay_s"]
+
+
+# ── electrical twin (circuit solver) ────────────────────────────────────────
+from blocktetris.circuit import Net, CircuitSim, Incident, PM, V3_OPTS
+
+
+@pytest.mark.parametrize("ctrl,opts", [("fixed", None), ("maxp", None), ("bt", None), ("bt", V3_OPTS)])
+def test_circuit_charge_conservation_clamp_and_interlock(ctrl, opts):
+    net = Net(3, 3)
+    sim = CircuitSim(net, ctrl, seed=4, demand=0.2, horizon=2400, opts=opts,
+                     incident=Incident("line_block", int(net.inner[0])))
+    for t in range(sim.T):
+        sim.step(t)
+        occ = sim.occ()
+        assert (occ <= net.cap0 + 1e-6).all()            # Zener clamp holds
+        assert (sim.V >= -1e-9).all()
+        for j in range(net.J):
+            g = sim.green[j * 16:(j + 1) * 16]
+            if g.any():
+                assert any((PM[p] == g).all() for p in range(len(PM)))  # only conflict-free pieces
+    inside = sim.V.sum() + sim.entry.sum() + sim.gateq.sum() + sim.ring.sum()
+    assert sim.arrived == pytest.approx(sim.served_out + inside, rel=1e-9)  # KCL: no charge lost
+
+
+def test_v3_beats_fixed_under_overload():
+    net = Net(4, 4)
+    f = CircuitSim(net, "fixed", seed=1, demand=0.2).run()
+    b = CircuitSim(net, "bt", seed=1, demand=0.2, opts=V3_OPTS).run()
+    assert b["delay_s"] < f["delay_s"]
