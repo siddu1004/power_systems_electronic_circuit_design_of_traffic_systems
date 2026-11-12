@@ -148,6 +148,24 @@ Officers then work as follows:
 - **Police sizing:** v7-final raises 9–17 alerts across the whole city in 90 min. That is manageable with 3 officers, but the city needs a larger pool or zone allocation; the officer count is still the corridor default.
 - **Clearance minutes are not meaningful at city scale.** One local event barely moves a 759 km total, so the measure is noise-dominated. Use delay.
 
+**Delay breakdown: where the delay is stored (normal peak, seed 11, s per unit of traffic)**
+
+Script: `python -m blocktetris.delay_breakdown`. Raw data: `city_full/delay_breakdown.json`.
+
+| Controller | Total | At signal stacks | At give-way (unsignalised) | Road-entry queues (spillback) | Boundary gates |
+|---|---|---|---|---|---|
+| Fixed-40 | 492 | 221 | 45 | 155 | 71 |
+| SITRA-MPC | 381 | 180 | 42 | 124 | 35 |
+| Actuated | 336 | 149 | 43 | 115 | 29 |
+| MaxPressure | 425 | 186 | 44 | 145 | 50 |
+| BT v3 | 286 | 132 | 41 | 86 | 28 |
+| BT v7-final | 279 | 128 | 49 | 72 | 30 |
+
+- **Fixed floor:** give-way and gate delay is roughly the same for every adaptive controller, about 70–80 s, or a quarter of BT's total. No signal logic touches it, so it compresses the ratio.
+- **Spillback (road-entry queues) is BT's biggest win:** 72 s against 115 s for Actuated (−37 %). This is the network layer at work: the relay, metering and diversion.
+- **At the signal stacks:** BT's lead over Actuated is −14 %. With light, distributed load, gap-out actuation is already near-efficient at most junctions.
+- **Takeaway:** BT's advantage grows with congestion. It is largest where spillback dominates (the corridor, overload tests) and smallest on a lightly loaded city.
+
 **Open items**
 - The worst wait of v7-final (146–161 s) is still above Actuated and SITRA-MPC (~90–100 s).
 - Demand is uniform per gate (0.06). Real OD and turn counts would sharpen the city picture.
