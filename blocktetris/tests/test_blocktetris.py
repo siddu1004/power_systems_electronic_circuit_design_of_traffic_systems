@@ -180,3 +180,41 @@ def test_sitra_port_reproduces_published_matlab_numbers():
         assert got == pytest.approx(v, abs=1e-3)
     bt = B.metrics(B.simulate("BlockTetris", t, rate, count, s["q0"], s["events"]))["avgDelay"]
     assert bt < ref["Actuated"]
+
+
+# ── v4: state estimator + look-ahead transfer capability ─────────────────────
+def test_kalman_estimator_beats_raw_faulty_sensors():
+    from blocktetris.circuit import V3_OPTS
+    net = Net(4, 4)
+    kf = CircuitSim(net, "bt", seed=3, demand=0.13, horizon=1800, opts=dict(V3_OPTS, estimator="kf")).run()
+    raw = CircuitSim(net, "bt", seed=3, demand=0.13, horizon=1800, opts=dict(V3_OPTS, estimator="raw")).run()
+    assert kf["est_rmse"] < 0.8 * raw["est_rmse"]
+
+
+def test_bad_data_rejection_catches_phantoms_and_frozen_cameras():
+    from blocktetris.circuit import V3_OPTS
+    sim = CircuitSim(Net(4, 4), "bt", seed=3, demand=0.13, horizon=1500,
+                     opts=dict(V3_OPTS, estimator="kf", phantom_p=0.01))
+    sim.run()
+    assert sim.est.rejects > 0
+
+
+def test_lookahead_throttles_inflow_two_hops_before_a_downstream_jam():
+    from blocktetris.network_state import NetState
+    net = Net(1, 4)                                   # a corridor J00-J01-J02-J03
+    sim = CircuitSim(net, "bt", seed=1, demand=0.1, horizon=10)
+    est = NetState(sim, mode="oracle", depth=3)
+    exit_east = net.out_line[3, 1]                    # far end of the corridor
+    est.z[:] = 0.2 * net.cap0
+    est.lam[:] = 0.3
+    est.mu[:] = 0.3
+    est.mu[exit_east] = 0.0                           # downstream exit dead
+    est.z[exit_east] = net.cap0[exit_east]            # and full
+    est.atc(sim.ratio, sim.gateq)
+    two_hops = net.out_line[1, 1]                     # J01 -> J02, two roads before the jam
+    one_hop = net.out_line[2, 1]                      # J02 -> J03
+    assert est.Cd[one_hop] < 0.3 and est.Cd[two_hops] < 0.3   # discharge capability cut upstream
+    est_shallow = NetState(sim, mode="oracle", depth=1)
+    est_shallow.z[:], est_shallow.lam[:], est_shallow.mu[:] = est.z, est.lam, est.mu
+    est_shallow.atc(sim.ratio, sim.gateq)
+    assert est.Cd[two_hops] < est_shallow.Cd[two_hops]       # depth 3 sees it, depth 1 does not

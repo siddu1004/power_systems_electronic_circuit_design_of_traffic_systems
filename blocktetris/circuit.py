@@ -48,7 +48,9 @@ DEFAULT_OPTS = dict(alarm_on=0.80, alarm_off=0.60, attenuation=0.5, ramp=0.02, a
                     rate_rolling=False, sat_gmin=15.0, hol_low=False,
                     backpressure=False, bp_exp=2.0, emergency=False, em_on=0.50, em_off=0.40,
                     em_green=40.0, em_actuated=False, divert=False, compliance=0.7,
-                    divert_on=0.9, divert_off=0.4)
+                    divert_on=0.9, divert_off=0.4,
+                    estimator="oracle", atc=False, atc_apply=False, atc_depth=3, atc_H=120.0,
+                    sensor_cover=0.5, sensor_sigma=3.0, count_noise=0.05, stuck=2, phantom_p=0.002)
 
 
 class Net:
@@ -174,6 +176,22 @@ class CircuitSim:
         self._load_now = np.zeros(n.L)
         self.em = False
         self.em_seconds = 0
+        self.c_in = np.zeros(n.L)
+        self.c_out = np.zeros(n.L)
+        self.est = None
+        o = self.opts
+        if ctrl == "bt" and (o["estimator"] != "oracle" or o["atc"]):
+            from .network_state import NetState
+            self.est = NetState(self, mode=o["estimator"], coverage=o["sensor_cover"],
+                                sigma=o["sensor_sigma"], count_noise=o["count_noise"], stuck=o["stuck"],
+                                phantom_p=o["phantom_p"], seed=seed + 99, H=o["atc_H"], depth=o["atc_depth"])
+        self.occ_c = np.zeros(n.L)
+        self.est_err2, self.est_n = 0.0, 0
+        self.raw_err2 = 0.0
+        self.warn_start = {}
+        self.warn_eps = []          # (line, start, end)
+        self.spill_events = []      # (line, t)
+        self.leads = []
         self.ratio = np.tile(RATIO, (n.L, 1))      # turn split of each road's arrivals
         self.diverted = np.zeros(n.L, bool)        # exit roads under a diversion order
 
@@ -206,14 +224,20 @@ class CircuitSim:
         self.gateq += inj
         self.arrived += inj.sum()
         occ = self.occ()
+        occ_c = self.occ_c if self.est is not None else occ
         g = n.gates
         meter = 1.0
         if self.ctrl == "bt" and self.opts["perimeter"]:
             # load shedding at the network boundary: meter entry when interior accumulation is critical
-            acc = occ[n.inner].sum() / n.cap0[n.inner].sum()
+            acc = occ_c[n.inner].sum() / n.cap0[n.inner].sum()
             self.acc = acc
             meter = float(np.clip(1 - (acc - self.opts["n_crit"]) / self.opts["n_band"], 0.05, 1.0))
+        meter = np.full(len(g), meter)
+        if self.est is not None and self.opts["atc"] and self.opts["atc_apply"]:
+            # look-ahead gate metering: admit no more than the road's 3-level acceptance rate
+            meter = np.minimum(meter, np.clip(self.est.A[g], 0.05, 1.0))
         mv = np.minimum(np.minimum(self.gateq[g], np.clip(n.cap0[g] - occ[g], 0, None)), 1.0 * DT * meter)
+        self.c_in[g] += mv
         self.gateq[g] -= mv
         tail = (self.head - 1) % n.D
         self.ring[g, tail] += mv
@@ -238,24 +262,38 @@ class CircuitSim:
         sr[s == blocked_line] = 0.0
         d = np.minimum(self.entry[s], sr * DT)
         self.entry[s] -= d
+        self.c_out[s] += d
         self.served_out += d.sum()
         # 5. network layer, learning, controllers, interlock
         occ = self.occ()
         load = occ / n.cap0
-        self._load_now = load
+        occ_c = occ
+        if self.est is not None:
+            occ_c = self.est.update(t, occ, self.c_in, self.c_out)
+            self.c_in[:] = 0.0
+            self.c_out[:] = 0.0
+            if self.opts["atc"]:
+                self.est.atc(self.ratio, self.gateq)
+                self._track_warnings(t, load)
+            e = occ_c[n.inner] - occ[n.inner]
+            self.est_err2 += float((e ** 2).sum())
+            self.est_n += len(e)
+            self.occ_c = occ_c.copy()
+        load_c = occ_c / n.cap0
+        self._load_now = load_c
         if self.ctrl == "bt":
-            self._pressure(load)
+            self._pressure(load_c)
             self._learn()
             if self.opts["divert"]:
                 self._divert()
             if self.opts["emergency"]:
-                acc = occ[n.inner].sum() / n.cap0[n.inner].sum()
+                acc = occ_c[n.inner].sum() / n.cap0[n.inner].sum()
                 if acc >= self.opts["em_on"]:
                     self.em = True
                 elif acc <= self.opts["em_off"]:
                     self.em = False
         for j in range(n.J):
-            self._interlock(j, t, occ)
+            self._interlock(j, t, occ_c)
         # 6. MOSFET taps discharge into Zener-clamped lines
         gi = np.where(self.green)[0]
         on = gi[self.startup[gi] <= 0]
@@ -276,6 +314,8 @@ class CircuitSim:
                 self.ring[ex, tail] += q
                 occ[ex] += q
                 occ[n.g_in[gg]] -= q
+                self.c_in[ex] += q
+                self.c_out[n.g_in[gg]] += q
                 self.last_served[gg] = t
                 self.discharged[gg] = q
         # 7. metrics
@@ -283,6 +323,12 @@ class CircuitSim:
         stored = self.V.sum() + self.entry.sum() + self.gateq.sum()
         self.stored_int += stored * DT
         full = load >= 0.95
+        new = np.where(full & ~self._full)[0]
+        for l in new:
+            if n.kind[l] == "inner":
+                self.spill_events.append((int(l), t))
+                ws = self.warn_start.get(int(l))
+                self.leads.append(t - ws if ws is not None else 0.0)
         self.spill += int((full & ~self._full).sum())
         self._full = np.where(load < 0.85, False, self._full | full)
         if t % 5 == 0:
@@ -370,6 +416,8 @@ class CircuitSim:
             return np.where(room > BLOCK_W, w, 0.0), None
         age = np.where(V > 0.05, t - self.last_served[sl], 0.0)
         score = (V + o["a_age"] * (V / BLOCK_W) * age) * (1.0 - self.p[ex])
+        if o["atc"] and o["atc_apply"] and self.est is not None:
+            score *= self.est.phi[ex]             # look-ahead inflow throttle (2-3 hops)
         if o["backpressure"]:
             # smooth back-pressure: value of sending charge falls as the receiving line fills
             score *= np.clip(1.0 - (occ[ex] / n.cap0[ex]) ** o["bp_exp"], 0.0, 1.0)
@@ -384,6 +432,26 @@ class CircuitSim:
         drain = np.minimum(V, np.clip(room, 0, None)) * tau / n.g_lanes[sl]
         T = (STARTUP + 1.15 * drain) * (1 - 0.5 * self.p[ex])
         return score, (T, elig, age)
+
+    def _track_warnings(self, t, load):
+        w = self.est.warn
+        for l in self.n.inner:
+            l = int(l)
+            if w[l] and l not in self.warn_start:
+                self.warn_start[l] = t
+            elif not w[l] and l in self.warn_start:
+                self.warn_eps.append((l, self.warn_start.pop(l), t))
+
+    def warning_stats(self, follow=300):
+        eps = self.warn_eps + [(l, s, self.T) for l, s in self.warn_start.items()]
+        sp = {}
+        for l, t in self.spill_events:
+            sp.setdefault(l, []).append(t)
+        hit = sum(1 for l, s, e in eps if any(s <= t <= e + follow for t in sp.get(l, [])))
+        caught = [x for x in self.leads if x > 0]
+        return {"episodes": len(eps), "precision": hit / len(eps) if eps else float("nan"),
+                "spills": len(self.leads), "recall": len(caught) / len(self.leads) if self.leads else float("nan"),
+                "median_lead_s": float(np.median(caught)) if caught else 0.0}
 
     def _line_stuck(self, l):
         n = self.n
@@ -515,6 +583,8 @@ class CircuitSim:
             "peak_stored": max(self.series),
             "spill": self.spill,
             "series": self.series,
+            "est_rmse": (self.est_err2 / self.est_n) ** 0.5 if self.est_n else 0.0,
+            "warn": self.warning_stats() if (self.est is not None and self.opts["atc"]) else None,
         }
 
 
@@ -523,3 +593,7 @@ V3_OPTS = dict(rate_rolling=True, sat_gmin=35.0, hol_low=True, backpressure=True
                perimeter=True, n_crit=0.30, n_band=0.15,
                emergency=True, em_on=0.45, em_off=0.35, em_actuated=True, em_green=50.0,
                divert=True, compliance=0.7)
+
+# v4 = v3 + network state estimator (Kalman, bad-data rejection) + 3-level
+# look-ahead transfer-capability inflow throttling and gate metering
+V4_OPTS = dict(V3_OPTS, estimator="kf", atc=True, atc_apply=True, atc_depth=3, atc_H=120.0)
