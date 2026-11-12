@@ -296,3 +296,38 @@ Code: `blocktetris/network_state.py`, integrated in `circuit.py` (`V4_OPTS`). St
   With v4 acting on the warnings, many spills never happen, so the recall and lead numbers from those runs are not comparable.
 - **Cost:** on a no-fault day at 2.3× load, v4 is about 10 % slower than v3 (329 vs 299 s), and slower on gate surges (356 vs 330 s). Predictive protection holds traffic back that sometimes didn't need holding.
 - **Note:** v3 itself is barely affected by faulty road sensors, because its signal decisions use the stop-line queues. The estimator pays off once those queues are used for *prediction*.
+
+---
+
+# Part 5: v5, network Tetris with cameras only, and blind junctions rebuilt from neighbours
+
+Builds on v4; all earlier versions remain runnable (`blocktetris/README.md`, *Versions*). Code: `circuit.py` (`_cameras`, `V5_OPTS`), `blind_experiments.py`. Data: `Results/BlockTetris/blind/results.json`. The first 3-mode run is kept in `archive/`.
+
+## 11. The model
+
+- **Each junction is a Tetris board.** A block counts as queue only once it has landed on the stack; blocks still falling (moving on the road) are not queue.
+- **Outlet = inlet.** Each block a junction sends lands at the next junction D = 36 s later.
+- **Cameras are the only sensors.** Each camera sees its own stacks and counts the blocks it sends.
+- **When a camera dies, the connected junctions message in, and the blind junction's stacks are rebuilt:**
+  - **Inflow** = the upstream cameras' send counts. Those blocks land now.
+  - **Outflow** = the junction's own signal state × its learned discharge rate (tau), limited by room on the exit road.
+  - **Correction** = downstream landing counts D seconds later, minus what was predicted to be sent then. The difference is taken out of the stacks feeding that exit.
+  - If an upstream neighbour is also blind, its predicted sends are used instead of counts.
+  - The network-wide road estimator marks the blind junction's road cameras as missing.
+- **Hybrid control:** the blind junction runs Block-Tetris on its rebuilt stacks. It switches to a fixed rotation only while network accumulation is ≥ 0.40, because at saturation a fixed rotation meters best.
+
+## 12. Results (4×4 grid, cameras dead for 20 min, 2 seeds; delay / rebuilt-stack error)
+
+| Cameras dead | Load | Fixed fallback | Frozen last frame | Neighbour rebuild | **Hybrid (v5)** |
+|---|---|---|---|---|---|
+| 1 junction (all 16 tried) | 1.9× | 163.9 s | 192.3 s / 3.66 W | 162.2 s / 0.98 W | **162.2 s / 0.98 W** |
+| 2 adjacent | 1.9× | 167.1 s | 201.2 s | 159.9 s | **159.9 s** |
+| 4 central | 1.9× | 178.0 s | 238.3 s | 166.4 s | **166.4 s** |
+| 1 junction | 2.3× | 330.5 s | 356.2 s / 4.40 W | 335.8 s / 1.51 W | **324.0 s / 1.48 W** |
+| 2 adjacent | 2.3× | 333.3 s | 378.5 s | 338.7 s | **321.6 s** |
+| 4 central | 2.3× | **309.8 s** | 389.7 s | 329.3 s | 315.2 s |
+
+- **Error:** the neighbour rebuild cuts the blind junction's queue error by 65–75 % against a frozen camera (1.0–1.5 W vs 3.1–5.5 W).
+- **Hybrid** is best in 5 of 6 cases. With 4 central cameras dead under overload it is 2 % behind a pure fixed fallback.
+- **Holding the last camera frame** is the worst choice everywhere: 17–34 % more delay than the fixed fallback.
+- **Speed:** the solver runs about 1.7× faster with identical results (checked against the previous commit).
