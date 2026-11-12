@@ -51,3 +51,48 @@ Exact port, matching to 0.002 %; 30 paired seeds. Block-Tetris beats Actuated (t
 - **Signal power failure:** a dark junction runs a 20 s give-way alternation. That is shorter than Fixed-40's cycle, which is why Fixed looks slightly better there than on a normal day. It's a modelling artefact to refine.
 - **SCATS-like and SCOOT-like** are simplified re-implementations of the published logic, not the commercial systems.
 - **Still assumed:** demand, turn shares and vehicle weights. Signal locations are inferred (OSM tags only 3).
+
+---
+
+## FINAL: v7-final (v7 + police failsafe + 120 s service guarantee)
+
+**Figures:** `realtime_FINAL__*.png`. **Raw data:** `realtime/results_3.json`. Same 7 events, 4 seeds, Coimbatore twin.
+
+| Event | Fixed-40 | SCOOT-like | SCATS-like | Actuated | MaxPressure | Fixed + police | BT v3 | BT v7 | **BT v7-final** |
+|---|---|---|---|---|---|---|---|---|---|
+| Normal peak | 570 | 489 | 737 | 483 | 699 | 452 | 190 | 185 | 187 |
+| Accident | 623 | 609 | 761 | 557 | 770 | 512 | 203 | 207 | **198** |
+| Monsoon rain | 619 | 601 | 857 | 552 | 727 | 494 | 248 | 228 | 233 |
+| Festival surge | 841 | 792 | 996 | 782 | 1027 | 688 | 352 | 367 | **343** |
+| VIP closure | 741 | 739 | 776 | 623 | 873 | 662 | 233 | 202 | 205 |
+| Signal power failure | 518 | 636 | 644 | 537 | 819 | 600 | 227 | 214 | **178** |
+| CCTV failure | 570 | 489 | 737 | 483 | 699 | 452 | 197 | 194 | **192** |
+
+- **v7-final** is best in 4 of 7 events and within 1–2 % of the best in the other 3.
+- **Accident:** it clears in 25 min, the fastest of all controllers.
+- **Police calls:** v7-final raises 0–3 alerts per event. Fixed + police raises 6.5–15 alerts per event and still has about 2.4× the delay.
+
+### Police failsafe
+
+A junction raises an alert in three cases:
+- its signal goes dark (alert at once);
+- it stays gridlocked for 60 s;
+- it stays at 70 % or more of its stored capacity for 120 s.
+
+Officers then work as follows:
+- **Dispatch:** a limited pool (3 officers) goes to the worst junctions first and arrives after 5 minutes.
+- **On duty:** an officer serves the longest queue first, waves vehicles past blocked turn pockets, and restores discharge at a dark signal.
+- **Release:** after 300 s of calm.
+
+### Final audit: weak points found and what was done
+
+| Weak point | Evidence | Action | Result |
+|---|---|---|---|
+| A movement could wait too long (pedestrians, side roads) | Worst servable wait 200–370 s for BT vs about 100 s for cycle-based controllers | 120 s service guarantee: end the current green and serve the late movement | Worst wait 147–163 s (253 s with a dark signal); mean delay also fell, 223 → 220 s |
+| v7 lost to v3 in the festival surge | 367 vs 352 s | Police failsafe and service guarantee | 343 s, now the best |
+| v7 lost to v3 in the accident | 207 vs 203 s | Same | 198 s, now the best |
+| Starving movements were only served when the current green ended | Waits reached the guard plus max green | Hard cap tested; superseded by the service guarantee | — |
+| Special-mode overload trigger | Never fires at city demand | Kept; it is only an option | No effect |
+| Clearance metric is relative to each controller's own normal day | BT's normal day is much lower | Use delay and peak queue as the headline measures | Documented |
+| Dark-signal model | A 20 s give-way alternation flatters Fixed | Police restore dark junctions | Documented |
+| Worst wait is still above the ~100 s of fixed cycles | 147–163 s | — | **Open:** a cyclic-order variant would trade a little delay for predictability |
