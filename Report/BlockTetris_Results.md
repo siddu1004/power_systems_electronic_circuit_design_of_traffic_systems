@@ -140,3 +140,66 @@ In S7 the jammed exit road CE→OUT goes to pressure 1.0. The road feeding it, C
 - Re-run on held-out seeds and demand levels.
 - Port the controller to SUMO via TraCI with Avinashi Road / Peelamedu counts.
 - Tune the max-wait guard, and add a rate-of-rise trigger to the alarm (fix for S2).
+
+---
+
+# Part 2: Electrical twin, full-network fault testing, v3
+
+Code: `blocktetris/circuit.py`, `circuit_experiments.py`, `circuit_report.py`. Data and figures: `Results/BlockTetris/circuit/`.
+
+## 6. The circuit
+
+| Traffic | Circuit component |
+|---|---|
+| Turn-pocket queue | Capacitor (V = stored weight) |
+| Green tap | MOSFET: saturation current above V_knee, linear region below it |
+| Start-up loss | Gate turn-on delay |
+| Road | Delay line (travel time) plus Zener clamp (storage capacity) |
+| Shared lane before pockets | Series bottleneck (head-of-line blocking) |
+| Exit | Current-limited load |
+| Gate queue | Source capacitor |
+| Alarm | Relay: attenuates per hop, latches with hysteresis, soft-start |
+| Diversion order (NEW) | Load redistributed onto parallel lines |
+| Boundary metering (NEW) | Load shedding at the network edge |
+| Emergency rotation (NEW) | Protective fallback mode |
+
+The circuit always conserves charge (KCL) and its line clamps are never exceeded; the tests check this.
+
+**Networks tested:**
+- the 5-junction chowrasta;
+- a 4×4 grid: 16 junctions, 80 roads.
+
+**Fault set (N-1), 88 single faults on the grid:**
+- every inner road closed for 15 min;
+- every exit dropped to 5 %;
+- every gate surged ×2.2;
+- one slowed approach per junction.
+
+Each fault set runs at normal, heavy (1.9×) and overload (2.3×) demand.
+
+## 7. Failures found and fixes (v2 → v3)
+
+| Failure seen in the twin | Root cause | v3 fix |
+|---|---|---|
+| Gridlock under overload: only 37 % of traffic got out, against 77 % for Fixed | Phase thrashing: 15 s greens, so 37 % of time lost to amber and start-up. Interior roads filled until loops locked. | Rolling re-placement decided by achievable **discharge current** (2× margin), not by the score. Minimum green rises to 35 s when the junction is saturated. |
+| Interior roads over-filled | Score ignores how full the receiving road is | Smooth back-pressure: score × (1 − load²) |
+| Network-wide accumulation | Nothing limits entry | Boundary metering once interior load passes 30 % |
+| Local loops still lock up | Adaptive order can starve a cycle of roads | Emergency rotation through every arm (actuated, max 50 s) when interior load ≥ 45 %; leave it again at 35 % |
+| Road closure traps vehicles that want to turn into it | Turn intent is fixed | Diversion order once the closed road's pressure reaches 0.9. 70 % of drivers comply. |
+
+## 8. Results (4×4 grid, average over 88 faults, delay per unit of traffic)
+
+| Load | Fixed-40 | MaxPressure | BT v2 | **BT v3** |
+|---|---|---|---|---|
+| Normal | 329 s | 137 s | 127 s | **126 s** |
+| Heavy, 1.9× | 833 s | 640 s | 232 s | **179 s** |
+| Overload, 2.3× | 1153 s | 1215 s | 718 s | **379 s** |
+
+- **Road closed at heavy load:** Fixed 1211 s, MaxPressure 912 s, v3 **187 s**.
+- **Capacity (fig 7):** v3 is the only controller that never drops below Fixed in throughput. At 4× overload, 58 % of traffic gets out, against 55 % for Fixed, 25 % for v2 and 13 % for MaxPressure.
+- **Chowrasta, heavy load:** v3 averages 169 s, against 534 s for Fixed. 87 % of faults clear, against 73 %.
+
+**Remaining weak spots:**
+- **Road closure on the chowrasta at heavy load:** v3 is at 311 s against 231 s for v2. With only 5 junctions there are few alternative routes, so diverted traffic has nowhere to go.
+- **Gridlock flags at overload:** 13.6 % of v3's runs end with more than 3× its own normal queue. That is relative to a low baseline; absolute delay is still about 3× better than Fixed.
+- **Metering thresholds are hand-tuned:** 30 % and 45 %. They should be fitted per network from its road-load versus throughput curve.
