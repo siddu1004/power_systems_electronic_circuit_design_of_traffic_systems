@@ -49,7 +49,7 @@ DEFAULT_OPTS = dict(alarm_on=0.80, alarm_off=0.60, attenuation=0.5, ramp=0.02, a
                     backpressure=False, bp_exp=2.0, emergency=False, em_on=0.50, em_off=0.40,
                     em_green=40.0, em_actuated=False, divert=False, compliance=0.7,
                     divert_on=0.9, divert_off=0.4,
-                    estimator="oracle", atc=False, atc_apply=False, atc_depth=3, atc_H=120.0,
+                    estimator="oracle", atc=False, pred_pressure=False, atc_apply=False, atc_depth=3, atc_H=120.0,
                     sensor_cover=0.5, sensor_sigma=3.0, count_noise=0.05, stuck=2, phantom_p=0.002)
 
 
@@ -280,6 +280,9 @@ class CircuitSim:
             self.est_n += len(e)
             self.occ_c = occ_c.copy()
         load_c = occ_c / n.cap0
+        if self.est is not None and self.opts["atc"] and self.opts["pred_pressure"]:
+            # protections act on the PREDICTED load (t + H), i.e. before the overload arrives
+            load_c = np.maximum(load_c, np.minimum(self.est.load_pred, 1.0))
         self._load_now = load_c
         if self.ctrl == "bt":
             self._pressure(load_c)
@@ -595,5 +598,9 @@ V3_OPTS = dict(rate_rolling=True, sat_gmin=35.0, hol_low=True, backpressure=True
                divert=True, compliance=0.7)
 
 # v4 = v3 + network state estimator (Kalman, bad-data rejection) + 3-level
-# look-ahead transfer-capability inflow throttling and gate metering
-V4_OPTS = dict(V3_OPTS, estimator="kf", atc=True, atc_apply=True, atc_depth=3, atc_H=120.0)
+# look-ahead transfer capability; the relay, diversion and emergency layers act
+# on the PREDICTED road load at t + 120 s instead of the present load
+V4_OPTS = dict(V3_OPTS, estimator="kf", atc=True, pred_pressure=True, atc_apply=False,
+               atc_depth=3, atc_H=120.0)
+# Tested and rejected: applying the ATC throttle phi directly to phase scores
+# (atc_apply=True) gave no gain on top of predictive protection.

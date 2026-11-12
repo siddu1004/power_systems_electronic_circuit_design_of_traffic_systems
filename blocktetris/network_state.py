@@ -62,6 +62,7 @@ class NetState:
         self.warn = np.zeros(n.L, bool)
         self.Cd = np.zeros(n.L)
         self.A = np.ones(n.L)
+        self.load_pred = np.zeros(n.L)
         self.exits = -np.ones((n.L, 4), int)
         for l in range(n.L):
             j, a = n.dst[l]
@@ -137,6 +138,9 @@ class NetState:
         self.Cd = C
         self.A = A
         self.phi = np.where(F > 1e-6, np.clip(A / np.maximum(F, 1e-9), self.phi_min, 1.0), 1.0)
+        self.F = F
+        # predicted load H seconds ahead (charge conservation with predicted in/out currents)
+        self.load_pred = np.clip((z + H * (F - C)) / n.cap0, 0.0, 1.5)
         grow = F - C
         self.tau = np.where(grow > 1e-4, np.maximum(0.0, 0.95 * n.cap0 - z) / np.maximum(grow, 1e-9), np.inf)
         self.warn = self.tau < self.warn_H
