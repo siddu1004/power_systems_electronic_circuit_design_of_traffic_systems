@@ -47,3 +47,19 @@ The results, figures and full write-up are in `Results/BlockTetris/` and
 | Sensor sanity filter | Surge arrester / plausibility check | `_sanity` |
 | Fixed-time fallback | UPS / backup supply | `FixedTime` inside each smart controller |
 | EMA on tau, L, arrival rates | RC low-pass filter | `Learner`, `lam` |
+
+## Versions: each builds on the previous one, and all stay runnable
+
+| Version | Where | Adds | Select with |
+|---|---|---|---|
+| v1 | `sim.py` | The spec as literally written | `params.V1`, controller `"BT-v1 (spec)"` |
+| v2 | `sim.py` | 11 hole fixes (head-of-line, rolling re-placement, partial exit release, tau learning, …) | `params.V2`, controller `"BT-v2 (fixed)"` |
+| v3-pre-divert | `circuit.py` | Current-based rolling, saturation minimum green, back-pressure, boundary metering, emergency rotation | `circuit.VERSIONS["v3-pre-divert"]` |
+| v3 | `circuit.py` | + diversion orders on tripped roads | `circuit.V3_OPTS` |
+| v3-SITRA first variant | `sitra_bench.py` | Junction controller with score rolling and planned end | `bt_kw=sitra_bench.BT_FIRST_KW` |
+| v3-SITRA | `sitra_bench.py` | Exhaustive service, q × s choice, observer, platoon hold | default `"BlockTetris"` |
+| v4a-throttle | `circuit.py` | Kalman estimator + direct look-ahead throttle | `circuit.V4A_OPTS` |
+| v4 | `circuit.py` | Kalman estimator + 3-level look-ahead; protections act on the predicted load | `circuit.V4_OPTS` |
+| v5 | `circuit.py` | Camera layer; a blind junction is rebuilt from its neighbours (hybrid) | `circuit.V5_OPTS` |
+
+**Results are never overwritten.** Every script writes through `outputs.keep()`: if a file already exists, the new run goes to `name_2`, `name_3`, …. Results that earlier runs had replaced are restored from git history into `Results/BlockTetris/archive/`.

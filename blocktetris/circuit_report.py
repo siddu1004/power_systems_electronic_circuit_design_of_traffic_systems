@@ -8,6 +8,8 @@ import os
 from multiprocessing import Pool
 
 import numpy as np
+
+from .outputs import keep
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -49,7 +51,7 @@ def capacity_curve(out):
     axs[1].set_title("Throughput: where gridlock sets in")
     axs[0].legend(frameon=False)
     fig.tight_layout()
-    fig.savefig(os.path.join(out, "fig7_capacity_curve.png"), dpi=150)
+    fig.savefig(keep(os.path.join(out, "fig7_capacity_curve.png")), dpi=150)
     plt.close(fig)
     return table
 
@@ -75,7 +77,7 @@ def contingency_fig(out):
     axs[0].set_ylabel("Delay per unit of traffic (s)")
     axs[0].legend(frameon=False, fontsize=8)
     fig.tight_layout()
-    fig.savefig(os.path.join(out, "fig8_n1_contingency.png"), dpi=150)
+    fig.savefig(keep(os.path.join(out, "fig8_n1_contingency.png")), dpi=150)
     plt.close(fig)
     return summary
 
@@ -86,7 +88,7 @@ def main():
     a = ap.parse_args()
     cap = capacity_curve(a.out)
     con = contingency_fig(a.out)
-    json.dump({"capacity": cap, "contingency_by_kind": con}, open(os.path.join(a.out, "summary.json"), "w"), indent=1)
+    json.dump({"capacity": cap, "contingency_by_kind": con}, open(keep(os.path.join(a.out, "summary.json")), "w"), indent=1)
     for c, v in cap.items():
         print(c, {d: (round(x[0]), round(100 * x[1])) for d, x in v.items()})
 

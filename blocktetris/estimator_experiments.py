@@ -12,6 +12,8 @@ from multiprocessing import Pool
 
 import numpy as np
 
+from .outputs import keep
+
 from .circuit import Net, CircuitSim, Incident, V3_OPTS, V4_OPTS
 
 VARIANTS = {
@@ -66,7 +68,7 @@ def main():
                 row["warn_median_lead_s"] = float(np.mean([w["median_lead_s"] for w in ws if w["spills"]] or [0]))
                 row["spills_per_run"] = float(np.mean([w["spills"] for w in ws]))
             out[f"{v}|{d}"] = row
-    json.dump(out, open(os.path.join(a.out, "results.json"), "w"), indent=1)
+    json.dump(out, open(keep(os.path.join(a.out, "results.json")), "w"), indent=1)
     for d in LOADS:
         print(f"\nload {d / 0.069:.1f}x normal")
         for v in VARIANTS:

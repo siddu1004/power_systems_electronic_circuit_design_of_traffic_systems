@@ -10,6 +10,8 @@ from multiprocessing import Pool
 
 import numpy as np
 
+from .outputs import keep
+
 from .circuit import Net, CircuitSim, Incident, V3_OPTS
 
 CTRLS = ("fixed", "maxp", "bt", "bt3")
@@ -136,7 +138,7 @@ def main():
     s = sweep(a.grid, a.seeds, json.loads(a.opts), demand=a.demand)
     agg, f = report(s, f"grid {a.grid} opts {a.opts} demand {a.demand}")
     print(f"{time.time() - t0:.0f} s")
-    with open(os.path.join(a.out, f"sweep_{a.grid}_{a.demand}.json"), "w") as fh:
+    with open(keep(os.path.join(a.out, f"sweep_{a.grid}_{a.demand}.json")), "w") as fh:
         json.dump({"opts": a.opts, "agg": agg, "failures": f, "summary": s}, fh, indent=1)
 
 

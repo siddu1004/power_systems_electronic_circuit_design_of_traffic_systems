@@ -10,6 +10,8 @@ import time
 from multiprocessing import Pool
 
 import numpy as np
+
+from .outputs import keep
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -105,7 +107,7 @@ def main():
                 d["cleared_frac"] = float(np.mean([r["cleared"] for r in rows]))
             table[f"{s}|{c}"] = d
 
-    with open(os.path.join(a.out, "results.json"), "w") as f:
+    with open(keep(os.path.join(a.out, "results.json")), "w") as f:
         json.dump({"seeds": a.seeds, "horizon_s": HORIZON,
                    "scenarios": {k: v.title for k, v in SCENARIOS.items()},
                    "table": table,
@@ -140,9 +142,9 @@ def ablation(a):
     for v in variants:
         L.append(f"| {v.replace('BT-abl:', 'v2 without ')} | " +
                  " | ".join(f"{np.mean(out[v][s]):.0f} ± {np.std(out[v][s], ddof=1) / np.sqrt(len(out[v][s])):.0f}" for s in scs) + " |")
-    with open(os.path.join(a.out, "ablation.md"), "w") as f:
+    with open(keep(os.path.join(a.out, "ablation.md")), "w") as f:
         f.write("\n".join(L) + "\n")
-    with open(os.path.join(a.out, "ablation.json"), "w") as f:
+    with open(keep(os.path.join(a.out, "ablation.json")), "w") as f:
         json.dump(out, f, indent=1)
     print("\n".join(L))
 
@@ -171,7 +173,7 @@ def write_markdown(table, a):
             cf = f"{d['cleared_frac'] * 100:.0f}%" if "cleared_frac" in d else "–"
             L.append(f"| {c} | {fmt(d, 'avg_delay_s')} | {fmt(d, 'p95_delay_s')} | {fmt(d, 'max_queue_blocks', 1)} | "
                      f"{fmt(d, 'spillbacks', 1)} | {fmt(d, 'throughput')} | {fmt(d, 'clear_s')} | {cf} | {fmt(d, 'excess_bh', 1)} |")
-    with open(os.path.join(a.out, "results_tables.md"), "w") as f:
+    with open(keep(os.path.join(a.out, "results_tables.md")), "w") as f:
         f.write("\n".join(L) + "\n")
 
 
@@ -197,7 +199,7 @@ def plots(R, table, a):
     axs[-1].set_xticks(x, scs)
     axs[0].set_title("Controller comparison across the 8 congestion scenarios")
     fig.tight_layout()
-    fig.savefig(os.path.join(out, "fig1_comparison_bars.png"), dpi=150)
+    fig.savefig(keep(os.path.join(out, "fig1_comparison_bars.png")), dpi=150)
     plt.close(fig)
 
     # 2. clearance bars
@@ -219,7 +221,7 @@ def plots(R, table, a):
     ax.legend(ncol=3, frameon=False, loc="upper center")
     ax.grid(axis="x", visible=False)
     fig.tight_layout()
-    fig.savefig(os.path.join(out, "fig2_clearance.png"), dpi=150)
+    fig.savefig(keep(os.path.join(out, "fig2_clearance.png")), dpi=150)
     plt.close(fig)
 
     # 3. stored-queue trajectories (seed 1) for the incident scenarios
@@ -242,7 +244,7 @@ def plots(R, table, a):
                  "BT-v1 omitted: it gridlocks and runs off the scale)",
                  fontweight="bold")
     fig.tight_layout()
-    fig.savefig(os.path.join(out, "fig3_queue_levels.png"), dpi=150)
+    fig.savefig(keep(os.path.join(out, "fig3_queue_levels.png")), dpi=150)
     plt.close(fig)
 
     # 4. pressure wave heatmap, BT-v2, S7 and S2
@@ -273,7 +275,7 @@ def plots(R, table, a):
             ax.set_xlim(0, tt[-1])
             ax.axvline(t0 / 60, color=INK2, lw=0.8)
             ax.axvline(t1 / 60, color=INK2, lw=0.8)
-        fig.savefig(os.path.join(out, f"fig4_pressure_wave_{s}.png"), dpi=150, bbox_inches="tight")
+        fig.savefig(keep(os.path.join(out, f"fig4_pressure_wave_{s}.png")), dpi=150, bbox_inches="tight")
         plt.close(fig)
 
     # 5. per-junction bottle levels, S2, Fixed vs v2
@@ -292,7 +294,7 @@ def plots(R, table, a):
     axs[0].set_ylabel("Approach queue (blocks)")
     axs[0].legend(frameon=False, fontsize=8)
     fig.tight_layout()
-    fig.savefig(os.path.join(out, "fig5_junction_levels_S2.png"), dpi=150)
+    fig.savefig(keep(os.path.join(out, "fig5_junction_levels_S2.png")), dpi=150)
     plt.close(fig)
 
     # 6. tau learning
@@ -315,7 +317,7 @@ def plots(R, table, a):
     ax.legend(frameon=False, fontsize=8, loc="upper right")
     ax.set_ylim(1.5, 13)
     fig.tight_layout()
-    fig.savefig(os.path.join(out, "fig6_tau_learning.png"), dpi=150)
+    fig.savefig(keep(os.path.join(out, "fig6_tau_learning.png")), dpi=150)
     plt.close(fig)
 
 

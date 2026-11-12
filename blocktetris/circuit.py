@@ -732,3 +732,18 @@ V4_OPTS = dict(V3_OPTS, estimator="kf", atc=True, pred_pressure=True, atc_apply=
                atc_depth=3, atc_H=120.0)
 # Tested and rejected: applying the ATC throttle phi directly to phase scores
 # (atc_apply=True) gave no gain on top of predictive protection.
+
+
+# ── every version stays selectable (nothing is replaced, each builds on the last) ──
+V3_PRE_DIVERT_OPTS = dict(V3_OPTS, divert=False)            # v3 as first found by the N-1 sweep
+V4A_OPTS = dict(V3_OPTS, estimator="kf", atc=True, atc_apply=True, pred_pressure=False,
+                atc_depth=3, atc_H=120.0)                   # first v4: direct look-ahead throttle
+V5_OPTS = dict(V4_OPTS, blind_mode="hybrid", hybrid_acc=0.40)   # v4 + neighbour rebuild of blind junctions
+VERSIONS = {
+    "v2": {},                       # Part 1 algorithm on the e-twin
+    "v3-pre-divert": V3_PRE_DIVERT_OPTS,
+    "v3": V3_OPTS,                  # + current rolling, saturation green, back-pressure, metering, emergency, diversion
+    "v4a-throttle": V4A_OPTS,
+    "v4": V4_OPTS,                  # + Kalman state estimator, 3-level look-ahead, predictive protection
+    "v5": V5_OPTS,                  # + camera layer, blind junction rebuilt from neighbour messages
+}

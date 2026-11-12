@@ -17,6 +17,8 @@ import os
 
 import numpy as np
 
+from .outputs import keep
+
 CAP = np.array([0.65, 0.35, 0.25, 0.45])
 DT = 1.0
 YELLOW = 3.0
@@ -296,6 +298,11 @@ BT_DEFAULT = dict(g_min=10.0, g_max=40.0, a_age=0.02, low=0.5, switch_margin=2.0
 # g_max, then picks the next piece by charge x learned discharge current.
 
 
+# The first junction-level variant (score-based rolling re-placement + planned end)
+# is kept selectable: simulate("BlockTetris", ..., bt_kw=BT_FIRST_KW)
+BT_FIRST_KW = dict(rate_score=False, rolling=True, planned_end=True)
+
+
 class BlockTetrisSITRA:
     """Block-Tetris v3 on the 3-approach SITRA junction (one Tetris piece per approach).
 
@@ -545,11 +552,11 @@ def main():
     res = aggregate(rows)
     worst, lines = verify(res, "Results/baselines/baseline_comparison.csv")
     print(f"Port check vs published MATLAB AvgDelay: worst relative error {100 * worst:.3f} %")
-    with open(os.path.join(a.out, "port_verification.csv"), "w") as f:
+    with open(keep(os.path.join(a.out, "port_verification.csv")), "w") as f:
         f.write("Scenario,Controller,AvgDelay_MATLAB,AvgDelay_Python,RelErr,Clear_MATLAB,Clear_Python,Excess_MATLAB,Excess_Python\n")
         for (s, c), ref, got, err, cm, cp, em, ep in lines:
             f.write(f"{s},{c},{ref:.3f},{got:.3f},{err:.5f},{cm},{cp},{em},{ep}\n")
-    with open(os.path.join(a.out, "results.json"), "w") as f:
+    with open(keep(os.path.join(a.out, "results.json")), "w") as f:
         json.dump({f"{s}|{c}": v for (s, c), v in res.items()}, f, indent=1)
     plot(res, a.out)
     print("\nAvg delay (s/veh) / clearance (s), mean of 5 seeds")
@@ -584,7 +591,7 @@ def plot(res, out):
         ax.spines[sp].set_visible(False)
     ax.legend(ncol=5, frameon=False)
     fig.tight_layout()
-    fig.savefig(os.path.join(out, "fig9_sitra_benchmark.png"), dpi=150)
+    fig.savefig(keep(os.path.join(out, "fig9_sitra_benchmark.png")), dpi=150)
 
 
 if __name__ == "__main__":

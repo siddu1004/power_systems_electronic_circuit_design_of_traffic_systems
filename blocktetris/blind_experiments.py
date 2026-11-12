@@ -15,6 +15,8 @@ from multiprocessing import Pool
 
 import numpy as np
 
+from .outputs import keep
+
 from .circuit import Net, CircuitSim, Incident, V4_OPTS
 
 MODES = ("fixed", "frozen", "neighbour", "hybrid")
@@ -62,7 +64,7 @@ def main():
             out[f"{d}|{k}"] = row
             print(f"  {k:11s} " + " | ".join(f"{m}: {row[m]['delay']:6.1f}s served {100 * row[m]['served']:4.1f}% "
                                              f"err {row[m]['rmse']:.2f}W" for m in MODES))
-    json.dump(out, open(os.path.join(a.out, "results.json"), "w"), indent=1)
+    json.dump(out, open(keep(os.path.join(a.out, "results.json")), "w"), indent=1)
 
 
 if __name__ == "__main__":
