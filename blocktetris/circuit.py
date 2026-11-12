@@ -125,11 +125,15 @@ class Net:
 class Incident:
     """kind: line_block (crash at the end of a road), sink_cut (exit accepts 5 %),
     gate_surge (demand x mult), slow (approach saturation current x mult),
-    cam_fail (camera of junction(s) `target` dead: that junction is blind)."""
+    cam_fail (camera of junction(s) `target` dead: that junction is blind),
+    rain (network-wide saturation current x mult, demand x 0.9),
+    dark (signal power failure at junction(s) `target`: give-way, discharge x 0.6).
+    line_block / gate_surge targets may be a single index or a list."""
 
     def __init__(self, kind, target, t0=1200, t1=2100, mult=None):
         self.kind, self.target, self.t0, self.t1 = kind, target, t0, t1
-        self.mult = mult if mult is not None else {"gate_surge": 2.2, "sink_cut": 0.05, "slow": 0.45}.get(kind, 0.0)
+        self.mult = mult if mult is not None else {"gate_surge": 2.2, "sink_cut": 0.05, "slow": 0.45,
+                                                   "rain": 0.75, "dark": 0.6}.get(kind, 0.0)
 
     def on(self, t):
         return self.t0 <= t < self.t1
@@ -196,6 +200,19 @@ class CircuitSim:
                                 phantom_p=o["phantom_p"], seed=seed + 99, H=o["atc_H"], depth=o["atc_depth"])
         self.occ_c = np.zeros(n.L)
         self._priority = getattr(n, "priority", set())
+        self._dark = set()
+        # classic real-world controllers (per junction, split phasing through present arms)
+        arms_ok = getattr(n, "arm_present", np.ones((n.J, 4), bool))
+        self.plan_C = np.full(n.J, 80.0)
+        self.plan_g = np.where(arms_ok, 20.0, 0.0)
+        self.green_s = np.zeros((n.J, 4))
+        self.busy_s = np.zeros((n.J, 4))
+        self.q_arm = np.zeros((n.J, 4))
+        self.last_plan_t = np.zeros(n.J)
+        # v7: v6 protections only in special cases
+        self.special = False
+        self.special_until = -1.0
+        self.special_s = 0
         self._arm_ok = getattr(n, "arm_present", np.ones((n.J, 4), bool))
         # camera layer: what the controllers SEE (aliases of the truth unless a camera is dead)
         self.Vo, self.Eo = self.V, self.entry
@@ -226,6 +243,9 @@ class CircuitSim:
     def step(self, t):
         n, inc = self.n, self.inc
         lam = self.lam.copy()
+        if self.opts.get("peak_profile"):
+            # real-time morning peak: demand rises to 1.6x around t = 40 min
+            lam = lam * (0.7 + 0.9 * np.exp(-((t - 2400.0) / 1000.0) ** 2))
         if self.opts.get("heldout_pattern"):
             # held-out demand: N-S corridors x1.4, E-W x0.7, and a peak bump 20-60 min
             if not hasattr(self, "_gm"):
@@ -235,7 +255,8 @@ class CircuitSim:
             peak = 0.8 + 0.5 * np.exp(-((t - 2400.0) / 900.0) ** 2)
             lam = lam * self._gm * peak
         sink_rate = self.sink_rate.copy()
-        blocked_line = -1
+        blocked = np.zeros(n.L, bool)
+        self._dark = set()
         self.isat_mult[:] = 1.0
         if inc and inc.on(t):
             if inc.kind == "gate_surge":
@@ -243,7 +264,14 @@ class CircuitSim:
             elif inc.kind == "sink_cut":
                 sink_rate[inc.target] *= inc.mult
             elif inc.kind == "line_block":
-                blocked_line = inc.target
+                blocked[np.atleast_1d(inc.target)] = True
+            elif inc.kind == "rain":
+                self.isat_mult[:] = inc.mult
+                lam = lam * 0.9
+            elif inc.kind == "dark":
+                self._dark = set(np.atleast_1d(inc.target).tolist())
+                for j in self._dark:
+                    self.isat_mult[j * 16:(j + 1) * 16] = inc.mult
             elif inc.kind == "slow":
                 j, a = inc.target
                 self.isat_mult[j * 16 + a * 4: j * 16 + a * 4 + 4] = inc.mult
@@ -283,14 +311,13 @@ class CircuitSim:
         R = self.ratio[has]
         headroom = np.where(R > 1e-9, (n.g_pocket[lm[has]] - Vm) / np.maximum(R, 1e-9), np.inf)
         x = np.minimum(self.entry[has], np.clip(headroom.min(1), 0, None))
-        if blocked_line >= 0:
-            x[has == blocked_line] = 0.0
+        x[blocked[has]] = 0.0
         self.entry[has] -= x
         np.add.at(self.V, lm[has].ravel(), (x[:, None] * R).ravel())
         # 4. current-limited exits
         s = n.sinks
         sr = sink_rate[s].copy()
-        sr[s == blocked_line] = 0.0
+        sr[blocked[s]] = 0.0
         d = np.minimum(self.entry[s], sr * DT)
         self.entry[s] -= d
         self.c_out[s] += d
@@ -315,7 +342,20 @@ class CircuitSim:
             self.occ_c = occ_c.copy()
         self.acc_c = occ_c[n.inner].sum() / n.cap0[n.inner].sum()
         load_c = occ_c / n.cap0
-        if self.est is not None and self.opts["atc"] and self.opts["pred_pressure"]:
+        if self.opts.get("special_only"):
+            # event triggers: dead camera, network-wide overload, or >= 2 roads predicted
+            # to overflow (load at t+H >= 1) continuously for 30 s
+            trig = bool(self.blind) or self.acc_c >= 0.40
+            if self.est is not None and self.opts["atc"]:
+                over = int((self.est.load_pred[n.inner] >= 1.0).sum()) >= 2
+                self._over_run = getattr(self, "_over_run", 0) + 1 if over else 0
+                trig = trig or self._over_run >= 30
+            if trig:
+                self.special_until = t + 300.0
+            self.special = t < self.special_until
+            self.special_s += int(self.special)
+        if self.est is not None and self.opts["atc"] and self.opts["pred_pressure"] and \
+                (not self.opts.get("special_only") or self.special):
             # protections act on the PREDICTED load (t + H), i.e. before the overload arrives
             load_c = np.maximum(load_c, np.minimum(self.est.load_pred, 1.0))
         self._load_now = load_c
@@ -359,6 +399,15 @@ class CircuitSim:
                 self.last_served[gg] = t
                 self.discharged[gg] = q
                 self.sent[ex] += q
+        if self.ctrl in ("scats", "scoot"):
+            arm_busy = self.discharged.reshape(n.J, 4, 4).sum(2) > 0
+            for j in range(n.J):
+                if self.state[j] == "G":
+                    a = self.k_fixed[j]
+                    self.green_s[j, a] += 1
+                    self.busy_s[j, a] += int(arm_busy[j, a])
+            land = np.array([[self.landed[n.in_line[j, a]] for a in range(4)] for j in range(n.J)])
+            self.q_arm += (land - self.q_arm) / 300.0
         # 7. metrics
         self.em_seconds += int(self.em)
         stored = self.V.sum() + self.entry.sum() + self.gateq.sum()
@@ -556,6 +605,42 @@ class CircuitSim:
             self.blind_err2 += float(e2.sum())
             self.blind_n += 16
 
+    def _replan(self, j, t):
+        """SCATS-like: cycle length follows the worst degree of saturation (DS) and
+        splits follow each arm's DS. SCOOT-like: every 5 min a Webster plan from the
+        measured arm flows and saturation flows (cyclic flow-profile optimisation)."""
+        ok = self._arm_ok[j]
+        nA = int(ok.sum())
+        L = 5.0 * nA
+        if self.ctrl == "scats":
+            ds = np.where(self.green_s[j] > 0, self.busy_s[j] / np.maximum(self.green_s[j], 1), 0.0)
+            dmax = ds[ok].max() if nA else 0.0
+            C = self.plan_C[j] + (10.0 if dmax > 0.9 else -10.0 if dmax < 0.6 else 0.0)
+            C = float(np.clip(C, 40.0, 160.0))
+            w = np.where(ok, np.maximum(ds, 0.2), 0.0)
+            self.plan_C[j] = C
+            self.plan_g[j] = np.where(ok, np.maximum(10.0, (C - L) * w / max(w.sum(), 1e-9)), 0.0)
+            self.green_s[j] = 0.0
+            self.busy_s[j] = 0.0
+        else:
+            if t - self.last_plan_t[j] < 300.0:
+                return
+            self.last_plan_t[j] = t
+            n = self.n
+            y = np.zeros(4)
+            for a in range(4):
+                if not ok[a]:
+                    continue
+                r = self.base_ratio[n.in_line[j, a]]
+                sat = n.g_lanes[j * 16 + a * 4: j * 16 + a * 4 + 4] / (TAU_TRUE * TURN_F)
+                s_arm = min(sat[k] / r[k] for k in range(4) if r[k] > 1e-9)
+                y[a] = self.q_arm[j, a] / max(s_arm, 1e-6)
+            Y = y.sum()
+            C = (1.5 * L + 5.0) / (1.0 - Y) if Y < 0.9 else 150.0
+            C = float(np.clip(C, 40.0, 150.0))
+            self.plan_C[j] = C
+            self.plan_g[j] = np.where(ok, np.maximum(10.0, (C - L) * y / max(Y, 1e-9)), 0.0)
+
     def _divert(self):
         """Diversion orders (VMS / police): when an exit road trips, the share of
         approaching traffic that wanted it is re-routed to the other exits
@@ -711,9 +796,16 @@ class CircuitSim:
             return self.acc_c >= self.opts["hybrid_acc"]
         return m == "fixed"
 
+    def _arm_q(self, j, a):
+        return self.V[j * 16 + a * 4: j * 16 + a * 4 + 4].sum() + self.entry[self.n.in_line[j, a]]
+
     def _wants_end(self, j, t, el, occ):
-        if j in self._priority:
-            return el >= 20.0                        # give-way junction: short alternation
+        if j in self._priority or j in self._dark:
+            return el >= 20.0                        # give-way / dark signal: short alternation
+        if self.ctrl == "actuated":                  # NEMA-style: gap-out when the arm empties
+            return el >= 40.0 or self._arm_q(j, self.k_fixed[j]) < 0.5
+        if self.ctrl in ("scats", "scoot"):
+            return el >= max(10.0, self.plan_g[j, self.k_fixed[j]])
         if self.ctrl == "bt" and self._blind_fixed(j):
             return el >= 40.0
         if self.ctrl == "bt" and self.em:
@@ -775,12 +867,21 @@ class CircuitSim:
         return med > 40.0
 
     def _choose(self, j, t, occ, forced):
-        if self.ctrl == "fixed" or j in self._priority or \
+        if self.ctrl in ("fixed", "actuated", "scats", "scoot") or j in self._priority or j in self._dark or \
                 (self.ctrl == "bt" and (self.em or self._blind_fixed(j))):
+            prev = self.k_fixed[j]
             for _ in range(4):                       # next arm that physically exists
                 self.k_fixed[j] = (self.k_fixed[j] + 1) % 4
-                if self._arm_ok[j, self.k_fixed[j]]:
-                    break
+                if not self._arm_ok[j, self.k_fixed[j]]:
+                    continue
+                if self.ctrl == "actuated" and j not in self._priority and j not in self._dark \
+                        and self._arm_q(j, self.k_fixed[j]) < 0.5:
+                    continue                         # skip arms with no call
+                break
+            else:
+                self.k_fixed[j] = prev
+            if self.ctrl in ("scats", "scoot") and self.k_fixed[j] <= prev:
+                self._replan(j, t)                   # a cycle has completed
             return SPLIT_IDX[self.k_fixed[j]]
         s, extra = self._scores(j, t, occ)
         ps = PM.astype(float) @ s
@@ -855,3 +956,10 @@ VERSIONS = {
 # and Google Maps travel times fused into the network Kalman filter
 V6_OPTS = dict(V5_OPTS, estimator="kf6", cctv_view_m=60.0, gmaps=True)
 VERSIONS["v6"] = V6_OPTS
+
+
+# v7 = v3 behaviour normally; v6 protections only in special cases
+# (camera failure, a road alarm / predicted spill-back, or network accumulation >= 0.35)
+V7_OPTS = dict(V6_OPTS, special_only=True)
+V7_IDEAL_OPTS = dict(V7_OPTS, cctv_view_m=float("inf"))
+VERSIONS["v7"] = V7_OPTS
