@@ -154,3 +154,5 @@ Results/BlockTetris/realtime/*.png -filter -diff -merge binary
 Results/BlockTetris/BUNDLE/figures/*.png -filter -diff -merge binary
 Results/BlockTetris/city_full/*.png -filter -diff -merge binary
 Results/BlockTetris/sumo_*/*.png -filter -diff -merge binary
+Results/BlockTetris/BUNDLE/video/*.mp4 -filter -diff -merge binary
+Results/BlockTetris/BUNDLE/video/*.png -filter -diff -merge binary

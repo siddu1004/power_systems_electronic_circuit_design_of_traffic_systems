@@ -283,6 +283,10 @@ BT_VARIANTS["Block-Tetris v13 (+HOL, no special, police dark/blockage only)"] = 
 BT_V13F = dict(BT_V13, hol=True)
 BT_VARIANTS["Block-Tetris v13-final"] = BT_V13F
 BT_VARIANTS["Block-Tetris v13-final (no police)"] = dict(BT_V13F, police=False)
+# Official name of the final version (owner, 13 Nov): ICTM-Tetris = Intra-City Traffic Management,
+# Tetris core. "Block-Tetris v13-final" stays as an alias so earlier result files still match.
+ICTM_TETRIS = BT_V13F
+BT_VARIANTS["ICTM-Tetris"] = ICTM_TETRIS
 
 
 class Runner:

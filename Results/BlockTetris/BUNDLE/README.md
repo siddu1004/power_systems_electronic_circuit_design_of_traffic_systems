@@ -326,3 +326,23 @@ v12 against the existing controllers: −5.1 % vs MaxPressure (16 of 21 runs bet
 | MaxPressure gridlocks in the city | 335–404 teleports per run, against about 30 for the others. City-wide MaxPressure without coordination locks up, so the comparison with Actuated (−32 %) is the conservative one. |
 | City trips are long | Only about half finish within 90 min for every controller. |
 | The city gain is larger than on the corridor | Corridor: −11 to −16 %. Likely reasons: rerouting has many alternative paths, signal-off helps at many lightly used junctions, and perimeter metering helps. To be confirmed with ablations. |
+
+---
+
+## Name: ICTM-Tetris
+
+The final version (v13-final) is named **ICTM-Tetris**: Intra-City Traffic Management with a Tetris core. In code, `BT_VARIANTS["ICTM-Tetris"]` is the same object as `"Block-Tetris v13-final"`, so every result file above still matches.
+
+## Explainer video
+
+`video/ICTM_Tetris_explainer.mp4` (2 min 10 s, 1280×720, no audio; captions carry the narration). Built by `python -m blocktetris.explainer_video` from live toy simulations, so the blocks really arrive, stack and discharge:
+
+1. vehicles become weighted blocks (capacitor charging);
+2. the junction places pieces: live scores, the rolling re-placement rule, back-pressure from a full exit;
+3. the network: relay, pressure propagation, gate metering, Zener clamp;
+4. pressure rerouting;
+5. cameras and the robust estimator (noise, outliers, a dead camera);
+6. failsafes: officer at a dark signal, the green-but-not-moving alert card, signal off, block area;
+7. results; 8. what is integrated.
+
+Key frames are in `video/frame_*.png` for slides.
