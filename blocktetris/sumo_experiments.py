@@ -202,6 +202,8 @@ class Runner:
         q, cnt, hal = defaultdict(float), defaultdict(float), defaultdict(int)
         for ln in self.in_lanes:
             for v in tc.lane.getLastStepVehicleIDs(ln):
+                if v not in self.route:
+                    continue
                 w = WEIGHT.get(self.vtype[v], 0.4)
                 cnt[ln] += w
                 if tc.vehicle.getSpeed(v) < 1.0:
@@ -480,33 +482,37 @@ class Runner:
         for t in range(HORIZON):
             # ── events ──
             if ev == "accident" and t in (T0, T1):
+                # crash: stopped vehicles block all lanes but one; traffic squeezes past at low speed
                 e = tg["road"]
                 nl = tc.edge.getLaneNumber(e)
-                for k in range(nl):
-                    ln = f"{e}_{k}"
-                    if t == T0:
-                        allowed[ln] = tc.lane.getAllowed(ln)
-                        if k < nl - 1:
-                            tc.lane.setAllowed(ln, ["custom1"])
-                        tc.lane.setMaxSpeed(ln, 2.0)
-                    else:
-                        tc.lane.setAllowed(ln, allowed[ln])
-                        tc.lane.setMaxSpeed(ln, net.getEdge(e).getSpeed())
-                if t == T0 and nl == 1:
-                    tc.lane.setMaxSpeed(f"{e}_0", 1.0)
+                L = net.getEdge(e).getLength()
+                if t == T0:
+                    tc.route.add("_acc_r", [e])
+                    for k in range(max(0, nl - 1)):
+                        vid = f"_acc{k}"
+                        tc.vehicle.add(vid, "_acc_r", typeID="car", departLane=str(k), departPos=str(L * 0.5))
+                        tc.vehicle.setStop(vid, e, pos=min(L - 1, L * 0.5 + 5), laneIndex=k, duration=T1 - T0)
+                    for k in range(nl):
+                        tc.lane.setMaxSpeed(f"{e}_{k}", 3.0 if nl > 1 else 1.5)
+                else:
+                    for k in range(max(0, nl - 1)):
+                        try:
+                            tc.vehicle.remove(f"_acc{k}")
+                        except Exception:
+                            pass
+                    for k in range(nl):
+                        tc.lane.setMaxSpeed(f"{e}_{k}", net.getEdge(e).getSpeed())
             if ev == "VIP closure" and t in (T0, T0 + 600):
+                # barricade: the 3 roads pass (almost) nothing; routing avoids them where an alternative exists
                 for e in tg["roads3"]:
                     for k in range(tc.edge.getLaneNumber(e)):
-                        ln = f"{e}_{k}"
-                        if t == T0:
-                            allowed[ln] = tc.lane.getAllowed(ln)
-                            tc.lane.setAllowed(ln, ["custom1"])
-                        else:
-                            tc.lane.setAllowed(ln, allowed[ln])
+                        tc.lane.setMaxSpeed(f"{e}_{k}", 0.1 if t == T0 else net.getEdge(e).getSpeed())
                     tc.edge.adaptTraveltime(e, 1e6 if t == T0 else net.getEdge(e).getLength() / net.getEdge(e).getSpeed())
                 closed = set(tg["roads3"]) if t == T0 else set()
                 if t == T0:
                     for v in tc.vehicle.getIDList():
+                        if v.startswith("_"):
+                            continue
                         r = tc.vehicle.getRoute(v)
                         i = tc.vehicle.getRouteIndex(v)
                         if closed & set(r[i + 1:]):
@@ -539,6 +545,8 @@ class Runner:
             tc.simulationStep()
             teleports += tc.simulation.getStartingTeleportNumber()
             for v in tc.simulation.getDepartedIDList():
+                if v.startswith("_"):
+                    continue
                 self.vtype[v] = tc.vehicle.getTypeID(v)
                 if closed:
                     r = tc.vehicle.getRoute(v)
@@ -550,7 +558,8 @@ class Runner:
                 self.route[v] = tc.vehicle.getRoute(v)
             if closed and t == T0:
                 for v in tc.vehicle.getIDList():
-                    self.route[v] = tc.vehicle.getRoute(v)
+                    if not v.startswith("_"):
+                        self.route[v] = tc.vehicle.getRoute(v)
             if not juncs:
                 continue
             self.measure(t)
@@ -586,7 +595,7 @@ class Runner:
         tl, waits, arrived, n = [], [], 0, 0
         seen = set()
         for _, el in ET.iterparse(trip_out):
-            if el.tag != "tripinfo":
+            if el.tag != "tripinfo" or el.get("id", "").startswith("_"):
                 continue
             seen.add(el.get("id"))
             loss = float(el.get("timeLoss")) + float(el.get("departDelay"))
@@ -645,7 +654,11 @@ def probe_targets(d, routes):
 
 def _job(a):
     d, ctrl, ev, seed, routes, tg = a
-    r = Runner(d, ctrl, ev, seed, routes, tg).run()
+    try:
+        r = Runner(d, ctrl, ev, seed, routes, tg).run()
+    except Exception:                                   # SWIG exceptions do not pickle
+        import traceback
+        raise RuntimeError(f"{ctrl} | {ev} | {seed}\n" + traceback.format_exc()) from None
     r.update(name=ctrl, ev=ev, seed=seed)
     return r
 
