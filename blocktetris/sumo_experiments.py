@@ -168,6 +168,10 @@ class TLS:
         self.var = np.zeros(self.n)
         self.alerted = False
         self.last_move = 0.0
+        self.gmin_j = None
+        self.low_off = False
+        self.calm_since = 0.0
+        self.off_since = 0.0
         self.state_str = self.greens[0]
         tc.trafficlight.setRedYellowGreenState(tid, self.state_str)
 
@@ -197,7 +201,8 @@ class TLS:
 
 
 BT_V7F = dict(gmin=15.0, gsat=35.0, gmax=70.0, low=0.5, roll=2.0, mp=0.0, dark_p=0.0,
-              dyn=False, z=1.0, gdyn=60.0, reroute=False, comply=0.5, alert=False)
+              dyn=False, z=1.0, gdyn=60.0, reroute=False, comply=0.5, alert=False,
+              lowoff=False, adapt_gmin=False, area=False)
 # v8 = v7-final + back-pressure in weight units (exit-lane load subtracted from the stack),
 # chosen on tuning seeds 1-3 (sumo_tune.py); validated on the untouched seeds 11-13
 BT_V8 = dict(BT_V7F, mp=0.25)
@@ -213,6 +218,13 @@ BT_V9 = dict(BT_V7F, dyn=True, reroute=True, alert=True)
 BT_VARIANTS = {"Block-Tetris v7-final": BT_V7F, "Block-Tetris v8": BT_V8, "Block-Tetris v9": BT_V9,
                "Block-Tetris v9 (no reroute)": dict(BT_V9, reroute=False),
                "Block-Tetris v7-final + reroute": dict(BT_V7F, reroute=True, alert=True)}
+# v10 = v9 + (owner, 13 Nov): signal off when traffic is very light (give-way rules, hysteresis);
+# the fixed minimum green shrinks where it is wasted (>= 7 s) and grows back where queues remain;
+# block area per road: the stack a road may take depends on its lanes, its average fill and its
+# incident history (each spill-back tightens it, quiet periods relax it) - used in every room test
+BT_V10 = dict(BT_V9, lowoff=True, adapt_gmin=True, area=True)
+BT_VARIANTS["Block-Tetris v10"] = BT_V10
+BT_VARIANTS["Block-Tetris v10 (no reroute)"] = dict(BT_V10, reroute=False)
 
 
 class Runner:
@@ -299,10 +311,63 @@ class Runner:
     def pe(self, e):
         return self.p[self.eidx[e]] if e in self.eidx else 0.0
 
+    def lim(self, j):
+        """block area of each exit lane: fill a lane may take before it counts as full"""
+        if not self.bo["area"]:
+            return np.full(j.n, 0.9)
+        return np.array([self.area_lim(l) for l in j.outl])
+
+    def area_lim(self, l):
+        if not l:
+            return 0.0
+        h = self.lim_hist.get(l)
+        if h is None:
+            nl = self.tc.edge.getLaneNumber(l.rsplit("_", 1)[0])
+            h = self.lim_base[l] = self.lim_hist[l] = {1: 0.75, 2: 0.85}.get(nl, 0.9)
+        return max(0.55, h - 0.1 * max(0.0, self.fmu.get(l, 0.0) - 0.5))
+
+    def area_update(self, t):
+        """incident history: a spill-back (fill >= 0.95) tightens that lane's block area by 0.05
+        (floor 0.6); 5 quiet minutes relax it by 0.01 back toward its base"""
+        for l, f in self.fill.items():
+            if l not in self.lim_hist:
+                self.area_lim(l)
+            full = f >= 0.95
+            if full and not self.spilled.get(l):
+                self.lim_hist[l] = max(0.6, self.lim_hist[l] - 0.05)
+                self.last_inc[l] = t
+            self.spilled[l] = full
+            if t - self.last_inc.get(l, -1e9) >= 300 and t % 300 == 0:
+                self.lim_hist[l] = min(self.lim_base[l], self.lim_hist[l] + 0.01)
+
+    def low_traffic(self, j, t):
+        """very light traffic: hand the junction to give-way rules; back on as soon as a stack builds"""
+        V = self.V(j)
+        tot = V.sum()
+        if not j.low_off:
+            calm = tot < 0.8 and V.max() < 0.5
+            if not calm:
+                j.calm_since = t
+            elif t - j.calm_since >= 120.0 and j.mode == "G":
+                j.low_off, j.off_since = True, t
+                self.tc.trafficlight.setProgram(j.id, "off")
+                self.low_off_s += 0
+            return j.low_off
+        self.low_off_s += 1
+        if (tot > 2.0 or V.max() > 1.2) and t - j.off_since >= 30.0:
+            j.low_off = False
+            j.calm_since = t
+            j.state_str = ""
+            j.mode, j.g_start = "G", t
+            j.set_state(j.greens[j.cur])
+            self.on_green_bt(j, t)
+        return j.low_off
+
     def bt(self, j, t):
         V = self.V(j)
         fz = self.fills(j)
-        room_ok = fz < 0.95
+        LIM = self.lim(j)
+        room_ok = fz < (LIM + 0.05 if self.bo["area"] else 0.95)
         pex = np.array([self.pe(e) if e else 0.0 for e in j.oute])
         age = np.where(V > 0.05, t - j.last_served, 0.0)
         meter = 1.0
@@ -323,7 +388,7 @@ class Runner:
             from math import erf
             fm = np.array([self.fmu.get(l, 0.0) if l else 1.0 for l in j.outl])
             fs = np.sqrt(np.array([self.fvar.get(l, 0.0) if l else 0.0 for l in j.outl])) + 0.03
-            safe = np.array([0.5 * (1 + erf(x / 1.41421356)) for x in (0.9 - np.maximum(fm, fz)) / fs])
+            safe = np.array([0.5 * (1 + erf(x / 1.41421356)) for x in (LIM - np.maximum(fm, fz)) / fs])
             score = (Vn + 0.01 * (V / 0.55) * age) * (1 - pex) * safe
         else:
             score = (Vn + 0.01 * (V / 0.55) * age) * (1 - pex) * np.clip(1 - fz ** 2, 0, 1)
@@ -349,7 +414,7 @@ class Runner:
                                              "upstream signals throttle feed into this junction",
                                     why="stack waiting under green while the exits are not moving"))
         busy = V > 0.5
-        gmin = o["gmin"]
+        gmin = o["gmin"] if not o["adapt_gmin"] or j.gmin_j is None else j.gmin_j
         if busy.sum() >= 6 and np.median(V[busy] / isat) > 40.0:
             gmin = o["gsat"]
         if el < gmin:
@@ -369,6 +434,11 @@ class Runner:
             j.blocked_run = j.blocked_run + 1 if blk else 0
             if (V * ph).sum() < o["low"] or j.blocked_run >= 3:
                 end = True
+                if o["adapt_gmin"] and (V * ph).sum() < o["low"] and el <= gmin + 1.0:
+                    # the fixed part outlasted the stack: shrink this junction's fixed time
+                    j.gmin_j = max(7.0, (j.gmin_j or o["gmin"]) - 1.0)
+            elif o["adapt_gmin"] and el >= j.planned and (V * ph).sum() >= 2.0:
+                j.gmin_j = min(o["gmin"], (j.gmin_j or o["gmin"]) + 0.5)
             if not end and int(el) % 5 == 0:
                 r = isat * np.minimum(1.0, V / 0.4) * room_ok * (1 - pex)
                 pr = j.G.astype(float) @ r
@@ -427,7 +497,8 @@ class Runner:
                 if not l:
                     continue
                 capW = self.tc.lane.getLength(l) * 0.075
-                head = 0.9 - self.fmu.get(l, fz[i]) - o["z"] * np.sqrt(self.fvar.get(l, 0.0))
+                head = (self.area_lim(l) if o["area"] else 0.9) - self.fmu.get(l, fz[i]) \
+                    - o["z"] * np.sqrt(self.fvar.get(l, 0.0))
                 Troom.append(max(0.0, head) * capW * 4.62)
             Tplan = o["gmin"] + Tdyn
             if Troom:
@@ -582,6 +653,8 @@ class Runner:
         self.acc, self.em = 0.0, False
         self.dark_edges = set()
         self.fmu, self.fvar = {}, {}
+        self.lim_hist, self.lim_base, self.spilled, self.last_inc = {}, {}, {}, {}
+        self.low_off_s = 0
         self.alerts, self.n_reroute = [], 0
         self.orate = defaultdict(float)
         self.last_rr = {}
@@ -718,8 +791,12 @@ class Runner:
                 self.reroute(t, closed)
             if self.ctrl.startswith("Block"):
                 self.relay()
+            if self.ctrl.startswith("Block") and self.bo["area"]:
+                self.area_update(t)
             for j in juncs.values():
                 if j.off:
+                    continue
+                if self.ctrl.startswith("Block") and self.bo["lowoff"] and not self.em and self.low_traffic(j, t):
                     continue
                 new = j.tick(t)
                 if self.ctrl.startswith("Block"):
@@ -733,7 +810,8 @@ class Runner:
         loaded = tc.simulation.getLoadedNumber() if hasattr(tc.simulation, "getLoadedNumber") else None
         tc.close()
         m = self.metrics(trip_out, teleports)
-        m.update(police_alerts=len(self.alerts), alert_log=self.alerts[:20], reroutes=self.n_reroute)
+        m.update(police_alerts=len(self.alerts), alert_log=self.alerts[:20], reroutes=self.n_reroute,
+                 signal_off_s=int(self.low_off_s))
         return m
 
     def metrics(self, trip_out, teleports):

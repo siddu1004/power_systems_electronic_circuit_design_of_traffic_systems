@@ -27,11 +27,12 @@ VARIANTS_V8 = {
 # round 2 (v9): 6 tuning seeds (3 were too few: v8 won on 1-3 and lost on 11-13)
 VARIANTS_V9 = {k: S.BT_VARIANTS[k] for k in ("Block-Tetris v7-final", "Block-Tetris v9",
                                              "Block-Tetris v9 (no reroute)", "Block-Tetris v7-final + reroute")}
-VARIANTS = VARIANTS_V9 if ROUND == "v9" else VARIANTS_V8
+VARIANTS_V10 = dict(VARIANTS_V9, **{k: S.BT_VARIANTS[k] for k in ("Block-Tetris v10", "Block-Tetris v10 (no reroute)")})
+VARIANTS = {"v9": VARIANTS_V9, "v10": VARIANTS_V10}.get(ROUND, VARIANTS_V8)
 BASE = ["MaxPressure", "Actuated"]
 EVENTS = ["normal peak", "accident", "monsoon rain", "festival surge", "signal power failure"] + \
-    (["VIP closure"] if ROUND == "v9" else [])
-SEEDS = [1, 2, 3, 4, 5, 6] if ROUND == "v9" else [1, 2, 3]
+    (["VIP closure"] if ROUND in ("v9", "v10") else [])
+SEEDS = [1, 2, 3, 4, 5, 6] if ROUND in ("v9", "v10") else [1, 2, 3]
 SCALE = 0.07
 
 
