@@ -722,10 +722,10 @@ def main():
     for e in events:
         print(f"{e:22s} " + " ".join(f"{table.get(f'{e}|{c}', {}).get('served', float('nan')):6.2f}/"
                                      f"{table.get(f'{e}|{c}', {}).get('teleports', float('nan')):5.0f}" for c in ctrls))
-    plots(table, events, ctrls, out)
+    plots(table, events, ctrls, out, a.scale)
 
 
-def plots(table, events, ctrls, out):
+def plots(table, events, ctrls, out, scale):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -743,7 +743,7 @@ def plots(table, events, ctrls, out):
     ax.legend(ncol=4, fontsize=8, frameon=False)
     ax.spines[["top", "right"]].set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(out, "sumo1_delay_by_event.png"), dpi=150)
+    fig.savefig(os.path.join(out, f"sumo1_delay_by_event_x{scale:g}.png"), dpi=150)
     plt.close(fig)
 
 
