@@ -34,3 +34,12 @@ Branch pushed: local `bt-results` -> remote `ccr-27f50ecb-k5rs69` (push with
 - **Where to find it:** BUNDLE README section "SUMO VALIDATION".
 - **Next:** full-city SUMO (`sumo/city`, 333 TLS), police-alert rate limiting, rain and surge.
 - The paper is still NOT to be written.
+
+## FINAL version: v13-final (13 Nov)
+- **Code:** `BT_V13F` in `blocktetris/sumo_experiments.py`; it integrates v1–v13 together with v3 HOL.
+- **Results on test seeds 11–13:**
+  - −13 % vs MaxPressure and −16 % vs Actuated at demand 0.07;
+  - −11 % vs both at demand 0.10;
+  - all p < 0.001.
+- **Where to find it:** BUNDLE README section "FINAL VERSION".
+- **Next:** a full-city SUMO check. The paper is to be written together with the owner; do not draft it alone.

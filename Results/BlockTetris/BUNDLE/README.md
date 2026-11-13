@@ -245,3 +245,47 @@ v12 against the existing controllers: −5.1 % vs MaxPressure (16 of 21 runs bet
 | Police interaction | The photo-and-suggestion workflow with officers is design only (owner's note, kept for later). |
 
 **Figures:** `sumo_peelamedu__sumo1_delay_by_event_x0.07.png` and `sumo_peelamedu__sumo1_delay_by_event_x0.1.png`.
+
+---
+
+## FINAL VERSION: Block-Tetris v13-final (SUMO, test seeds 11–13)
+
+**What v13-final integrates (every version kept selectable in code)**
+
+| Version | Feature |
+|---|---|
+| v1–v3 | Block weights and stacks. Rolling re-placement on discharge current. 35 s saturation green. Back-pressure. Relay with hysteresis and soft start. Perimeter metering. Emergency rotation. **Head-of-line attribution: a shared lane's whole stack counts for its lead vehicle's movement.** |
+| v4 | Predictive relay: trips on load + 60 s × rate of rise. |
+| v5, v6 | Robust estimator on realistic 60 m cameras: KCL prediction, Kalman update with χ² gate and Huber weighting, lower bound beyond the view, frozen-camera test. A dead camera falls back to rebuilding from neighbour counts. |
+| v6 | Navigation-app travel time fused into the rerouting cost. |
+| v7 | Special-mode switching: triggered by degraded discharge, network accumulation, a camera failure or a dark signal. While on, it adds v8 back-pressure. |
+| v7-final | 120 s service guarantee and the police failsafe: 3 officers with a 5-minute arrival; longest-queue-first manual control; they take over dark junctions. |
+| v9 | Pressure rerouting (navigation-app style); green-but-not-moving alert with its decision and justification. |
+| v10 | Signal off in very light traffic. Self-adjusting fixed green. Block area per road from lanes, average fill and incident history. |
+| v12b / v13 | Online discharge-time learning per junction. Police alerts only for local blockages, at most one per junction per 10 min. |
+
+**Speed:** one junction decision takes about 0.12 ms, so the whole corridor (31 signals) is decided in about 4 ms per second of traffic.
+
+**Mean time loss per vehicle (s), test seeds 11–13 (21 paired runs per controller)**
+
+| Demand | Fixed-40 | SITRA-MPC | Actuated | MaxPressure | BT v7-final | BT v12 | BT v13-final, no police | **BT v13-final** |
+|---|---|---|---|---|---|---|---|---|
+| 0.07 | 866 | 668 | 502 | 487 | 475 | 462 | 452 | **423** |
+| 0.10 | 1165 | 1026 | 878 | 880 | 839 | 836 | 807 | **785** |
+
+**v13-final against the baselines**
+
+| Comparison | Demand 0.07 | Demand 0.10 |
+|---|---|---|
+| vs MaxPressure | −13.1 % (19 of 21 runs, p < 0.001) | −10.8 % (21 of 21, p < 0.001) |
+| vs Actuated | −15.7 % (19 of 21, p < 0.001) | −10.6 % (21 of 21, p < 0.001) |
+| vs SITRA-MPC | −36.6 % (21 of 21) | −23.5 % (21 of 21) |
+| vs v12 | −8.4 % (18 of 21, p < 0.001) | −6.2 % (19 of 21, p < 0.001) |
+| **Without police**, vs MaxPressure | −7.2 % (18 of 21, p = 0.002) | −8.3 % (21 of 21, p < 0.001) |
+
+- **v13-final is best in every event at both demand levels.** It is about 0.5 % behind v7-final + reroute in the festival surge at demand 0.07; that version uses a perfect camera.
+- **Signal power failure:** 320 s, against 501 s for v12 and 507 s for MaxPressure.
+- **Rain:** 433 s, against 458 s for MaxPressure. This had been a weak point.
+- **Police alerts:** 2.7 per run at demand 0.07 and 7.7 per run at 0.10, down from about 110 in v12.
+- **Estimator queue RMSE:** 6.2 / 7.4 W, against 7.7 / 12.5 W for the raw camera.
+- **Tuning history:** `Results/BlockTetris/sumo_tune/tune_results_v13.json`. Seeds 1–6 were used for tuning; the reported numbers use seeds 11–13 only.
