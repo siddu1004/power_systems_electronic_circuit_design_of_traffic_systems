@@ -169,6 +169,11 @@ class TLS:
         self.alerted = False
         self.last_move = 0.0
         self.gmin_j = None
+        self.tau = 4.62
+        self.sat_W = 0.0
+        self.sat_ls = 0.0
+        self.last_alert = -1e9
+        self._vt, self._vc = -1, None
         self.low_off = False
         self.calm_since = 0.0
         self.off_since = 0.0
@@ -202,7 +207,8 @@ class TLS:
 
 BT_V7F = dict(gmin=15.0, gsat=35.0, gmax=70.0, low=0.5, roll=2.0, mp=0.0, dark_p=0.0,
               dyn=False, z=1.0, gdyn=60.0, reroute=False, comply=0.5, alert=False,
-              lowoff=False, adapt_gmin=False, area=False, cam=False, est=False)
+              lowoff=False, adapt_gmin=False, area=False, cam=False, est=False,
+              learn_tau=False, alert_smart=False, rr_period=60)
 # v8 = v7-final + back-pressure in weight units (exit-lane load subtracted from the stack),
 # chosen on tuning seeds 1-3 (sumo_tune.py); validated on the untouched seeds 11-13
 BT_V8 = dict(BT_V7F, mp=0.25)
@@ -240,6 +246,14 @@ BT_VARIANTS["Block-Tetris v7-final (real camera, no estimator)"] = dict(BT_V7F, 
 BT_V12 = dict(BT_V11, dyn=False)
 BT_VARIANTS["Block-Tetris v12"] = BT_V12
 BT_VARIANTS["Block-Tetris v12 (oracle camera)"] = dict(BT_V12, cam=False, est=False)
+# v13 = v12 + each junction learns its own discharge time per weight unit online (rain, heavy mix,
+# narrow lanes change it) + smarter police alerts (local blockage only: exits not full; stuck 30 s;
+# at most one alert per junction per 10 min); the rest are tuning candidates around v13
+BT_V13 = dict(BT_V12, learn_tau=True, alert_smart=True)
+BT_VARIANTS["Block-Tetris v13"] = BT_V13
+for _k, _o in {"comply 0.7": dict(comply=0.7), "comply 0.3": dict(comply=0.3), "reroute 30 s": dict(rr_period=30),
+               "roll 1.5": dict(roll=1.5), "gmax 55": dict(gmax=55.0), "low 1.0": dict(low=1.0)}.items():
+    BT_VARIANTS[f"Block-Tetris v13 ({_k})"] = dict(BT_V13, **_o)
 
 
 class Runner:
@@ -320,6 +334,8 @@ class Runner:
         for i in range(j.n):
             share[(j.inl[i], j.oute[i])] += 1
         real = self.ctrl.startswith("Block") and (self.bo["cam"] or self.bo["est"])
+        if real and j._vt == self.now:
+            return j._vc.copy()
         for i in range(j.n):
             l = j.inl[i]
             if l is None:
@@ -341,6 +357,8 @@ class Runner:
                 V[i] = self.q[(l, j.oute[i])] / share[(l, j.oute[i])]
         if self.ctrl.startswith("Block") and not real:
             V *= np.clip(1 + 0.08 * self.rng.standard_normal(j.n), 0.5, 1.5)
+        if real:
+            j._vt, j._vc = self.now, V.copy()
         return V
 
     def fills(self, j):
@@ -465,9 +483,15 @@ class Runner:
         if j.mode != "G":
             return
         el = t - j.g_start
-        isat = 1.0 / 4.62
-        if o["alert"] and not j.alerted and el >= 20.0 and (V * j.G[j.cur]).sum() > 1.0 \
-                and t - j.last_move >= 20.0:
+        isat = 1.0 / (j.tau if o["learn_tau"] else 4.62)
+        stuck_s = 30.0 if o["alert_smart"] else 20.0
+        local = True
+        if o["alert_smart"]:
+            ph_ = j.G[j.cur] & (V > 0.3)
+            local = bool(ph_.any()) and float(self.fills(j)[ph_].max()) < 0.8 and t - j.last_alert >= 600.0
+        if o["alert"] and not j.alerted and local and el >= stuck_s and (V * j.G[j.cur]).sum() > 1.0 \
+                and t - j.last_move >= stuck_s:
+            j.last_alert = t
             j.alerted = True
             self.alerts.append(dict(t=int(t), tls=j.id, phase=int(j.cur), queue_W=round(float((V * j.G[j.cur]).sum()), 2),
                                     exit_fill=round(float(self.fills(j)[j.G[j.cur]].max()), 2),
@@ -539,7 +563,8 @@ class Runner:
         fz = self.fills(j)
         room = (1 - fz) * 10.0                      # ~ W of room on the exit lane
         pex = np.array([self.pe(e) if e else 0.0 for e in j.oute])
-        drain = np.minimum(V, np.clip(room, 0, None)) * 4.62
+        tau = j.tau if self.bo["learn_tau"] else 4.62
+        drain = np.minimum(V, np.clip(room, 0, None)) * tau
         T = (2.5 + 1.15 * drain) * (1 - 0.5 * pex)
         Ts = T[j.G[j.cur] & (V > 0.05)]
         o = self.bo
@@ -560,7 +585,7 @@ class Runner:
                 capW = self.tc.lane.getLength(l) * 0.075
                 head = (self.area_lim(l) if o["area"] else 0.9) - self.fmu.get(l, fz[i]) \
                     - o["z"] * np.sqrt(self.fvar.get(l, 0.0))
-                Troom.append(max(0.0, head) * capW * 4.62)
+                Troom.append(max(0.0, head) * capW * tau)
             Tplan = o["gmin"] + Tdyn
             if Troom:
                 Tplan = min(Tplan, max(o["gmin"], min(Troom)))
@@ -715,6 +740,7 @@ class Runner:
         self.dark_edges = set()
         self.fmu, self.fvar = {}, {}
         self.lim_hist, self.lim_base, self.spilled, self.last_inc = {}, {}, {}, {}
+        self.now = -1
         self.low_off_s = 0
         self.alerts, self.n_reroute = [], 0
         self.orate = defaultdict(float)
@@ -818,6 +844,7 @@ class Runner:
                             ls = {l for l in juncs[tid].inl if l}
                             self.est.dead = (self.est.dead | ls) if t == T0 else (self.est.dead - ls)
             tc.simulationStep()
+            self.now = t
             teleports += tc.simulation.getStartingTeleportNumber()
             for v in tc.simulation.getDepartedIDList():
                 if v.startswith("_"):
@@ -848,17 +875,31 @@ class Runner:
                         for j in self.lane_j.get(ln, ()):
                             jj, ks = j
                             jj.flow[ks] += newc
-            if self.ctrl.startswith("Block") and (self.bo["reroute"] or self.bo["alert"]):
+            if self.ctrl.startswith("Block") and (self.bo["reroute"] or self.bo["alert"] or self.bo["learn_tau"]):
                 for ln in self.in_lanes:
                     ids = set(tc.lane.getLastStepVehicleIDs(ln))
-                    left = len(prev_ids[ln] - ids)
+                    gone = prev_ids[ln] - ids
+                    left = len(gone)
                     prev_ids[ln] = ids
+                    if self.bo["learn_tau"]:
+                        lq = (self.Qhat.get(ln, 0.0) if self.bo["est"] else
+                              sum(w for (l2, _), w in self.q.items() if l2 == ln))
+                        if lq > 1.0:                     # saturated lane under green: measure its discharge
+                            for jj, ks in self.lane_j.get(ln, ()):
+                                if jj.mode == "G" and ks == jj.cur and t - jj.g_start >= 3.0:
+                                    jj.sat_ls += 1.0
+                                    jj.sat_W += sum(WEIGHT.get(self.vtype.get(v, "car"), 0.4) for v in gone)
+                                    if jj.sat_ls >= 30.0:
+                                        obs = jj.sat_ls / max(jj.sat_W, 0.05)
+                                        jj.tau = float(np.clip(0.8 * jj.tau + 0.2 * obs, 2.5, 9.0))
+                                        jj.sat_ls = jj.sat_W = 0.0
                     self.orate[ln] += 0.02 * (0.4 * left - self.orate[ln])
                     if left:
                         for jj, ks in self.lane_j.get(ln, ()):
                             if jj.mode == "G" and ks == jj.cur:
                                 jj.last_move = t
-            if self.ctrl.startswith("Block") and self.bo["reroute"] and t % 60 == 30 and t > 300:
+            if self.ctrl.startswith("Block") and self.bo["reroute"] and t % self.bo["rr_period"] == 30 % self.bo["rr_period"] \
+                    and t > 300:
                 self.reroute(t, closed)
             if self.ctrl.startswith("Block"):
                 self.relay()
@@ -881,6 +922,10 @@ class Runner:
         loaded = tc.simulation.getLoadedNumber() if hasattr(tc.simulation, "getLoadedNumber") else None
         tc.close()
         m = self.metrics(trip_out, teleports)
+        if juncs:
+            m["tau_mean"] = float(np.mean([j.tau for j in juncs.values()]))
+            m["tau_min"] = float(np.min([j.tau for j in juncs.values()]))
+            m["tau_max"] = float(np.max([j.tau for j in juncs.values()]))
         m.update(police_alerts=len(self.alerts), alert_log=self.alerts[:20], reroutes=self.n_reroute,
                  signal_off_s=int(self.low_off_s))
         if self.est is not None and self.bo["est"]:
