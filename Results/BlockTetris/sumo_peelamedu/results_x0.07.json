@@ -694,6 +694,118 @@
    "served": 0.768359952345015,
    "teleports": 5.333333333333333,
    "vehicles": 4126.666666666667
+  },
+  "normal peak|Block-Tetris v13-final": {
+   "delay": 359.8015714958353,
+   "p95_wait": 691.3166666666665,
+   "max_wait": 2205.0,
+   "served": 0.7617756975131122,
+   "teleports": 6.666666666666667,
+   "vehicles": 4126.666666666667
+  },
+  "accident|Block-Tetris v13-final": {
+   "delay": 445.31981078091735,
+   "p95_wait": 924.9166666666665,
+   "max_wait": 2427.0,
+   "served": 0.7430663627425913,
+   "teleports": 12.0,
+   "vehicles": 4126.666666666667
+  },
+  "monsoon rain|Block-Tetris v13-final": {
+   "delay": 433.98504915797207,
+   "p95_wait": 773.8833333333332,
+   "max_wait": 1867.6666666666667,
+   "served": 0.7163043643718581,
+   "teleports": 3.6666666666666665,
+   "vehicles": 4126.666666666667
+  },
+  "festival surge|Block-Tetris v13-final": {
+   "delay": 664.3712125929643,
+   "p95_wait": 1682.2833333333328,
+   "max_wait": 2762.6666666666665,
+   "served": 0.6961927474361032,
+   "teleports": 37.333333333333336,
+   "vehicles": 5108.333333333333
+  },
+  "VIP closure|Block-Tetris v13-final": {
+   "delay": 401.0866494592708,
+   "p95_wait": 744.9,
+   "max_wait": 1990.0,
+   "served": 0.7617339017648014,
+   "teleports": 15.0,
+   "vehicles": 4126.666666666667
+  },
+  "signal power failure|Block-Tetris v13-final": {
+   "delay": 319.89238714723103,
+   "p95_wait": 550.5166666666665,
+   "max_wait": 1542.6666666666667,
+   "served": 0.7939889012164879,
+   "teleports": 8.333333333333334,
+   "vehicles": 4126.666666666667
+  },
+  "CCTV failure|Block-Tetris v13-final": {
+   "delay": 337.64445129822326,
+   "p95_wait": 735.6833333333328,
+   "max_wait": 1910.3333333333333,
+   "served": 0.7727384472380421,
+   "teleports": 3.0,
+   "vehicles": 4126.666666666667
+  },
+  "normal peak|Block-Tetris v13-final (no police)": {
+   "delay": 360.3036857496192,
+   "p95_wait": 702.4666666666666,
+   "max_wait": 2216.3333333333335,
+   "served": 0.7615280899440199,
+   "teleports": 6.333333333333333,
+   "vehicles": 4126.666666666667
+  },
+  "accident|Block-Tetris v13-final (no police)": {
+   "delay": 431.64786286749785,
+   "p95_wait": 978.3166666666666,
+   "max_wait": 2244.0,
+   "served": 0.7528790854878853,
+   "teleports": 12.0,
+   "vehicles": 4126.666666666667
+  },
+  "monsoon rain|Block-Tetris v13-final (no police)": {
+   "delay": 433.2341009293917,
+   "p95_wait": 777.9333333333333,
+   "max_wait": 1785.3333333333333,
+   "served": 0.7146162104623812,
+   "teleports": 3.6666666666666665,
+   "vehicles": 4126.666666666667
+  },
+  "festival surge|Block-Tetris v13-final (no police)": {
+   "delay": 667.3489953644292,
+   "p95_wait": 1679.4999999999975,
+   "max_wait": 2721.6666666666665,
+   "served": 0.6925125421427847,
+   "teleports": 31.666666666666668,
+   "vehicles": 5108.333333333333
+  },
+  "VIP closure|Block-Tetris v13-final (no police)": {
+   "delay": 420.65967665272893,
+   "p95_wait": 964.9833333333332,
+   "max_wait": 2119.6666666666665,
+   "served": 0.7540242817197029,
+   "teleports": 15.0,
+   "vehicles": 4126.666666666667
+  },
+  "signal power failure|Block-Tetris v13-final (no police)": {
+   "delay": 510.9499002303867,
+   "p95_wait": 1273.6499999999999,
+   "max_wait": 3252.0,
+   "served": 0.7214014101405762,
+   "teleports": 19.333333333333332,
+   "vehicles": 4126.666666666667
+  },
+  "CCTV failure|Block-Tetris v13-final (no police)": {
+   "delay": 337.2505298569128,
+   "p95_wait": 715.9499999999997,
+   "max_wait": 1883.0,
+   "served": 0.773866661700732,
+   "teleports": 2.6666666666666665,
+   "vehicles": 4126.666666666667
   }
  },
  "rows": [
@@ -2714,131 +2826,6 @@
    "seed": 13
   },
   {
-   "delay": 363.29974891356835,
-   "p95_wait": 736.8499999999995,
-   "max_wait": 2264.0,
-   "arrived": 3183,
-   "vehicles": 4142,
-   "served": 0.7684693384838243,
-   "teleports": 5,
-   "police_alerts": 12,
-   "alert_log": [
-    {
-     "t": 3053,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 8.31,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3147,
-     "tls": "344406248",
-     "phase": 0,
-     "queue_W": 2.22,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3557,
-     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
-     "phase": 0,
-     "queue_W": 9.37,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3675,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 60.6,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3848,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 62.04,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3878,
-     "tls": "344406248",
-     "phase": 1,
-     "queue_W": 3.26,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3895,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 7.78,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3958,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 4.62,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 4582,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 4.62,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 5087,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 64.81,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 5229,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 8.37,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 5250,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 67.23,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    }
-   ],
-   "reroutes": 508,
-   "signal_off_s": 0,
-   "name": "Block-Tetris v7-final + reroute",
-   "ev": "normal peak",
-   "seed": 13
-  },
-  {
    "delay": 350.64844488188976,
    "p95_wait": 757.6499999999992,
    "max_wait": 2304.0,
@@ -3060,6 +3047,131 @@
    "name": "Block-Tetris v7-final + reroute",
    "ev": "normal peak",
    "seed": 12
+  },
+  {
+   "delay": 363.29974891356835,
+   "p95_wait": 736.8499999999995,
+   "max_wait": 2264.0,
+   "arrived": 3183,
+   "vehicles": 4142,
+   "served": 0.7684693384838243,
+   "teleports": 5,
+   "police_alerts": 12,
+   "alert_log": [
+    {
+     "t": 3053,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 8.31,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3147,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 2.22,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3557,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 9.37,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3675,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 60.6,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3848,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 62.04,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3878,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 3.26,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3895,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 7.78,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3958,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 4.62,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4582,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 4.62,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5087,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 64.81,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5229,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 8.37,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5250,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 67.23,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 508,
+   "signal_off_s": 0,
+   "name": "Block-Tetris v7-final + reroute",
+   "ev": "normal peak",
+   "seed": 13
   },
   {
    "delay": 418.0684375,
@@ -3581,140 +3693,6 @@
    "seed": 13
   },
   {
-   "delay": 443.61007187350265,
-   "p95_wait": 791.3499999999999,
-   "max_wait": 1925.0,
-   "arrived": 3039,
-   "vehicles": 4174,
-   "served": 0.7280785816962146,
-   "teleports": 1,
-   "police_alerts": 13,
-   "alert_log": [
-    {
-     "t": 2268,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 8.35,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2448,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 4.56,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3070,
-     "tls": "344406318",
-     "phase": 0,
-     "queue_W": 4.05,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3127,
-     "tls": "344406248",
-     "phase": 0,
-     "queue_W": 1.53,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3317,
-     "tls": "344406248",
-     "phase": 0,
-     "queue_W": 3.84,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3457,
-     "tls": "344406248",
-     "phase": 0,
-     "queue_W": 3.35,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3481,
-     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
-     "phase": 0,
-     "queue_W": 16.93,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3609,
-     "tls": "344406248",
-     "phase": 0,
-     "queue_W": 1.87,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 4160,
-     "tls": "344406248",
-     "phase": 1,
-     "queue_W": 1.06,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 4682,
-     "tls": "13999738756",
-     "phase": 1,
-     "queue_W": 1.44,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 4794,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 57.59,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 4818,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 7.59,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 4896,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 7.7,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    }
-   ],
-   "reroutes": 335,
-   "signal_off_s": 0,
-   "name": "Block-Tetris v7-final + reroute",
-   "ev": "monsoon rain",
-   "seed": 12
-  },
-  {
    "delay": 560.4251599409448,
    "p95_wait": 1624.85,
    "max_wait": 2675.0,
@@ -3910,6 +3888,140 @@
    "name": "Block-Tetris v7-final + reroute",
    "ev": "monsoon rain",
    "seed": 11
+  },
+  {
+   "delay": 443.61007187350265,
+   "p95_wait": 791.3499999999999,
+   "max_wait": 1925.0,
+   "arrived": 3039,
+   "vehicles": 4174,
+   "served": 0.7280785816962146,
+   "teleports": 1,
+   "police_alerts": 13,
+   "alert_log": [
+    {
+     "t": 2268,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 8.35,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2448,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 4.56,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3070,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 4.05,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3127,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 1.53,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3317,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 3.84,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3457,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 3.35,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3481,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 16.93,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3609,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 1.87,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4160,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 1.06,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4682,
+     "tls": "13999738756",
+     "phase": 1,
+     "queue_W": 1.44,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4794,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 57.59,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4818,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 7.59,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4896,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 7.7,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 335,
+   "signal_off_s": 0,
+   "name": "Block-Tetris v7-final + reroute",
+   "ev": "monsoon rain",
+   "seed": 12
   },
   {
    "delay": 483.1691042974408,
@@ -5388,6 +5500,140 @@
    "seed": 12
   },
   {
+   "delay": 495.85229357798164,
+   "p95_wait": 1784.0,
+   "max_wait": 3254.0,
+   "arrived": 3079,
+   "vehicles": 4142,
+   "served": 0.7433606953162724,
+   "teleports": 29,
+   "police_alerts": 13,
+   "alert_log": [
+    {
+     "t": 2709,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 2.7,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2719,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 2.36,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2726,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 23.82,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2773,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 30.14,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3116,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 1.58,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3273,
+     "tls": "13999738756",
+     "phase": 1,
+     "queue_W": 9.42,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3659,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 40.74,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4573,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 9.73,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4758,
+     "tls": "cluster_13999738767_13999738768",
+     "phase": 1,
+     "queue_W": 8.07,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4913,
+     "tls": "cluster_13999738767_13999738768",
+     "phase": 1,
+     "queue_W": 5.92,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4981,
+     "tls": "13999738756",
+     "phase": 1,
+     "queue_W": 10.12,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5019,
+     "tls": "cluster_13999738767_13999738768",
+     "phase": 1,
+     "queue_W": 5.49,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5236,
+     "tls": "13999738756",
+     "phase": 1,
+     "queue_W": 9.52,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 266,
+   "signal_off_s": 0,
+   "name": "Block-Tetris v7-final + reroute",
+   "ev": "signal power failure",
+   "seed": 13
+  },
+  {
    "delay": 358.7304896653543,
    "p95_wait": 805.8499999999999,
    "max_wait": 2159.0,
@@ -5574,140 +5820,6 @@
    "name": "Block-Tetris v7-final + reroute",
    "ev": "CCTV failure",
    "seed": 11
-  },
-  {
-   "delay": 495.85229357798164,
-   "p95_wait": 1784.0,
-   "max_wait": 3254.0,
-   "arrived": 3079,
-   "vehicles": 4142,
-   "served": 0.7433606953162724,
-   "teleports": 29,
-   "police_alerts": 13,
-   "alert_log": [
-    {
-     "t": 2709,
-     "tls": "344406318",
-     "phase": 0,
-     "queue_W": 2.7,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2719,
-     "tls": "344406248",
-     "phase": 1,
-     "queue_W": 2.36,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2726,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 23.82,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2773,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 30.14,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3116,
-     "tls": "344406248",
-     "phase": 0,
-     "queue_W": 1.58,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3273,
-     "tls": "13999738756",
-     "phase": 1,
-     "queue_W": 9.42,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3659,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 40.74,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 4573,
-     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
-     "phase": 0,
-     "queue_W": 9.73,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 4758,
-     "tls": "cluster_13999738767_13999738768",
-     "phase": 1,
-     "queue_W": 8.07,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 4913,
-     "tls": "cluster_13999738767_13999738768",
-     "phase": 1,
-     "queue_W": 5.92,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 4981,
-     "tls": "13999738756",
-     "phase": 1,
-     "queue_W": 10.12,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 5019,
-     "tls": "cluster_13999738767_13999738768",
-     "phase": 1,
-     "queue_W": 5.49,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 5236,
-     "tls": "13999738756",
-     "phase": 1,
-     "queue_W": 9.52,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    }
-   ],
-   "reroutes": 266,
-   "signal_off_s": 0,
-   "name": "Block-Tetris v7-final + reroute",
-   "ev": "signal power failure",
-   "seed": 13
   },
   {
    "delay": 373.8144010541447,
@@ -7368,206 +7480,6 @@
    "seed": 12
   },
   {
-   "delay": 416.5834621062992,
-   "p95_wait": 1010.6999999999998,
-   "max_wait": 2542.0,
-   "arrived": 3086,
-   "vehicles": 4064,
-   "served": 0.7593503937007874,
-   "teleports": 20,
-   "police_alerts": 29,
-   "alert_log": [
-    {
-     "t": 1561,
-     "tls": "344406318",
-     "phase": 0,
-     "queue_W": 1.43,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1603,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 1.02,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1631,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 1.18,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1639,
-     "tls": "joinedS_13999738733_7115964236_7115964240_cluster_13999738735_13999738736_2444374105_2444388992_#2more",
-     "phase": 4,
-     "queue_W": 2.2,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1645,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 6.4,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1675,
-     "tls": "cluster_1150945202_1150945250",
-     "phase": 0,
-     "queue_W": 1.24,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1694,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 7.73,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1706,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 6.22,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1770,
-     "tls": "joinedS_13999738733_7115964236_7115964240_cluster_13999738735_13999738736_2444374105_2444388992_#2more",
-     "phase": 4,
-     "queue_W": 1.44,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1778,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 9.6,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1855,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 15.7,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1880,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 4.45,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1950,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 22.6,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1966,
-     "tls": "cluster_1150945202_1150945250",
-     "phase": 0,
-     "queue_W": 1.28,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1973,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 4.13,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1998,
-     "tls": "cluster_1150945202_1150945250",
-     "phase": 1,
-     "queue_W": 1.48,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2037,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 27.9,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2067,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 2.86,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2656,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 2.48,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2797,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 4.02,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    }
-   ],
-   "reroutes": 322,
-   "signal_off_s": 98604,
-   "est_rmse": 9.274091732106756,
-   "cam_rmse": 8.457011518713925,
-   "rejected": 5670,
-   "name": "Block-Tetris v11 (unified)",
-   "ev": "VIP closure",
-   "seed": 11
-  },
-  {
    "delay": 730.7219177288528,
    "p95_wait": 1757.1499999999996,
    "max_wait": 2818.0,
@@ -7766,6 +7678,206 @@
    "name": "Block-Tetris v11 (unified)",
    "ev": "festival surge",
    "seed": 13
+  },
+  {
+   "delay": 416.5834621062992,
+   "p95_wait": 1010.6999999999998,
+   "max_wait": 2542.0,
+   "arrived": 3086,
+   "vehicles": 4064,
+   "served": 0.7593503937007874,
+   "teleports": 20,
+   "police_alerts": 29,
+   "alert_log": [
+    {
+     "t": 1561,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 1.43,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1603,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 1.02,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1631,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 1.18,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1639,
+     "tls": "joinedS_13999738733_7115964236_7115964240_cluster_13999738735_13999738736_2444374105_2444388992_#2more",
+     "phase": 4,
+     "queue_W": 2.2,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1645,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 6.4,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1675,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 1.24,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1694,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 7.73,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1706,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 6.22,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1770,
+     "tls": "joinedS_13999738733_7115964236_7115964240_cluster_13999738735_13999738736_2444374105_2444388992_#2more",
+     "phase": 4,
+     "queue_W": 1.44,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1778,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 9.6,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1855,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 15.7,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1880,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 4.45,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1950,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 22.6,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1966,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 1.28,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1973,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 4.13,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1998,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 1,
+     "queue_W": 1.48,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2037,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 27.9,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2067,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 2.86,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2656,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 2.48,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2797,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 4.02,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 322,
+   "signal_off_s": 98604,
+   "est_rmse": 9.274091732106756,
+   "cam_rmse": 8.457011518713925,
+   "rejected": 5670,
+   "name": "Block-Tetris v11 (unified)",
+   "ev": "VIP closure",
+   "seed": 11
   },
   {
    "delay": 451.43225922376615,
@@ -10290,206 +10402,6 @@
    "seed": 12
   },
   {
-   "delay": 406.38189714566926,
-   "p95_wait": 866.8499999999999,
-   "max_wait": 2189.0,
-   "arrived": 3074,
-   "vehicles": 4064,
-   "served": 0.7563976377952756,
-   "teleports": 11,
-   "police_alerts": 22,
-   "alert_log": [
-    {
-     "t": 1561,
-     "tls": "344406318",
-     "phase": 0,
-     "queue_W": 1.52,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1599,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 1.26,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1645,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 6.41,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1646,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 4.85,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1675,
-     "tls": "cluster_1150945202_1150945250",
-     "phase": 0,
-     "queue_W": 1.27,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1709,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 6.46,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1721,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 5.25,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1726,
-     "tls": "cluster_1150945202_1150945250",
-     "phase": 0,
-     "queue_W": 1.28,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1791,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 5.82,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1825,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 12.38,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1886,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 4.94,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1919,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 19.38,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1985,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 24.48,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1991,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 3.71,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2076,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 3.02,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2077,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 28.48,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2325,
-     "tls": "344406318",
-     "phase": 0,
-     "queue_W": 2.53,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2560,
-     "tls": "344406248",
-     "phase": 1,
-     "queue_W": 1.73,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 3729,
-     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
-     "phase": 0,
-     "queue_W": 11.36,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 5182,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 205.38,
-     "exit_fill": 0.01,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    }
-   ],
-   "reroutes": 344,
-   "signal_off_s": 94336,
-   "est_rmse": 5.592394513681013,
-   "cam_rmse": 7.747525057879853,
-   "rejected": 5502,
-   "name": "Block-Tetris v12",
-   "ev": "VIP closure",
-   "seed": 11
-  },
-  {
    "delay": 728.0689242950948,
    "p95_wait": 1933.2999999999993,
    "max_wait": 2902.0,
@@ -10688,6 +10600,206 @@
    "name": "Block-Tetris v12",
    "ev": "festival surge",
    "seed": 13
+  },
+  {
+   "delay": 406.38189714566926,
+   "p95_wait": 866.8499999999999,
+   "max_wait": 2189.0,
+   "arrived": 3074,
+   "vehicles": 4064,
+   "served": 0.7563976377952756,
+   "teleports": 11,
+   "police_alerts": 22,
+   "alert_log": [
+    {
+     "t": 1561,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 1.52,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1599,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 1.26,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1645,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 6.41,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1646,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 4.85,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1675,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 1.27,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1709,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 6.46,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1721,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 5.25,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1726,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 1.28,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1791,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 5.82,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1825,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 12.38,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1886,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 4.94,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1919,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 19.38,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1985,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 24.48,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1991,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 3.71,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2076,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 3.02,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2077,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 28.48,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2325,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 2.53,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2560,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 1.73,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3729,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 11.36,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5182,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 205.38,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 344,
+   "signal_off_s": 94336,
+   "est_rmse": 5.592394513681013,
+   "cam_rmse": 7.747525057879853,
+   "rejected": 5502,
+   "name": "Block-Tetris v12",
+   "ev": "VIP closure",
+   "seed": 11
   },
   {
    "delay": 434.82672735984664,
@@ -13116,203 +13228,6 @@
    "seed": 12
   },
   {
-   "delay": 547.0674458661416,
-   "p95_wait": 1644.499999999999,
-   "max_wait": 2731.0,
-   "arrived": 2816,
-   "vehicles": 4064,
-   "served": 0.6929133858267716,
-   "teleports": 58,
-   "police_alerts": 124,
-   "alert_log": [
-    {
-     "t": 1550,
-     "tls": "cluster_1150945202_1150945250",
-     "phase": 0,
-     "queue_W": 1.68,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1558,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 4.2,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1558,
-     "tls": "344406318",
-     "phase": 0,
-     "queue_W": 1.48,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1609,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 4.26,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1635,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 6.15,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1650,
-     "tls": "cluster_1150945202_1150945250",
-     "phase": 0,
-     "queue_W": 1.83,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1671,
-     "tls": "13999738739",
-     "phase": 1,
-     "queue_W": 4.82,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1698,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 7.81,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1701,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 5.63,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1720,
-     "tls": "cluster_1150945202_1150945250",
-     "phase": 0,
-     "queue_W": 1.76,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1753,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 9.52,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1817,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 12.0,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1818,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 4.18,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1847,
-     "tls": "cluster_1150945202_1150945250",
-     "phase": 0,
-     "queue_W": 1.52,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1874,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 3.76,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1909,
-     "tls": "cluster_1150945202_1150945250",
-     "phase": 0,
-     "queue_W": 2.05,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1928,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 19.26,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1969,
-     "tls": "14301482192",
-     "phase": 1,
-     "queue_W": 3.05,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 1996,
-     "tls": "cluster_1150945202_1150945250",
-     "phase": 0,
-     "queue_W": 1.81,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    },
-    {
-     "t": 2009,
-     "tls": "13999738739",
-     "phase": 0,
-     "queue_W": 19.4,
-     "exit_fill": 0.0,
-     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
-     "why": "stack waiting under green while the exits are not moving"
-    }
-   ],
-   "reroutes": 364,
-   "signal_off_s": 105996,
-   "name": "Block-Tetris v12 (oracle camera)",
-   "ev": "VIP closure",
-   "seed": 11
-  },
-  {
    "delay": 701.8688354577057,
    "p95_wait": 1919.5999999999985,
    "max_wait": 2921.0,
@@ -13508,6 +13423,203 @@
    "name": "Block-Tetris v12 (oracle camera)",
    "ev": "festival surge",
    "seed": 13
+  },
+  {
+   "delay": 547.0674458661416,
+   "p95_wait": 1644.499999999999,
+   "max_wait": 2731.0,
+   "arrived": 2816,
+   "vehicles": 4064,
+   "served": 0.6929133858267716,
+   "teleports": 58,
+   "police_alerts": 124,
+   "alert_log": [
+    {
+     "t": 1550,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 1.68,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1558,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 4.2,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1558,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 1.48,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1609,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 4.26,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1635,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 6.15,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1650,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 1.83,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1671,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 4.82,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1698,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 7.81,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1701,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 5.63,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1720,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 1.76,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1753,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 9.52,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1817,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 12.0,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1818,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 4.18,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1847,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 1.52,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1874,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 3.76,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1909,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 2.05,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1928,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 19.26,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1969,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 3.05,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1996,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 1.81,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2009,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 19.4,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 364,
+   "signal_off_s": 105996,
+   "name": "Block-Tetris v12 (oracle camera)",
+   "ev": "VIP closure",
+   "seed": 11
   },
   {
    "delay": 403.20938667944415,
@@ -14578,6 +14690,2249 @@
    "reroutes": 391,
    "signal_off_s": 112577,
    "name": "Block-Tetris v12 (oracle camera)",
+   "ev": "CCTV failure",
+   "seed": 13
+  },
+  {
+   "delay": 342.5901722440945,
+   "p95_wait": 692.2499999999995,
+   "max_wait": 1982.0,
+   "arrived": 3136,
+   "vehicles": 4064,
+   "served": 0.7716535433070866,
+   "teleports": 5,
+   "police_dispatches": 2,
+   "special_s": 2240,
+   "tau_mean": 7.1641967231719255,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 2,
+   "alert_log": [
+    {
+     "t": 4666,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 131.2,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4794,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 4.53,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 476,
+   "signal_off_s": 91935,
+   "est_rmse": 6.275756958852329,
+   "cam_rmse": 6.921190691906216,
+   "rejected": 5711,
+   "name": "Block-Tetris v13-final",
+   "ev": "normal peak",
+   "seed": 11
+  },
+  {
+   "delay": 372.3612288749397,
+   "p95_wait": 753.0,
+   "max_wait": 2245.0,
+   "arrived": 3116,
+   "vehicles": 4142,
+   "served": 0.7522935779816514,
+   "teleports": 8,
+   "police_dispatches": 2,
+   "special_s": 2520,
+   "tau_mean": 7.065879506831064,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 2,
+   "alert_log": [
+    {
+     "t": 4102,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 151.21,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4766,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 7.2,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 580,
+   "signal_off_s": 97587,
+   "est_rmse": 8.580715934375863,
+   "cam_rmse": 9.043371192550195,
+   "rejected": 5582,
+   "name": "Block-Tetris v13-final",
+   "ev": "normal peak",
+   "seed": 13
+  },
+  {
+   "delay": 364.45331336847147,
+   "p95_wait": 628.6999999999998,
+   "max_wait": 2388.0,
+   "arrived": 3178,
+   "vehicles": 4174,
+   "served": 0.761379971250599,
+   "teleports": 7,
+   "police_dispatches": 0,
+   "special_s": 2310,
+   "tau_mean": 7.252195153746261,
+   "tau_min": 4.358223884135305,
+   "tau_max": 9.0,
+   "police_alerts": 0,
+   "alert_log": [],
+   "reroutes": 652,
+   "signal_off_s": 88846,
+   "est_rmse": 5.536868549134502,
+   "cam_rmse": 6.578759283058491,
+   "rejected": 7230,
+   "name": "Block-Tetris v13-final",
+   "ev": "normal peak",
+   "seed": 12
+  },
+  {
+   "delay": 430.53159202755904,
+   "p95_wait": 831.8499999999999,
+   "max_wait": 2195.0,
+   "arrived": 3040,
+   "vehicles": 4064,
+   "served": 0.7480314960629921,
+   "teleports": 5,
+   "police_dispatches": 4,
+   "special_s": 2030,
+   "tau_mean": 6.833766266071336,
+   "tau_min": 3.541070168915607,
+   "tau_max": 9.0,
+   "police_alerts": 4,
+   "alert_log": [
+    {
+     "t": 1826,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 4.19,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2609,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 1.78,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4296,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 4.69,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4461,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 163.14,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 928,
+   "signal_off_s": 92719,
+   "est_rmse": 4.719599465531956,
+   "cam_rmse": 7.926905776502009,
+   "rejected": 7677,
+   "name": "Block-Tetris v13-final",
+   "ev": "accident",
+   "seed": 11
+  },
+  {
+   "delay": 431.2132942022041,
+   "p95_wait": 953.0,
+   "max_wait": 2581.0,
+   "arrived": 3131,
+   "vehicles": 4174,
+   "served": 0.7501197891710589,
+   "teleports": 14,
+   "police_dispatches": 4,
+   "special_s": 2250,
+   "tau_mean": 7.40955705606007,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 4,
+   "alert_log": [
+    {
+     "t": 2162,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 17.06,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3309,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 2.04,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4284,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 11.23,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4789,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 189.94,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 668,
+   "signal_off_s": 87135,
+   "est_rmse": 7.8467523849946845,
+   "cam_rmse": 8.766860968381996,
+   "rejected": 5443,
+   "name": "Block-Tetris v13-final",
+   "ev": "accident",
+   "seed": 12
+  },
+  {
+   "delay": 474.214546112989,
+   "p95_wait": 989.8999999999996,
+   "max_wait": 2505.0,
+   "arrived": 3028,
+   "vehicles": 4142,
+   "served": 0.7310478029937229,
+   "teleports": 17,
+   "police_dispatches": 4,
+   "special_s": 2430,
+   "tau_mean": 7.242160915602152,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 4,
+   "alert_log": [
+    {
+     "t": 1989,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 10.12,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3709,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 14.28,
+     "exit_fill": 0.02,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4665,
+     "tls": "13999738756",
+     "phase": 1,
+     "queue_W": 2.98,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4808,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 165.35,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 870,
+   "signal_off_s": 93016,
+   "est_rmse": 9.077601687744545,
+   "cam_rmse": 9.041979678403472,
+   "rejected": 5333,
+   "name": "Block-Tetris v13-final",
+   "ev": "accident",
+   "seed": 13
+  },
+  {
+   "delay": 422.57781742125985,
+   "p95_wait": 756.0,
+   "max_wait": 1820.0,
+   "arrived": 2904,
+   "vehicles": 4064,
+   "served": 0.7145669291338582,
+   "teleports": 5,
+   "police_dispatches": 5,
+   "special_s": 2460,
+   "tau_mean": 7.924572156451255,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 5,
+   "alert_log": [
+    {
+     "t": 2687,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 2.43,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3605,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 4.51,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4164,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 6.81,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4852,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 172.75,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4963,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 10.33,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 703,
+   "signal_off_s": 91141,
+   "est_rmse": 5.06048581065039,
+   "cam_rmse": 7.439028268980953,
+   "rejected": 5486,
+   "name": "Block-Tetris v13-final",
+   "ev": "monsoon rain",
+   "seed": 11
+  },
+  {
+   "delay": 438.88215380929563,
+   "p95_wait": 769.6999999999998,
+   "max_wait": 1849.0,
+   "arrived": 2992,
+   "vehicles": 4174,
+   "served": 0.7168183996166747,
+   "teleports": 2,
+   "police_dispatches": 3,
+   "special_s": 2290,
+   "tau_mean": 7.462657020862099,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 3,
+   "alert_log": [
+    {
+     "t": 2631,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 9.34,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3330,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 3.23,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4566,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 202.8,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 678,
+   "signal_off_s": 86727,
+   "est_rmse": 7.788229376991261,
+   "cam_rmse": 7.3825096192084185,
+   "rejected": 5711,
+   "name": "Block-Tetris v13-final",
+   "ev": "monsoon rain",
+   "seed": 12
+  },
+  {
+   "delay": 440.4951762433607,
+   "p95_wait": 795.9499999999998,
+   "max_wait": 1934.0,
+   "arrived": 2972,
+   "vehicles": 4142,
+   "served": 0.7175277643650411,
+   "teleports": 4,
+   "police_dispatches": 1,
+   "special_s": 2430,
+   "tau_mean": 7.535244791459373,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 1,
+   "alert_log": [
+    {
+     "t": 2985,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 2.18,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 622,
+   "signal_off_s": 92026,
+   "est_rmse": 6.9518703899899545,
+   "cam_rmse": 8.28542032900008,
+   "rejected": 6978,
+   "name": "Block-Tetris v13-final",
+   "ev": "monsoon rain",
+   "seed": 13
+  },
+  {
+   "delay": 687.985344895546,
+   "p95_wait": 1847.699999999999,
+   "max_wait": 2708.0,
+   "arrived": 3428,
+   "vehicles": 5074,
+   "served": 0.675601103665747,
+   "teleports": 49,
+   "police_dispatches": 3,
+   "special_s": 2840,
+   "tau_mean": 7.263879010353695,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 4,
+   "alert_log": [
+    {
+     "t": 2631,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 6.47,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2676,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 6.28,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2702,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 3.92,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5299,
+     "tls": "13999738756",
+     "phase": 1,
+     "queue_W": 4.38,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 1051,
+   "signal_off_s": 78350,
+   "est_rmse": 6.415689280945704,
+   "cam_rmse": 10.772714907097608,
+   "rejected": 10930,
+   "name": "Block-Tetris v13-final",
+   "ev": "festival surge",
+   "seed": 11
+  },
+  {
+   "delay": 614.2282909520994,
+   "p95_wait": 1366.0,
+   "max_wait": 2722.0,
+   "arrived": 3691,
+   "vehicles": 5073,
+   "served": 0.7275773703922728,
+   "teleports": 15,
+   "police_dispatches": 1,
+   "special_s": 2770,
+   "tau_mean": 7.535283878405804,
+   "tau_min": 3.9000474401035365,
+   "tau_max": 9.0,
+   "police_alerts": 1,
+   "alert_log": [
+    {
+     "t": 4850,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 5.66,
+     "exit_fill": 0.03,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 802,
+   "signal_off_s": 79884,
+   "est_rmse": 6.603316012476714,
+   "cam_rmse": 10.307807242614475,
+   "rejected": 9978,
+   "name": "Block-Tetris v13-final",
+   "ev": "festival surge",
+   "seed": 12
+  },
+  {
+   "delay": 690.9000019312476,
+   "p95_wait": 1833.1499999999996,
+   "max_wait": 2858.0,
+   "arrived": 3549,
+   "vehicles": 5178,
+   "served": 0.6853997682502897,
+   "teleports": 48,
+   "police_dispatches": 3,
+   "special_s": 3010,
+   "tau_mean": 7.509387311683417,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 6,
+   "alert_log": [
+    {
+     "t": 2895,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 4.06,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2941,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 4.28,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2985,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 1,
+     "queue_W": 4.36,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5025,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 5.19,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5083,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 23.58,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5160,
+     "tls": "14121812808",
+     "phase": 0,
+     "queue_W": 83.7,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 999,
+   "signal_off_s": 70392,
+   "est_rmse": 5.556445906287086,
+   "cam_rmse": 10.224147123926594,
+   "rejected": 12705,
+   "name": "Block-Tetris v13-final",
+   "ev": "festival surge",
+   "seed": 13
+  },
+  {
+   "delay": 399.29791830708655,
+   "p95_wait": 753.0,
+   "max_wait": 2300.0,
+   "arrived": 3084,
+   "vehicles": 4064,
+   "served": 0.7588582677165354,
+   "teleports": 12,
+   "police_dispatches": 5,
+   "special_s": 2610,
+   "tau_mean": 7.143894340994686,
+   "tau_min": 3.091497353557801,
+   "tau_max": 9.0,
+   "police_alerts": 5,
+   "alert_log": [
+    {
+     "t": 1571,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 2.27,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1655,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 6.68,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1656,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 5.04,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4653,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 209.02,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4776,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 5.67,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 788,
+   "signal_off_s": 92774,
+   "est_rmse": 5.766104812140654,
+   "cam_rmse": 7.74339095664944,
+   "rejected": 5868,
+   "name": "Block-Tetris v13-final",
+   "ev": "VIP closure",
+   "seed": 11
+  },
+  {
+   "delay": 387.76442022041203,
+   "p95_wait": 728.6999999999998,
+   "max_wait": 1395.0,
+   "arrived": 3246,
+   "vehicles": 4174,
+   "served": 0.7776712985146143,
+   "teleports": 22,
+   "police_dispatches": 6,
+   "special_s": 2780,
+   "tau_mean": 7.682655999635731,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 6,
+   "alert_log": [
+    {
+     "t": 1587,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 1.35,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1649,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 2.13,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1684,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 5.77,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1709,
+     "tls": "joinedS_13999738733_7115964236_7115964240_cluster_13999738735_13999738736_2444374105_2444388992_#2more",
+     "phase": 4,
+     "queue_W": 3.8,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1775,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 1.55,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2806,
+     "tls": "344406149",
+     "phase": 1,
+     "queue_W": 7.51,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 646,
+   "signal_off_s": 86566,
+   "est_rmse": 6.5916889222635815,
+   "cam_rmse": 6.593677566738192,
+   "rejected": 5709,
+   "name": "Block-Tetris v13-final",
+   "ev": "VIP closure",
+   "seed": 12
+  },
+  {
+   "delay": 416.1976098503139,
+   "p95_wait": 753.0,
+   "max_wait": 2275.0,
+   "arrived": 3101,
+   "vehicles": 4142,
+   "served": 0.7486721390632545,
+   "teleports": 11,
+   "police_dispatches": 3,
+   "special_s": 2540,
+   "tau_mean": 7.822810087967223,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 3,
+   "alert_log": [
+    {
+     "t": 1617,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 4.9,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1618,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 2.11,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1764,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 5.38,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 800,
+   "signal_off_s": 90498,
+   "est_rmse": 6.661003284385136,
+   "cam_rmse": 8.313870002149521,
+   "rejected": 6176,
+   "name": "Block-Tetris v13-final",
+   "ev": "VIP closure",
+   "seed": 13
+  },
+  {
+   "delay": 293.107155511811,
+   "p95_wait": 444.8499999999999,
+   "max_wait": 1289.0,
+   "arrived": 3298,
+   "vehicles": 4064,
+   "served": 0.8115157480314961,
+   "teleports": 8,
+   "police_dispatches": 2,
+   "special_s": 3820,
+   "tau_mean": 7.475508738458118,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 0,
+   "alert_log": [],
+   "reroutes": 490,
+   "signal_off_s": 94851,
+   "est_rmse": 4.133894511347366,
+   "cam_rmse": 4.137008820996953,
+   "rejected": 5618,
+   "name": "Block-Tetris v13-final",
+   "ev": "signal power failure",
+   "seed": 11
+  },
+  {
+   "delay": 332.5773574508865,
+   "p95_wait": 627.6999999999998,
+   "max_wait": 1625.0,
+   "arrived": 3286,
+   "vehicles": 4174,
+   "served": 0.7872544321993292,
+   "teleports": 13,
+   "police_dispatches": 2,
+   "special_s": 3690,
+   "tau_mean": 7.572358206948486,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 0,
+   "alert_log": [],
+   "reroutes": 514,
+   "signal_off_s": 87936,
+   "est_rmse": 4.551165885538357,
+   "cam_rmse": 5.582114532032513,
+   "rejected": 6092,
+   "name": "Block-Tetris v13-final",
+   "ev": "signal power failure",
+   "seed": 12
+  },
+  {
+   "delay": 333.99264847899565,
+   "p95_wait": 579.0,
+   "max_wait": 1714.0,
+   "arrived": 3244,
+   "vehicles": 4142,
+   "served": 0.7831965234186383,
+   "teleports": 4,
+   "police_dispatches": 3,
+   "special_s": 3900,
+   "tau_mean": 7.645335413651496,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 1,
+   "alert_log": [
+    {
+     "t": 3567,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 6.24,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 541,
+   "signal_off_s": 86564,
+   "est_rmse": 5.636160613471353,
+   "cam_rmse": 6.339427787476194,
+   "rejected": 6682,
+   "name": "Block-Tetris v13-final",
+   "ev": "signal power failure",
+   "seed": 13
+  },
+  {
+   "delay": 327.5976230314961,
+   "p95_wait": 695.0,
+   "max_wait": 1974.0,
+   "arrived": 3166,
+   "vehicles": 4064,
+   "served": 0.7790354330708661,
+   "teleports": 5,
+   "police_dispatches": 1,
+   "special_s": 3900,
+   "tau_mean": 6.863217828608413,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 1,
+   "alert_log": [
+    {
+     "t": 4800,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 165.6,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 496,
+   "signal_off_s": 93634,
+   "est_rmse": 5.432855518779449,
+   "cam_rmse": 6.742970349146881,
+   "rejected": 5438,
+   "name": "Block-Tetris v13-final",
+   "ev": "CCTV failure",
+   "seed": 11
+  },
+  {
+   "delay": 333.29789889793966,
+   "p95_wait": 721.3999999999996,
+   "max_wait": 1767.0,
+   "arrived": 3224,
+   "vehicles": 4174,
+   "served": 0.7724005749880211,
+   "teleports": 2,
+   "police_dispatches": 1,
+   "special_s": 3900,
+   "tau_mean": 7.268320198937006,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 1,
+   "alert_log": [
+    {
+     "t": 4272,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 11.96,
+     "exit_fill": 0.03,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 384,
+   "signal_off_s": 88810,
+   "est_rmse": 4.9501022045312775,
+   "cam_rmse": 6.348501711579532,
+   "rejected": 5405,
+   "name": "Block-Tetris v13-final",
+   "ev": "CCTV failure",
+   "seed": 12
+  },
+  {
+   "delay": 352.03783196523415,
+   "p95_wait": 790.6499999999987,
+   "max_wait": 1990.0,
+   "arrived": 3176,
+   "vehicles": 4142,
+   "served": 0.766779333655239,
+   "teleports": 2,
+   "police_dispatches": 3,
+   "special_s": 3900,
+   "tau_mean": 7.2906690260383025,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 3,
+   "alert_log": [
+    {
+     "t": 1937,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 1.86,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2575,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 2.21,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4315,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 11.05,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 544,
+   "signal_off_s": 87951,
+   "est_rmse": 5.395518120964184,
+   "cam_rmse": 6.253355422968538,
+   "rejected": 5327,
+   "name": "Block-Tetris v13-final",
+   "ev": "CCTV failure",
+   "seed": 13
+  },
+  {
+   "delay": 342.1177583661417,
+   "p95_wait": 692.6999999999998,
+   "max_wait": 1972.0,
+   "arrived": 3132,
+   "vehicles": 4064,
+   "served": 0.7706692913385826,
+   "teleports": 5,
+   "police_dispatches": 0,
+   "special_s": 2240,
+   "tau_mean": 7.163529619566994,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 2,
+   "alert_log": [
+    {
+     "t": 4666,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 131.2,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4794,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 4.53,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 441,
+   "signal_off_s": 92460,
+   "est_rmse": 6.403125159034652,
+   "cam_rmse": 6.910104251588728,
+   "rejected": 5562,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "normal peak",
+   "seed": 11
+  },
+  {
+   "delay": 364.45331336847147,
+   "p95_wait": 628.6999999999998,
+   "max_wait": 2388.0,
+   "arrived": 3178,
+   "vehicles": 4174,
+   "served": 0.761379971250599,
+   "teleports": 7,
+   "police_dispatches": 0,
+   "special_s": 2310,
+   "tau_mean": 7.252195153746261,
+   "tau_min": 4.358223884135305,
+   "tau_max": 9.0,
+   "police_alerts": 0,
+   "alert_log": [],
+   "reroutes": 652,
+   "signal_off_s": 88846,
+   "est_rmse": 5.536868549134502,
+   "cam_rmse": 6.578759283058491,
+   "rejected": 7230,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "normal peak",
+   "seed": 12
+  },
+  {
+   "delay": 374.33998551424435,
+   "p95_wait": 786.0,
+   "max_wait": 2289.0,
+   "arrived": 3117,
+   "vehicles": 4142,
+   "served": 0.7525350072428778,
+   "teleports": 7,
+   "police_dispatches": 0,
+   "special_s": 2520,
+   "tau_mean": 7.031458306864574,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 2,
+   "alert_log": [
+    {
+     "t": 4102,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 151.21,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4541,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 1.26,
+     "exit_fill": 0.02,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 565,
+   "signal_off_s": 95340,
+   "est_rmse": 8.408931367931608,
+   "cam_rmse": 9.349113908592804,
+   "rejected": 5579,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "normal peak",
+   "seed": 13
+  },
+  {
+   "delay": 416.46893946850395,
+   "p95_wait": 966.0,
+   "max_wait": 2212.0,
+   "arrived": 3093,
+   "vehicles": 4064,
+   "served": 0.7610728346456693,
+   "teleports": 8,
+   "police_dispatches": 0,
+   "special_s": 2150,
+   "tau_mean": 7.360429176304842,
+   "tau_min": 3.8225752769372314,
+   "tau_max": 9.0,
+   "police_alerts": 4,
+   "alert_log": [
+    {
+     "t": 1826,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 4.19,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2592,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 26.26,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2624,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 3.99,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2817,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 5.03,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 565,
+   "signal_off_s": 90029,
+   "est_rmse": 5.4895732206846315,
+   "cam_rmse": 8.213200062083404,
+   "rejected": 6585,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "accident",
+   "seed": 11
+  },
+  {
+   "delay": 428.0794777192142,
+   "p95_wait": 885.0,
+   "max_wait": 2196.0,
+   "arrived": 3142,
+   "vehicles": 4174,
+   "served": 0.7527551509343555,
+   "teleports": 13,
+   "police_dispatches": 0,
+   "special_s": 2200,
+   "tau_mean": 6.907918034992552,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 3,
+   "alert_log": [
+    {
+     "t": 2162,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 17.06,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3332,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 1.33,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4608,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 4.45,
+     "exit_fill": 0.03,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 694,
+   "signal_off_s": 93189,
+   "est_rmse": 6.952190397232187,
+   "cam_rmse": 8.433934031075522,
+   "rejected": 5664,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "accident",
+   "seed": 12
+  },
+  {
+   "delay": 450.3951714147754,
+   "p95_wait": 1083.9499999999998,
+   "max_wait": 2324.0,
+   "arrived": 3085,
+   "vehicles": 4142,
+   "served": 0.7448092708836311,
+   "teleports": 15,
+   "police_dispatches": 0,
+   "special_s": 2360,
+   "tau_mean": 7.42193672885668,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 1,
+   "alert_log": [
+    {
+     "t": 1989,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 10.12,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 803,
+   "signal_off_s": 90903,
+   "est_rmse": 9.097813772534291,
+   "cam_rmse": 10.109364108662774,
+   "rejected": 5876,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "accident",
+   "seed": 13
+  },
+  {
+   "delay": 419.64777066929133,
+   "p95_wait": 735.8499999999999,
+   "max_wait": 1819.0,
+   "arrived": 2904,
+   "vehicles": 4064,
+   "served": 0.7145669291338582,
+   "teleports": 3,
+   "police_dispatches": 0,
+   "special_s": 2460,
+   "tau_mean": 7.778877725739752,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 3,
+   "alert_log": [
+    {
+     "t": 2687,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 2.43,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3571,
+     "tls": "344406149",
+     "phase": 0,
+     "queue_W": 6.23,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5092,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 3.27,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 714,
+   "signal_off_s": 89405,
+   "est_rmse": 6.4376705706773425,
+   "cam_rmse": 7.304814879278565,
+   "rejected": 5894,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "monsoon rain",
+   "seed": 11
+  },
+  {
+   "delay": 436.02462386200284,
+   "p95_wait": 815.0,
+   "max_wait": 1793.0,
+   "arrived": 2989,
+   "vehicles": 4174,
+   "served": 0.716099664590321,
+   "teleports": 5,
+   "police_dispatches": 0,
+   "special_s": 2280,
+   "tau_mean": 7.3150889847331975,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 3,
+   "alert_log": [
+    {
+     "t": 2631,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 9.34,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5083,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 14.59,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5305,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 4.33,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 832,
+   "signal_off_s": 87849,
+   "est_rmse": 6.360707871440667,
+   "cam_rmse": 6.819522383954183,
+   "rejected": 6599,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "monsoon rain",
+   "seed": 12
+  },
+  {
+   "delay": 444.02990825688073,
+   "p95_wait": 782.9499999999998,
+   "max_wait": 1744.0,
+   "arrived": 2954,
+   "vehicles": 4142,
+   "served": 0.7131820376629647,
+   "teleports": 3,
+   "police_dispatches": 0,
+   "special_s": 2430,
+   "tau_mean": 7.674435761367365,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 2,
+   "alert_log": [
+    {
+     "t": 2985,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 2.18,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4616,
+     "tls": "13999738756",
+     "phase": 1,
+     "queue_W": 5.61,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 597,
+   "signal_off_s": 91557,
+   "est_rmse": 7.6347894927869575,
+   "cam_rmse": 7.963185051387097,
+   "rejected": 6510,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "monsoon rain",
+   "seed": 13
+  },
+  {
+   "delay": 697.3749369333859,
+   "p95_wait": 1937.1999999999935,
+   "max_wait": 2622.0,
+   "arrived": 3371,
+   "vehicles": 5074,
+   "served": 0.6643673630271975,
+   "teleports": 45,
+   "police_dispatches": 0,
+   "special_s": 2840,
+   "tau_mean": 7.455889227652044,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 13,
+   "alert_log": [
+    {
+     "t": 2631,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 6.47,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2676,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 6.28,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2702,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 3.92,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3251,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 23.23,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3276,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 9.7,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3851,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 29.33,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3904,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 1,
+     "queue_W": 23.03,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4331,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 4.15,
+     "exit_fill": 0.02,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4456,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 6.47,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4504,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 1,
+     "queue_W": 10.2,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4935,
+     "tls": "13999738756",
+     "phase": 1,
+     "queue_W": 4.81,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5092,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 6.47,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5160,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 1,
+     "queue_W": 8.97,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 1409,
+   "signal_off_s": 81143,
+   "est_rmse": 8.597781848861118,
+   "cam_rmse": 11.156899246039957,
+   "rejected": 7650,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "festival surge",
+   "seed": 11
+  },
+  {
+   "delay": 614.2282909520994,
+   "p95_wait": 1366.0,
+   "max_wait": 2722.0,
+   "arrived": 3691,
+   "vehicles": 5073,
+   "served": 0.7275773703922728,
+   "teleports": 15,
+   "police_dispatches": 0,
+   "special_s": 2770,
+   "tau_mean": 7.535283878405804,
+   "tau_min": 3.9000474401035365,
+   "tau_max": 9.0,
+   "police_alerts": 1,
+   "alert_log": [
+    {
+     "t": 4850,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 5.66,
+     "exit_fill": 0.03,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 802,
+   "signal_off_s": 79884,
+   "est_rmse": 6.603316012476714,
+   "cam_rmse": 10.307807242614475,
+   "rejected": 9978,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "festival surge",
+   "seed": 12
+  },
+  {
+   "delay": 394.70577509842525,
+   "p95_wait": 889.0,
+   "max_wait": 2160.0,
+   "arrived": 3101,
+   "vehicles": 4064,
+   "served": 0.7630413385826772,
+   "teleports": 14,
+   "police_dispatches": 0,
+   "special_s": 2610,
+   "tau_mean": 7.284824936448129,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 4,
+   "alert_log": [
+    {
+     "t": 1571,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 2.27,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1655,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 6.68,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1656,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 5.04,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4318,
+     "tls": "13999738756",
+     "phase": 1,
+     "queue_W": 10.16,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 617,
+   "signal_off_s": 94180,
+   "est_rmse": 6.267130773749454,
+   "cam_rmse": 7.828135175479045,
+   "rejected": 5336,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "VIP closure",
+   "seed": 11
+  },
+  {
+   "delay": 690.4437582078021,
+   "p95_wait": 1735.2999999999993,
+   "max_wait": 2821.0,
+   "arrived": 3550,
+   "vehicles": 5178,
+   "served": 0.6855928930088837,
+   "teleports": 35,
+   "police_dispatches": 0,
+   "special_s": 3010,
+   "tau_mean": 7.500635562762252,
+   "tau_min": 3.570959251740804,
+   "tau_max": 9.0,
+   "police_alerts": 12,
+   "alert_log": [
+    {
+     "t": 2895,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 4.06,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2941,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 4.28,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2985,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 1,
+     "queue_W": 4.36,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3495,
+     "tls": "344406248",
+     "phase": 0,
+     "queue_W": 21.05,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 3585,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 9.03,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4095,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 6.47,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4232,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 1,
+     "queue_W": 38.65,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4282,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 12.75,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4697,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 4.88,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4861,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 17.31,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5159,
+     "tls": "14121812808",
+     "phase": 0,
+     "queue_W": 86.2,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5297,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 6.47,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 893,
+   "signal_off_s": 70596,
+   "est_rmse": 4.392129691048091,
+   "cam_rmse": 10.019396725277362,
+   "rejected": 12265,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "festival surge",
+   "seed": 13
+  },
+  {
+   "delay": 436.1736990896023,
+   "p95_wait": 965.0,
+   "max_wait": 2086.0,
+   "arrived": 3132,
+   "vehicles": 4174,
+   "served": 0.7503593675131768,
+   "teleports": 20,
+   "police_dispatches": 0,
+   "special_s": 2830,
+   "tau_mean": 7.414922394442194,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 7,
+   "alert_log": [
+    {
+     "t": 1587,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 1.35,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1649,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 2.13,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1684,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 5.77,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1709,
+     "tls": "joinedS_13999738733_7115964236_7115964240_cluster_13999738735_13999738736_2444374105_2444388992_#2more",
+     "phase": 4,
+     "queue_W": 3.8,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1775,
+     "tls": "cluster_1150945202_1150945250",
+     "phase": 0,
+     "queue_W": 1.55,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4596,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 4.57,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4909,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 3.59,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 686,
+   "signal_off_s": 88236,
+   "est_rmse": 7.083467925725041,
+   "cam_rmse": 8.510373794233884,
+   "rejected": 5612,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "VIP closure",
+   "seed": 12
+  },
+  {
+   "delay": 431.0995557701594,
+   "p95_wait": 1040.9499999999998,
+   "max_wait": 2113.0,
+   "arrived": 3101,
+   "vehicles": 4142,
+   "served": 0.7486721390632545,
+   "teleports": 11,
+   "police_dispatches": 0,
+   "special_s": 2620,
+   "tau_mean": 7.362244766445631,
+   "tau_min": 3.1933895761759112,
+   "tau_max": 9.0,
+   "police_alerts": 5,
+   "alert_log": [
+    {
+     "t": 1617,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 4.9,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1618,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 2.11,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 1764,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 5.38,
+     "exit_fill": 0.0,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5106,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 226.43,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5167,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 4.72,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 597,
+   "signal_off_s": 92756,
+   "est_rmse": 6.975094666548304,
+   "cam_rmse": 9.052810827519485,
+   "rejected": 6410,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "VIP closure",
+   "seed": 13
+  },
+  {
+   "delay": 485.66043553149615,
+   "p95_wait": 1176.85,
+   "max_wait": 3041.0,
+   "arrived": 2976,
+   "vehicles": 4064,
+   "served": 0.7322834645669292,
+   "teleports": 16,
+   "police_dispatches": 0,
+   "special_s": 3670,
+   "tau_mean": 7.007915838530854,
+   "tau_min": 4.507537839487604,
+   "tau_max": 9.0,
+   "police_alerts": 4,
+   "alert_log": [
+    {
+     "t": 2348,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 2.3,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2381,
+     "tls": "344406248",
+     "phase": 1,
+     "queue_W": 4.35,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5079,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 169.76,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5082,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 11.1,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 639,
+   "signal_off_s": 94204,
+   "est_rmse": 8.951192061526301,
+   "cam_rmse": 11.030283157408054,
+   "rejected": 4498,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "signal power failure",
+   "seed": 11
+  },
+  {
+   "delay": 511.251990896023,
+   "p95_wait": 1351.0999999999995,
+   "max_wait": 3413.0,
+   "arrived": 2998,
+   "vehicles": 4174,
+   "served": 0.7182558696693819,
+   "teleports": 20,
+   "police_dispatches": 0,
+   "special_s": 3690,
+   "tau_mean": 7.141808777586903,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 2,
+   "alert_log": [
+    {
+     "t": 2735,
+     "tls": "13999738739",
+     "phase": 0,
+     "queue_W": 30.1,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5030,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 1.88,
+     "exit_fill": 0.02,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 765,
+   "signal_off_s": 90258,
+   "est_rmse": 9.587487766505866,
+   "cam_rmse": 11.813730963883737,
+   "rejected": 5774,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "signal power failure",
+   "seed": 12
+  },
+  {
+   "delay": 327.8822662401575,
+   "p95_wait": 697.5499999999997,
+   "max_wait": 1935.0,
+   "arrived": 3167,
+   "vehicles": 4064,
+   "served": 0.7792814960629921,
+   "teleports": 4,
+   "police_dispatches": 0,
+   "special_s": 3900,
+   "tau_mean": 6.88234153484188,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 1,
+   "alert_log": [
+    {
+     "t": 4800,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 165.6,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 497,
+   "signal_off_s": 93653,
+   "est_rmse": 5.258992597869494,
+   "cam_rmse": 6.7683335815190055,
+   "rejected": 5460,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "CCTV failure",
+   "seed": 11
+  },
+  {
+   "delay": 535.9372742636408,
+   "p95_wait": 1293.0,
+   "max_wait": 3302.0,
+   "arrived": 2956,
+   "vehicles": 4142,
+   "served": 0.7136648961854176,
+   "teleports": 22,
+   "police_dispatches": 0,
+   "special_s": 3690,
+   "tau_mean": 7.256816101894745,
+   "tau_min": 4.121612630941279,
+   "tau_max": 9.0,
+   "police_alerts": 4,
+   "alert_log": [
+    {
+     "t": 2757,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 27.09,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4771,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 4.63,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5037,
+     "tls": "13999738756",
+     "phase": 1,
+     "queue_W": 11.17,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 5101,
+     "tls": "14301482192",
+     "phase": 1,
+     "queue_W": 176.41,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 865,
+   "signal_off_s": 91136,
+   "est_rmse": 7.944787153706957,
+   "cam_rmse": 10.411801925098091,
+   "rejected": 6171,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "signal power failure",
+   "seed": 13
+  },
+  {
+   "delay": 333.29789889793966,
+   "p95_wait": 721.3999999999996,
+   "max_wait": 1767.0,
+   "arrived": 3224,
+   "vehicles": 4174,
+   "served": 0.7724005749880211,
+   "teleports": 2,
+   "police_dispatches": 0,
+   "special_s": 3900,
+   "tau_mean": 7.268320198937006,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 1,
+   "alert_log": [
+    {
+     "t": 4272,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 11.96,
+     "exit_fill": 0.03,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 384,
+   "signal_off_s": 88829,
+   "est_rmse": 4.9501022045312775,
+   "cam_rmse": 6.348501711579532,
+   "rejected": 5405,
+   "name": "Block-Tetris v13-final (no police)",
+   "ev": "CCTV failure",
+   "seed": 12
+  },
+  {
+   "delay": 350.5714244326412,
+   "p95_wait": 728.8999999999996,
+   "max_wait": 1947.0,
+   "arrived": 3189,
+   "vehicles": 4142,
+   "served": 0.769917914051183,
+   "teleports": 2,
+   "police_dispatches": 0,
+   "special_s": 3900,
+   "tau_mean": 7.380797530858439,
+   "tau_min": 4.62,
+   "tau_max": 9.0,
+   "police_alerts": 3,
+   "alert_log": [
+    {
+     "t": 1937,
+     "tls": "joinedS_9624126958_cluster_9789461976_9789461977",
+     "phase": 0,
+     "queue_W": 1.86,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 2575,
+     "tls": "344406318",
+     "phase": 0,
+     "queue_W": 2.21,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    },
+    {
+     "t": 4315,
+     "tls": "13999738739",
+     "phase": 1,
+     "queue_W": 11.05,
+     "exit_fill": 0.01,
+     "decision": "green held, no discharge for 20 s: request officer; upstream signals throttle feed into this junction",
+     "why": "stack waiting under green while the exits are not moving"
+    }
+   ],
+   "reroutes": 511,
+   "signal_off_s": 88821,
+   "est_rmse": 6.117728531440677,
+   "cam_rmse": 6.449185727062476,
+   "rejected": 5358,
+   "name": "Block-Tetris v13-final (no police)",
    "ev": "CCTV failure",
    "seed": 13
   }
