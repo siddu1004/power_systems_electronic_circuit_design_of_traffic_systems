@@ -190,10 +190,15 @@ class TLS:
         return self.mode == "G"
 
 
+BT_V7F = dict(gmin=15.0, gsat=35.0, gmax=70.0, low=0.5, roll=2.0, mp=0.0, dark_p=0.0)
+BT_VARIANTS = {"Block-Tetris v7-final": BT_V7F}
+
+
 class Runner:
     def __init__(self, d, ctrl, event, seed, routes, targets):
         self.d, self.ctrl, self.event, self.seed, self.targets = d, ctrl, event, seed, targets
         self.routes = routes
+        self.bo = BT_VARIANTS.get(ctrl, BT_V7F)
         self.rng = np.random.default_rng(1000 + seed)
 
     # measurements -----------------------------------------------------------
@@ -250,6 +255,11 @@ class Runner:
         prop = pe[self.down_idx].max(1)
         target = np.maximum(local, 0.5 * prop)
         self.p = np.where(target >= self.p, target, np.maximum(target, self.p - 0.02))
+        if self.bo["dark_p"] > 0 and self.dark_edges:
+            # a dark junction discharges at give-way rates: throttle what is sent into it
+            for e in self.dark_edges:
+                if e in self.eidx:
+                    self.p[self.eidx[e]] = max(self.p[self.eidx[e]], self.bo["dark_p"])
         inner = load[self.inner_mask]
         self.acc = float(inner.mean()) if inner.size else 0.0
         if self.acc >= 0.45:
@@ -270,7 +280,12 @@ class Runner:
         if self.acc > 0.30:
             meter = float(np.clip(1 - (self.acc - 0.30) / 0.15, 0.05, 1.0))
         gate = np.array([(l.rsplit("_", 1)[0] in self.src_ids) if l else False for l in j.inl])
-        score = (V + 0.01 * (V / 0.55) * age) * (1 - pex) * np.clip(1 - fz ** 2, 0, 1)
+        o = self.bo
+        Vn = V
+        if o["mp"] > 0:                              # back-pressure in weight units (MaxPressure-style)
+            wout = np.array([0.4 * self.nveh.get(l, 0) if l else 0.0 for l in j.outl])
+            Vn = np.clip(V - o["mp"] * wout, 0, None)
+        score = (Vn + 0.01 * (V / 0.55) * age) * (1 - pex) * np.clip(1 - fz ** 2, 0, 1)
         score = np.where(gate, score * meter, score)
         elig = room_ok & (V > 0.05)
         score = np.where(elig, score, 0.0)
@@ -285,16 +300,16 @@ class Runner:
         el = t - j.g_start
         isat = 1.0 / 4.62
         busy = V > 0.5
-        gmin = 15.0
+        gmin = o["gmin"]
         if busy.sum() >= 6 and np.median(V[busy] / isat) > 40.0:
-            gmin = 35.0
+            gmin = o["gsat"]
         if el < gmin:
             return
         if self.em:                                  # emergency rotation (gridlock guard)
             if (V * j.G[j.cur]).sum() < 0.5 or el >= 50.0:
                 j.go((j.cur + 1) % j.P, t)
             return
-        forced = el >= 70.0
+        forced = el >= o["gmax"]
         ph = j.G[j.cur]
         end = forced
         if not end:
@@ -303,12 +318,12 @@ class Runner:
                 end = True
             blk = (ph & (V > 0.05) & ~room_ok).any()
             j.blocked_run = j.blocked_run + 1 if blk else 0
-            if (V * ph).sum() < 0.5 or j.blocked_run >= 3:
+            if (V * ph).sum() < o["low"] or j.blocked_run >= 3:
                 end = True
             if not end and int(el) % 5 == 0:
                 r = isat * np.minimum(1.0, V / 0.4) * room_ok * (1 - pex)
                 pr = j.G.astype(float) @ r
-                if pr.max() > 2.0 * (r * ph).sum() + 0.05:
+                if pr.max() > o["roll"] * (r * ph).sum() + 0.05:
                     end = True
             if not end and el >= j.planned:
                 end = True
@@ -332,10 +347,10 @@ class Runner:
         if pick is None:
             pick = int(np.argmax(ps))
             if not forced and ps[cur] >= 0.85 * ps[pick] and ps[cur] > 0:
-                j.planned = min(70.0, el + 10.0)
+                j.planned = min(o["gmax"], el + 10.0)
                 return
         if pick == cur:
-            j.planned = min(70.0, el + 10.0)
+            j.planned = min(o["gmax"], el + 10.0)
             return
         j.go(pick, t)
 
@@ -347,7 +362,8 @@ class Runner:
         drain = np.minimum(V, np.clip(room, 0, None)) * 4.62
         T = (2.5 + 1.15 * drain) * (1 - 0.5 * pex)
         Ts = T[j.G[j.cur] & (V > 0.05)]
-        j.planned = float(np.clip(Ts.max() if Ts.size else 15.0, 15.0, 70.0))
+        o = self.bo
+        j.planned = float(np.clip(Ts.max() if Ts.size else o["gmin"], o["gmin"], o["gmax"]))
         j.blocked_run = 0
 
     # cyclic controllers -------------------------------------------------------
@@ -458,6 +474,7 @@ class Runner:
         self.p = np.zeros(len(self.edges))
         self.latched = np.zeros(len(self.edges), bool)
         self.acc, self.em = 0.0, False
+        self.dark_edges = set()
         tg = self.targets
         ev = self.event
         juncs = {}
@@ -531,7 +548,9 @@ class Runner:
                         tc.trafficlight.setProgram(tid, "off")
                         if tid in juncs:
                             juncs[tid].off = True
+                            self.dark_edges |= {l.rsplit("_", 1)[0] for l in juncs[tid].inl if l}
                     else:
+                        self.dark_edges = set()
                         if tid in juncs:
                             juncs[tid].off = False
                             juncs[tid].state_str = ""
