@@ -34,3 +34,4 @@ __pycache__/
 # partial downloads
 *.tmp
 Results/BlockTetris/*/jobs/
+sumo/

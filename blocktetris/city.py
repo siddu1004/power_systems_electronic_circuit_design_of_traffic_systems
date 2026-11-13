@@ -137,6 +137,7 @@ class CityNet:
         net = CityNet()
         net.J = len(clusters)
         net.pos = [c["pos"] for c in clusters]
+        net.cluster_ids = [list(c["ids"]) for c in clusters]
         net.signalised = np.array([any(i in signals for i in c["ids"]) for c in clusters])
         net._build(segs, boundary_m)
         net.osm_signalised = net.signalised.copy()
