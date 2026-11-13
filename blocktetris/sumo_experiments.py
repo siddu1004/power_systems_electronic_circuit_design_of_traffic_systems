@@ -213,7 +213,8 @@ BT_V7F = dict(gmin=15.0, gsat=35.0, gmax=70.0, low=0.5, roll=2.0, mp=0.0, dark_p
               lowoff=False, adapt_gmin=False, area=False, cam=False, est=False,
               learn_tau=False, alert_smart=False, rr_period=60,
               police=False, officers=3, police_delay=300.0, pred_relay=False, gmaps=False,
-              special=False, sp_mp=0.25, sp_dyn=False, sp_tau=1.12, sp_acc=0.25, hol=False)
+              special=False, sp_mp=0.25, sp_dyn=False, sp_tau=1.12, sp_acc=0.25, hol=False,
+              police_jam=True)
 # v8 = v7-final + back-pressure in weight units (exit-lane load subtracted from the stack),
 # chosen on tuning seeds 1-3 (sumo_tune.py); validated on the untouched seeds 11-13
 BT_V8 = dict(BT_V7F, mp=0.25)
@@ -272,6 +273,12 @@ BT_VARIANTS["Block-Tetris v13 (rain trigger 5 %)"] = dict(BT_V13, sp_tau=1.05)
 # v3 head-of-line attribution in a shared lane: the first queued vehicle decides whether the lane moves,
 # so the lane's whole stack counts for that vehicle's movement (camera sees the lead vehicle)
 BT_VARIANTS["Block-Tetris v13 (+ v3 HOL)"] = dict(BT_V13, hol=True)
+# tuning showed officers called to general jams do worse than Block-Tetris (VIP closure) and special
+# mode is neutral: final candidates
+_H = dict(BT_V13, hol=True)
+BT_VARIANTS["Block-Tetris v13 (+HOL, no special)"] = dict(_H, special=False)
+BT_VARIANTS["Block-Tetris v13 (+HOL, police dark/blockage only)"] = dict(_H, police_jam=False)
+BT_VARIANTS["Block-Tetris v13 (+HOL, no special, police dark/blockage only)"] = dict(_H, special=False, police_jam=False)
 
 
 class Runner:
@@ -646,7 +653,7 @@ class Runner:
                 f = self.fills(j)
                 jam = f[f < 1.0].mean() >= 0.7 if (f < 1.0).any() else False
                 j.jam_since = j.jam_since if jam else t
-                if jam and t - j.jam_since >= 120:
+                if jam and t - j.jam_since >= 120 and self.bo["police_jam"]:
                     self.request_police(j, t, "jam >= 70 % for 120 s")
                 if j.off:
                     self.request_police(j, t, "signal dark")
