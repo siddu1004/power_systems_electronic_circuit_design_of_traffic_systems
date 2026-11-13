@@ -16,9 +16,16 @@ toy simulations, not static slides:
   8. results (SUMO, full Coimbatore city)
   9. what is integrated
 
-    python -m blocktetris.explainer_video            # full video
+    python -m blocktetris.explainer_video            # full video, captions only
     python -m blocktetris.explainer_video --quick    # 8 fps draft
+    python -m blocktetris.explainer_video --voice path/to/en-us-ryan-medium.onnx   # + narration
+
+Narration uses Piper (pip install piper-tts). Voices: the rhasspy/piper GitHub
+release v0.0.2 tarballs (e.g. voice-en-us-ryan-medium.tar.gz) work; they are not
+kept in the repo. Scene lengths stretch to fit the speech.
 """
+import subprocess
+import wave
 import argparse
 import os
 
@@ -40,6 +47,73 @@ TAU = 4.62                      # s per weight unit per lane
 
 SCENES = [("title", 5), ("blocks", 13), ("junction", 24), ("network", 20), ("reroute", 16),
           ("sensing", 16), ("failsafe", 16), ("results", 13), ("credits", 7)]
+
+NARRATION = {
+    "title": "I C T M Tetris: intra-city traffic management with a Tetris core.",
+    "blocks": "Every vehicle is a block with a weight. A bike is zero point two, an auto zero point three, a car zero "
+              "point four, a bus zero point nine. Blocks fall onto the lane and stack at the stop line. The stack weight "
+              "V is the queue. Electrically, the stack is a capacitor: its charge rises with arrivals and falls when "
+              "the green drains it.",
+    "junction": "Each arm has a stack for left, straight and right. A green light is a tap that drains its stacks. The "
+                "junction keeps the green until the stack empties, until another phase could pass twice the current, "
+                "or until seventy seconds. The scores on the right decide which piece fits best. A full exit road "
+                "shrinks a stack's score, so no block is pushed where it cannot land.",
+    "network": "Roads are delay lines with a hard capacity. When a road reaches eighty percent it trips a relay. Its "
+               "pressure spreads upstream, halved at each junction, and the upstream signals send less into it. At the "
+               "city boundary the gate meters the inflow. Charge is conserved everywhere: every block that enters is "
+               "accounted for.",
+    "reroute": "Traffic flows from high pressure to low. Every sixty seconds, each road is priced by its queue, by how "
+               "fast its signal is really clearing it, and by its capacity. Drivers headed into a hot road are offered "
+               "a route that rejoins later, the way a navigation app would.",
+    "sensing": "Cameras see only sixty metres, with noise, occlusion and the odd bad reading. A robust estimator "
+               "predicts each lane's queue from the counts in and out, then corrects it with the camera, rejecting "
+               "outliers. A queue beyond the view is a lower bound. If a camera dies, the lane is rebuilt from its "
+               "neighbours.",
+    "failsafe": "Failsafes. If a signal goes dark, an officer is dispatched and takes over the junction. If a green is "
+                "held but nothing moves, an alert goes out with the decision and its justification. Quiet junctions "
+                "switch off. Narrow or incident-prone roads are allowed fewer blocks before they count as full.",
+    "results": "On the full Coimbatore city in SUMO, with three hundred and thirty-three signals, I C T M Tetris had "
+               "the lowest delay in every event: about a third less than actuated control. On the corridor it beat "
+               "MaxPressure by thirteen percent and actuated control by sixteen. One junction decision takes about a "
+               "tenth of a millisecond.",
+    "credits": "I C T M Tetris integrates every version: from the block weights and rolling re-placement of version "
+               "three, to the estimator, rerouting, officers and learning of version thirteen. Validated in an "
+               "electrical twin and in SUMO on OpenStreetMap Coimbatore.",
+}
+
+
+def synthesize(voice_path, audio_dir):
+    """one wav per scene; returns {scene: seconds}"""
+    from piper import PiperVoice
+    voice = PiperVoice.load(voice_path)
+    os.makedirs(audio_dir, exist_ok=True)
+    secs = {}
+    for name, text in NARRATION.items():
+        fp = os.path.join(audio_dir, f"{name}.wav")
+        with wave.open(fp, "wb") as w:
+            voice.synthesize_wav(text, w)
+        with wave.open(fp) as w:
+            secs[name] = w.getnframes() / w.getframerate()
+    return secs
+
+
+def build_track(audio_dir, scenes, out_wav, lead=0.6):
+    """scene wavs padded with silence to each scene's length, concatenated"""
+    rate, chunks = None, []
+    for name, dur in scenes:
+        with wave.open(os.path.join(audio_dir, f"{name}.wav")) as w:
+            rate = w.getframerate()
+            data = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16)
+        n = int(dur * rate)
+        buf = np.zeros(n, dtype=np.int16)
+        k = min(len(data), n - int(lead * rate))
+        buf[int(lead * rate):int(lead * rate) + k] = data[:k]
+        chunks.append(buf)
+    with wave.open(out_wav, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(np.concatenate(chunks).tobytes())
 
 
 # ───────────────────────────── helpers ─────────────────────────────
@@ -608,9 +682,16 @@ def main():
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--fps", type=int, default=0)
     ap.add_argument("--out", default=os.path.join(OUT_DIR, "ICTM_Tetris_explainer.mp4"))
+    ap.add_argument("--voice", default="", help="Piper .onnx voice; adds narration and stretches scenes to fit")
+    ap.add_argument("--audio-dir", default=os.path.join(OUT_DIR, "_narration"))
     a = ap.parse_args()
     fps = a.fps or (8 if a.quick else 24)
     os.makedirs(OUT_DIR, exist_ok=True)
+    scenes_list = list(SCENES)
+    if a.voice:
+        secs = synthesize(a.voice, a.audio_dir)
+        scenes_list = [(n, max(d, int(np.ceil(secs[n] + 1.2)))) for n, d in SCENES]
+        print("scene lengths with narration:", scenes_list, flush=True)
     rng = np.random.default_rng(7)
     scenes = {"title": TitleScene(), "blocks": BlocksScene(rng), "junction": JunctionScene(np.random.default_rng(11)),
               "network": NetworkScene(), "reroute": RerouteScene(np.random.default_rng(5)),
@@ -619,10 +700,11 @@ def main():
     fig = plt.figure(figsize=(W, H), dpi=100)
     fig.patch.set_facecolor(BG)
     writer = FFMpegWriter(fps=fps, codec="libx264", extra_args=["-pix_fmt", "yuv420p", "-crf", "26", "-preset", "slow"])
-    total = sum(d for _, d in SCENES)
+    total = sum(d for _, d in scenes_list)
     frame = 0
-    with writer.saving(fig, a.out, dpi=100):
-        for name, dur in SCENES:
+    silent = a.out.replace(".mp4", "_silent.mp4") if a.voice else a.out
+    with writer.saving(fig, silent, dpi=100):
+        for name, dur in scenes_list:
             sc = scenes[name]
             nfr = int(dur * fps)
             for i in range(nfr):
@@ -636,6 +718,12 @@ def main():
                     fig.savefig(os.path.join(OUT_DIR, f"frame_{name}.png"), dpi=100, facecolor=BG)
                 frame += 1
             print(f"scene {name} done ({frame}/{total * fps} frames)", flush=True)
+    if a.voice:
+        track = os.path.join(a.audio_dir, "track.wav")
+        build_track(a.audio_dir, scenes_list, track)
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", silent, "-i", track, "-c:v", "copy", "-c:a", "aac",
+                        "-b:a", "96k", "-shortest", a.out], check=True)
+        os.remove(silent)
     print("saved", a.out)
 
 
