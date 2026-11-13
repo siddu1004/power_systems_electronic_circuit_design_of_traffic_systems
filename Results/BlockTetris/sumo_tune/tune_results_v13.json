@@ -32,7 +32,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v9": {
    "gmin": 15.0,
@@ -66,7 +67,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v9 (no reroute)": {
    "gmin": 15.0,
@@ -100,7 +102,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v7-final + reroute": {
    "gmin": 15.0,
@@ -134,7 +137,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v10": {
    "gmin": 15.0,
@@ -168,7 +172,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v10 (no reroute)": {
    "gmin": 15.0,
@@ -202,7 +207,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v11 (unified)": {
    "gmin": 15.0,
@@ -236,7 +242,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v10 (real camera, no estimator)": {
    "gmin": 15.0,
@@ -270,7 +277,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v7-final (real camera, no estimator)": {
    "gmin": 15.0,
@@ -304,7 +312,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v12": {
    "gmin": 15.0,
@@ -338,7 +347,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v12 (oracle camera)": {
    "gmin": 15.0,
@@ -372,7 +382,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v12b": {
    "gmin": 15.0,
@@ -406,7 +417,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v13": {
    "gmin": 15.0,
@@ -440,7 +452,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v13 (special incl. v9 dyn)": {
    "gmin": 15.0,
@@ -474,7 +487,8 @@
    "sp_dyn": true,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v13 (no special mode)": {
    "gmin": 15.0,
@@ -508,7 +522,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v13 (no police)": {
    "gmin": 15.0,
@@ -542,7 +557,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v13 (no v4/v6 prediction)": {
    "gmin": 15.0,
@@ -576,7 +592,8 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v13 (rain trigger 5 %)": {
    "gmin": 15.0,
@@ -610,7 +627,8 @@
    "sp_dyn": false,
    "sp_tau": 1.05,
    "sp_acc": 0.25,
-   "hol": false
+   "hol": false,
+   "police_jam": true
   },
   "Block-Tetris v13 (+ v3 HOL)": {
    "gmin": 15.0,
@@ -644,7 +662,113 @@
    "sp_dyn": false,
    "sp_tau": 1.12,
    "sp_acc": 0.25,
-   "hol": true
+   "hol": true,
+   "police_jam": true
+  },
+  "Block-Tetris v13 (+HOL, no special)": {
+   "gmin": 15.0,
+   "gsat": 35.0,
+   "gmax": 70.0,
+   "low": 0.5,
+   "roll": 2.0,
+   "mp": 0.0,
+   "dark_p": 0.0,
+   "dyn": false,
+   "z": 1.0,
+   "gdyn": 60.0,
+   "reroute": true,
+   "comply": 0.5,
+   "alert": true,
+   "lowoff": true,
+   "adapt_gmin": true,
+   "area": true,
+   "cam": true,
+   "est": true,
+   "learn_tau": true,
+   "alert_smart": true,
+   "rr_period": 60,
+   "police": true,
+   "officers": 3,
+   "police_delay": 300.0,
+   "pred_relay": true,
+   "gmaps": true,
+   "special": false,
+   "sp_mp": 0.25,
+   "sp_dyn": false,
+   "sp_tau": 1.12,
+   "sp_acc": 0.25,
+   "hol": true,
+   "police_jam": true
+  },
+  "Block-Tetris v13 (+HOL, police dark/blockage only)": {
+   "gmin": 15.0,
+   "gsat": 35.0,
+   "gmax": 70.0,
+   "low": 0.5,
+   "roll": 2.0,
+   "mp": 0.0,
+   "dark_p": 0.0,
+   "dyn": false,
+   "z": 1.0,
+   "gdyn": 60.0,
+   "reroute": true,
+   "comply": 0.5,
+   "alert": true,
+   "lowoff": true,
+   "adapt_gmin": true,
+   "area": true,
+   "cam": true,
+   "est": true,
+   "learn_tau": true,
+   "alert_smart": true,
+   "rr_period": 60,
+   "police": true,
+   "officers": 3,
+   "police_delay": 300.0,
+   "pred_relay": true,
+   "gmaps": true,
+   "special": true,
+   "sp_mp": 0.25,
+   "sp_dyn": false,
+   "sp_tau": 1.12,
+   "sp_acc": 0.25,
+   "hol": true,
+   "police_jam": false
+  },
+  "Block-Tetris v13 (+HOL, no special, police dark/blockage only)": {
+   "gmin": 15.0,
+   "gsat": 35.0,
+   "gmax": 70.0,
+   "low": 0.5,
+   "roll": 2.0,
+   "mp": 0.0,
+   "dark_p": 0.0,
+   "dyn": false,
+   "z": 1.0,
+   "gdyn": 60.0,
+   "reroute": true,
+   "comply": 0.5,
+   "alert": true,
+   "lowoff": true,
+   "adapt_gmin": true,
+   "area": true,
+   "cam": true,
+   "est": true,
+   "learn_tau": true,
+   "alert_smart": true,
+   "rr_period": 60,
+   "police": true,
+   "officers": 3,
+   "police_delay": 300.0,
+   "pred_relay": true,
+   "gmaps": true,
+   "special": false,
+   "sp_mp": 0.25,
+   "sp_dyn": false,
+   "sp_tau": 1.12,
+   "sp_acc": 0.25,
+   "hol": true,
+   "police_jam": false
   }
  },
  "seeds": [
@@ -776,7 +900,7 @@
   "Block-Tetris v12b": {
    "normal peak": 391.40607181613035,
    "accident": 468.8743537682021,
-   "monsoon rain": 464.73613879995514,
+   "monsoon rain": 464.7361387999551,
    "festival surge": 642.9606563705474,
    "signal power failure": 522.770311278331,
    "VIP closure": 447.01162571095097,
@@ -784,8 +908,8 @@
   },
   "Block-Tetris v13": {
    "normal peak": 387.3294225219852,
-   "accident": 447.02536149898697,
-   "monsoon rain": 459.54613853267944,
+   "accident": 447.0253614989868,
+   "monsoon rain": 459.54613853267955,
    "festival surge": 629.7919087801844,
    "signal power failure": 342.0940889076751,
    "VIP closure": 473.4985772351652,
@@ -820,7 +944,7 @@
   },
   "Block-Tetris v13 (no v4/v6 prediction)": {
    "normal peak": 389.9462729415946,
-   "accident": 467.1686596058815,
+   "accident": 467.1686596058816,
    "monsoon rain": 472.62464328972806,
    "festival surge": 652.620701386271,
    "signal power failure": 351.95130230972586,
@@ -844,6 +968,33 @@
    "signal power failure": 335.57812534505774,
    "VIP closure": 422.23696463163947,
    "CCTV failure": 361.71984958518755
+  },
+  "Block-Tetris v13 (+HOL, no special)": {
+   "normal peak": 372.5326035517853,
+   "accident": 456.2001773086528,
+   "monsoon rain": 451.70093758929835,
+   "festival surge": 635.5478338175625,
+   "signal power failure": 337.46597537793497,
+   "VIP closure": 422.25714280261786,
+   "CCTV failure": 370.09643745168654
+  },
+  "Block-Tetris v13 (+HOL, police dark/blockage only)": {
+   "normal peak": 375.62880695783343,
+   "accident": 458.85379735406985,
+   "monsoon rain": 452.0979774117286,
+   "festival surge": 633.4579237996877,
+   "signal power failure": 335.3585500584578,
+   "VIP closure": 419.9247740901633,
+   "CCTV failure": 368.60586775898463
+  },
+  "Block-Tetris v13 (+HOL, no special, police dark/blockage only)": {
+   "normal peak": 372.5326035517853,
+   "accident": 456.2001773086529,
+   "monsoon rain": 451.70093758929835,
+   "festival surge": 635.5478338175626,
+   "signal power failure": 337.46597537793497,
+   "VIP closure": 422.25714280261786,
+   "CCTV failure": 370.09643745168654
   }
  }
 }

@@ -279,6 +279,10 @@ _H = dict(BT_V13, hol=True)
 BT_VARIANTS["Block-Tetris v13 (+HOL, no special)"] = dict(_H, special=False)
 BT_VARIANTS["Block-Tetris v13 (+HOL, police dark/blockage only)"] = dict(_H, police_jam=False)
 BT_VARIANTS["Block-Tetris v13 (+HOL, no special, police dark/blockage only)"] = dict(_H, special=False, police_jam=False)
+# FINAL (chosen on tuning seeds 1-6): every version v1-v13 integrated + v3 head-of-line attribution
+BT_V13F = dict(BT_V13, hol=True)
+BT_VARIANTS["Block-Tetris v13-final"] = BT_V13F
+BT_VARIANTS["Block-Tetris v13-final (no police)"] = dict(BT_V13F, police=False)
 
 
 class Runner:
