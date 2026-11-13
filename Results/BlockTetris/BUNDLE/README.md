@@ -289,3 +289,40 @@ v12 against the existing controllers: −5.1 % vs MaxPressure (16 of 21 runs bet
 - **Police alerts:** 2.7 per run at demand 0.07 and 7.7 per run at 0.10, down from about 110 in v12.
 - **Estimator queue RMSE:** 6.2 / 7.4 W, against 7.7 / 12.5 W for the raw camera.
 - **Tuning history:** `Results/BlockTetris/sumo_tune/tune_results_v13.json`. Seeds 1–6 were used for tuning; the reported numbers use seeds 11–13 only.
+
+### Full Coimbatore city in SUMO (333 signals, 1,595 edges)
+
+- **Run setup:** demand 0.03, seeds 11–12, 7 events. That is 14 paired runs per controller.
+- **Figure:** `sumo_city__sumo1_delay_by_event_x0.03.png`.
+
+**Mean time loss per vehicle (s)**
+
+| Event | Fixed-40 | SITRA-MPC | Actuated | MaxPressure | **BT v13-final** |
+|---|---|---|---|---|---|
+| Normal peak | 615 | 428 | 404 | 553 | **264** |
+| Accident | 639 | 464 | 416 | 544 | **274** |
+| Monsoon rain | 632 | 452 | 436 | 571 | **322** |
+| Festival surge | 682 | 468 | 438 | 614 | **301** |
+| VIP closure | 638 | 477 | 431 | 602 | **285** |
+| Signal power failure | 615 | 444 | 392 | 534 | **247** |
+| CCTV failure | 615 | 414 | 404 | 553 | **290** |
+
+**v13-final against each controller (14 of 14 runs better in every case, p = 0.0001)**
+
+| Compared with | Change in delay |
+|---|---|
+| Actuated | −32 % |
+| SITRA-MPC | −37 % |
+| MaxPressure | −50 % |
+| Fixed-40 | −55 % |
+
+- **Most trips finished:** v13-final completes the most trips in every event (0.48–0.58).
+- **Police load:** about 6 alerts and 4 dispatches per run.
+
+**Caveats**
+
+| Issue | Note |
+|---|---|
+| MaxPressure gridlocks in the city | 335–404 teleports per run, against about 30 for the others. City-wide MaxPressure without coordination locks up, so the comparison with Actuated (−32 %) is the conservative one. |
+| City trips are long | Only about half finish within 90 min for every controller. |
+| The city gain is larger than on the corridor | Corridor: −11 to −16 %. Likely reasons: rerouting has many alternative paths, signal-off helps at many lightly used junctions, and perimeter metering helps. To be confirmed with ablations. |
