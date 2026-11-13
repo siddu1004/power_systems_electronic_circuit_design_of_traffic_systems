@@ -26,3 +26,11 @@ Branch pushed: local `bt-results` -> remote `ccr-27f50ecb-k5rs69` (push with
   - the police pool has not been sized for the city;
   - demand is uniform.
 - The paper is still NOT to be written.
+
+## Update: SUMO validation (13 Nov)
+- **Code:** `blocktetris/sumo_net.py` (map conversion), `sumo_experiments.py` (runner, all controllers, BT v7-final to v12), `sumo_estimator.py` (robust estimator), `sumo_tune.py` (tuning on seeds 1–6).
+- **Final version:** v12 (realistic cameras + estimator).
+- **Results on test seeds 11–13:** −5 % vs MaxPressure, −5 to −8 % vs Actuated (significant).
+- **Where to find it:** BUNDLE README section "SUMO VALIDATION".
+- **Next:** full-city SUMO (`sumo/city`, 333 TLS), police-alert rate limiting, rain and surge.
+- The paper is still NOT to be written.

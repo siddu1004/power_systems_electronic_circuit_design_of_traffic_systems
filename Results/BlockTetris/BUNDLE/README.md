@@ -169,3 +169,79 @@ Script: `python -m blocktetris.delay_breakdown`. Raw data: `city_full/delay_brea
 **Open items**
 - The worst wait of v7-final (146–161 s) is still above Actuated and SITRA-MPC (~90–100 s).
 - Demand is uniform per gate (0.06). Real OD and turn counts would sharpen the city picture.
+
+---
+
+## SUMO VALIDATION (microscopic simulator, independent of the e-twin)
+
+**Setup**
+- **Map and signals:** the same OSM map and the same signal layout as the e-twin (`blocktetris/sumo_net.py`): the Peelamedu–Avinashi corridor, 31 signals.
+- **Phases:** every controller drives the same netconvert phase sets, with 3 s amber and 2 s all-red.
+- **Controllers:**
+  - Actuated is SUMO's own built-in controller.
+  - MaxPressure (Varaiya) reads exact lane queue counts.
+  - SITRA-MPC, SCOOT-like and SCATS-like are ported from the e-twin.
+- **Traffic:** vehicle mix of 45 % bikes, 15 % autos, 30 % cars and 10 % heavy; 90-minute morning peak.
+- **Events:** the same 7 events.
+- **Metric:** mean time loss per vehicle, counting unfinished and never-inserted vehicles.
+- **Seeds:**
+  - Tuning used seeds 1–6 (`sumo_tune.py`).
+  - **All reported numbers are on the untouched seeds 11–13.**
+  - Paired Wilcoxon tests, 21 runs per controller.
+
+**Main finding:** the e-twin overstated the margin. Its baselines ran split phasing (one arm at a time). With equal phase sets, Block-Tetris leads the best real-world controllers by about **5–8 %**, not 2–3×.
+
+**Versions added during validation (all kept)**
+
+| Version | What it adds | Tuning (seeds 1–6) | Kept as |
+|---|---|---|---|
+| v8 | Back-pressure in weight units | Won on 3 seeds, lost on seeds 11–13 | Negative result |
+| v9 | Fixed + dynamic green from queue mean/std; exit-overflow probability; look-ahead green cut; pressure rerouting; green-but-not-moving police alert | Dynamic green hurt (+5–10 %); rerouting helped | Rerouting and alerts carried forward |
+| v10 | Signal off in light traffic; self-adjusting fixed green; per-road block area (lanes, fill, incident history) | Neutral to positive | Carried forward |
+| v11 | All versions combined, on realistic cameras + robust estimator | 504 s | Superseded by v12 |
+| **v12** | **v11 without the statistics-timed green** | **476 s (best on realistic sensors)** | **Final** |
+
+**Robust estimator (`sumo_estimator.py`)**
+
+- **Camera model:** 60 m view; 8 % noise; heavy-vehicle occlusion; 2 % outliers; dead and frozen cameras.
+- **Filter:**
+  - KCL counts drive the prediction step (inflow delayed by travel time).
+  - The Kalman update uses a χ² gate (rejection when ν²/S > 9).
+  - Accepted innovations are Huber-weighted.
+  - A queue beyond the view gives a lower-bound update.
+  - A frozen camera is detected.
+  - A dead camera falls back to KCL only.
+- **At high demand:** queue RMSE is **6.7 W against 13.1 W for the raw camera** (halved), with about 8,400 bad readings rejected per run.
+- **On realistic sensors:** v7-final loses about 12 %; v12 with the estimator loses about 2 % against a perfect camera.
+
+**Demand 0.07, test seeds 11–13: mean time loss (s)**
+
+| Event | Fixed-40 | SITRA-MPC | Actuated | MaxPressure | BT v7-final | BT v7-final + reroute (perfect camera) | **BT v12 (real camera)** |
+|---|---|---|---|---|---|---|---|
+| Normal peak | 804 | 537 | 386 | 389 | 365 | 358 | 366 |
+| Accident | 887 | 664 | 515 | 500 | 442 | 419 | 437 |
+| Monsoon rain | 874 | 664 | 526 | 458 | 493 | 496 | 469 |
+| Festival surge | 1054 | 911 | 652 | 647 | 685 | 633 | 674 |
+| VIP closure | 840 | 664 | 488 | 519 | 426 | 400 | 422 |
+| Signal power failure | 799 | 673 | 561 | 507 | 539 | 530 | 501 |
+| CCTV failure | 804 | 559 | 386 | 389 | 375 | 371 | 364 |
+
+v12 against the existing controllers: −5.1 % vs MaxPressure (16 of 21 runs better, p = 0.03) and −7.9 % vs Actuated (18 of 21, p = 0.003).
+
+**Demand 0.10 (oversaturated), test seeds 11–13**
+- v12: −5.0 % vs MaxPressure (19 of 21 runs better, p < 0.001) and −4.7 % vs Actuated (20 of 21, p < 0.001).
+- v7-final + reroute: −6.5 % vs MaxPressure (21 of 21).
+
+**Pressure rerouting is the confirmed new gain:** −3.5 % (p = 0.001) at demand 0.07 and −1.9 % (p = 0.001) at 0.10 over v7-final.
+
+**Open items**
+
+| Issue | Note |
+|---|---|
+| Police-alert rate at saturation | About 110 per run at demand 0.10, when the green-not-moving test fires at every gridlocked junction. It needs rate limiting and grouping by area before deployment. |
+| Rain and festival surge | MaxPressure is still close or better in rain. |
+| Full-city SUMO | 333 signals. Pending. |
+| Real demand | Real OD or turn counts are not yet used. |
+| Police interaction | The photo-and-suggestion workflow with officers is design only (owner's note, kept for later). |
+
+**Figures:** `sumo_peelamedu__sumo1_delay_by_event_x0.07.png` and `sumo_peelamedu__sumo1_delay_by_event_x0.1.png`.
