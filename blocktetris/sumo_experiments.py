@@ -26,6 +26,7 @@ import json
 import os
 import pickle
 import xml.etree.ElementTree as ET
+import zlib
 from collections import defaultdict
 from multiprocessing import Pool
 
@@ -163,6 +164,10 @@ class TLS:
         self.last_plan = -1e9
         self.off = False
         self.blind = False
+        self.mu = np.zeros(self.n)
+        self.var = np.zeros(self.n)
+        self.alerted = False
+        self.last_move = 0.0
         self.state_str = self.greens[0]
         tc.trafficlight.setRedYellowGreenState(tid, self.state_str)
 
@@ -191,11 +196,23 @@ class TLS:
         return self.mode == "G"
 
 
-BT_V7F = dict(gmin=15.0, gsat=35.0, gmax=70.0, low=0.5, roll=2.0, mp=0.0, dark_p=0.0)
+BT_V7F = dict(gmin=15.0, gsat=35.0, gmax=70.0, low=0.5, roll=2.0, mp=0.0, dark_p=0.0,
+              dyn=False, z=1.0, gdyn=60.0, reroute=False, comply=0.5, alert=False)
 # v8 = v7-final + back-pressure in weight units (exit-lane load subtracted from the stack),
 # chosen on tuning seeds 1-3 (sumo_tune.py); validated on the untouched seeds 11-13
 BT_V8 = dict(BT_V7F, mp=0.25)
-BT_VARIANTS = {"Block-Tetris v7-final": BT_V7F, "Block-Tetris v8": BT_V8}
+# v9 (design from the project owner, 13 Nov):
+#  * fixed + dynamic green: every served phase keeps a fixed minimum; the extension is shared by
+#    the phases' queue mean + standard deviation (EWMA statistics of each stack)
+#  * forward/backward thinking: a stack is valued by the probability that its exit road does NOT
+#    overflow (exit fill mean / std), and a green is cut where the exit would fill (mean + z*std)
+#  * pressure rerouting: every 60 s each road's cost = travel + queue / measured leave rate +
+#    capacity penalty; a share of vehicles headed into a hot road re-route (navigation-app style)
+#  * green-but-not-moving -> police alert with the decision and its justification (logged)
+BT_V9 = dict(BT_V7F, dyn=True, reroute=True, alert=True)
+BT_VARIANTS = {"Block-Tetris v7-final": BT_V7F, "Block-Tetris v8": BT_V8, "Block-Tetris v9": BT_V9,
+               "Block-Tetris v9 (no reroute)": dict(BT_V9, reroute=False),
+               "Block-Tetris v7-final + reroute": dict(BT_V7F, reroute=True, alert=True)}
 
 
 class Runner:
@@ -227,6 +244,14 @@ class Runner:
             fill[ln] = min(1.0, tc.lane.getLastStepOccupancy(ln) / 100.0 * 1.35)
         self.fill = fill
         self.nveh = {ln: tc.lane.getLastStepVehicleNumber(ln) for ln in self.out_lanes}
+        if self.bo["dyn"]:
+            a = 0.05
+            for ln, f in fill.items():
+                m = self.fmu.get(ln, f)
+                v = self.fvar.get(ln, 0.0)
+                d = f - m
+                self.fmu[ln] = m + a * d
+                self.fvar[ln] = (1 - a) * (v + a * d * d)
 
     def V(self, j):
         """weighted queue per link of junction j (BT: 60 m CCTV + road-count tail, 8 % noise; blind = counts only)"""
@@ -289,7 +314,19 @@ class Runner:
         if o["mp"] > 0:                              # back-pressure in weight units (MaxPressure-style)
             wout = np.array([0.4 * self.nveh.get(l, 0) if l else 0.0 for l in j.outl])
             Vn = np.clip(V - o["mp"] * wout, 0, None)
-        score = (Vn + 0.01 * (V / 0.55) * age) * (1 - pex) * np.clip(1 - fz ** 2, 0, 1)
+        if o["dyn"]:
+            a = 0.05
+            d = V - j.mu
+            j.mu = j.mu + a * d
+            j.var = (1 - a) * (j.var + a * d * d)
+            # backward thinking: chance that the exit road does NOT overflow (Gaussian on its fill)
+            from math import erf
+            fm = np.array([self.fmu.get(l, 0.0) if l else 1.0 for l in j.outl])
+            fs = np.sqrt(np.array([self.fvar.get(l, 0.0) if l else 0.0 for l in j.outl])) + 0.03
+            safe = np.array([0.5 * (1 + erf(x / 1.41421356)) for x in (0.9 - np.maximum(fm, fz)) / fs])
+            score = (Vn + 0.01 * (V / 0.55) * age) * (1 - pex) * safe
+        else:
+            score = (Vn + 0.01 * (V / 0.55) * age) * (1 - pex) * np.clip(1 - fz ** 2, 0, 1)
         score = np.where(gate, score * meter, score)
         elig = room_ok & (V > 0.05)
         score = np.where(elig, score, 0.0)
@@ -303,6 +340,14 @@ class Runner:
             return
         el = t - j.g_start
         isat = 1.0 / 4.62
+        if o["alert"] and not j.alerted and el >= 20.0 and (V * j.G[j.cur]).sum() > 1.0 \
+                and t - j.last_move >= 20.0:
+            j.alerted = True
+            self.alerts.append(dict(t=int(t), tls=j.id, phase=int(j.cur), queue_W=round(float((V * j.G[j.cur]).sum()), 2),
+                                    exit_fill=round(float(self.fills(j)[j.G[j.cur]].max()), 2),
+                                    decision="green held, no discharge for 20 s: request officer; "
+                                             "upstream signals throttle feed into this junction",
+                                    why="stack waiting under green while the exits are not moving"))
         busy = V > 0.5
         gmin = o["gmin"]
         if busy.sum() >= 6 and np.median(V[busy] / isat) > 40.0:
@@ -369,6 +414,63 @@ class Runner:
         o = self.bo
         j.planned = float(np.clip(Ts.max() if Ts.size else o["gmin"], o["gmin"], o["gmax"]))
         j.blocked_run = 0
+        j.alerted = False
+        if o["dyn"]:
+            # fixed allocation (gmin) + dynamic share of gdyn by mean + std of each phase's stacks
+            S = j.G.astype(float) @ (j.mu + np.sqrt(j.var))
+            tot = S[S > 0.05].sum()
+            Tdyn = o["gdyn"] * S[j.cur] / tot if tot > 0 else 0.0
+            # forward thinking: stop before the exit fills (mean + z * std of its fill)
+            Troom = []
+            for i in np.where(j.G[j.cur] & (V > 0.05))[0]:
+                l = j.outl[i]
+                if not l:
+                    continue
+                capW = self.tc.lane.getLength(l) * 0.075
+                head = 0.9 - self.fmu.get(l, fz[i]) - o["z"] * np.sqrt(self.fvar.get(l, 0.0))
+                Troom.append(max(0.0, head) * capW * 4.62)
+            Tplan = o["gmin"] + Tdyn
+            if Troom:
+                Tplan = min(Tplan, max(o["gmin"], min(Troom)))
+            j.planned = float(np.clip(Tplan, o["gmin"], o["gmax"]))
+
+    def reroute(self, t, closed):
+        """pressure rerouting: road cost = free travel + queue / measured leave rate + capacity
+        penalty; vehicles whose next roads are hot re-route (compliance share, at most every 120 s)"""
+        tc = self.tc
+        qe = defaultdict(float)
+        for (ln, _), w in self.q.items():
+            qe[ln.rsplit("_", 1)[0]] += w
+        hot = set()
+        for e, lanes in self.edge_lanes.items():
+            if e in closed or e.startswith(":"):
+                continue
+            rate = max(sum(self.orate.get(l, 0.0) for l in lanes), 0.05)
+            delay = min(qe.get(e, 0.0) / rate, 900.0)
+            fill = min(1.0, tc.edge.getLastStepOccupancy(e) / 100.0 * 1.35)
+            pen = 0.0 if fill < 0.8 else (fill - 0.8) / 0.2 * 300.0
+            tc.edge.adaptTraveltime(e, self.edge_tt[e] + delay + pen)
+            if fill >= 0.8 or delay >= 90.0:
+                hot.add(e)
+        if not hot:
+            return
+        for v in tc.vehicle.getIDList():
+            if v.startswith("_") or v not in self.route:
+                continue
+            if (zlib.crc32(v.encode()) % 100) >= 100 * self.bo["comply"] or t - self.last_rr.get(v, -1e9) < 120:
+                continue
+            r = self.route[v]
+            i = tc.vehicle.getRouteIndex(v)
+            if hot & set(r[i + 1:i + 4]):
+                try:
+                    tc.vehicle.rerouteTraveltime(v, False)
+                    nr = tc.vehicle.getRoute(v)
+                    if list(nr) != list(r):
+                        self.n_reroute += 1
+                    self.route[v] = nr
+                    self.last_rr[v] = t
+                except Exception:
+                    pass
 
     # cyclic controllers -------------------------------------------------------
     def phase_q(self, j):
@@ -479,6 +581,12 @@ class Runner:
         self.latched = np.zeros(len(self.edges), bool)
         self.acc, self.em = 0.0, False
         self.dark_edges = set()
+        self.fmu, self.fvar = {}, {}
+        self.alerts, self.n_reroute = [], 0
+        self.orate = defaultdict(float)
+        self.last_rr = {}
+        self.edge_lanes = {e.getID(): [l.getID() for l in e.getLanes()] for e in net.getEdges()}
+        self.edge_tt = {e.getID(): e.getLength() / max(e.getSpeed(), 1.0) for e in net.getEdges()}
         tg = self.targets
         ev = self.event
         juncs = {}
@@ -596,6 +704,18 @@ class Runner:
                         for j in self.lane_j.get(ln, ()):
                             jj, ks = j
                             jj.flow[ks] += newc
+            if self.ctrl.startswith("Block") and (self.bo["reroute"] or self.bo["alert"]):
+                for ln in self.in_lanes:
+                    ids = set(tc.lane.getLastStepVehicleIDs(ln))
+                    left = len(prev_ids[ln] - ids)
+                    prev_ids[ln] = ids
+                    self.orate[ln] += 0.02 * (0.4 * left - self.orate[ln])
+                    if left:
+                        for jj, ks in self.lane_j.get(ln, ()):
+                            if jj.mode == "G" and ks == jj.cur:
+                                jj.last_move = t
+            if self.ctrl.startswith("Block") and self.bo["reroute"] and t % 60 == 30 and t > 300:
+                self.reroute(t, closed)
             if self.ctrl.startswith("Block"):
                 self.relay()
             for j in juncs.values():
@@ -612,7 +732,9 @@ class Runner:
                     self.cyclic(j, t, new == "new")
         loaded = tc.simulation.getLoadedNumber() if hasattr(tc.simulation, "getLoadedNumber") else None
         tc.close()
-        return self.metrics(trip_out, teleports)
+        m = self.metrics(trip_out, teleports)
+        m.update(police_alerts=len(self.alerts), alert_log=self.alerts[:20], reroutes=self.n_reroute)
+        return m
 
     def metrics(self, trip_out, teleports):
         tl, waits, arrived, n = [], [], 0, 0

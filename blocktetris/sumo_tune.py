@@ -16,16 +16,22 @@ import numpy as np
 
 from . import sumo_experiments as S
 
-VARIANTS = {
+ROUND = os.environ.get("TUNE_ROUND", "v9")
+VARIANTS_V8 = {
     "Block-Tetris v7-final": S.BT_V7F,
     "Block-Tetris tune A (short greens)": dict(S.BT_V7F, gmin=10.0, gsat=25.0, gmax=50.0),
     "Block-Tetris tune B (back-pressure)": dict(S.BT_V7F, mp=0.25),
     "Block-Tetris tune C (dark throttle)": dict(S.BT_V7F, dark_p=0.5),
     "Block-Tetris tune D (A+B+C)": dict(S.BT_V7F, gmin=10.0, gsat=25.0, gmax=50.0, mp=0.25, dark_p=0.5),
 }
+# round 2 (v9): 6 tuning seeds (3 were too few: v8 won on 1-3 and lost on 11-13)
+VARIANTS_V9 = {k: S.BT_VARIANTS[k] for k in ("Block-Tetris v7-final", "Block-Tetris v9",
+                                             "Block-Tetris v9 (no reroute)", "Block-Tetris v7-final + reroute")}
+VARIANTS = VARIANTS_V9 if ROUND == "v9" else VARIANTS_V8
 BASE = ["MaxPressure", "Actuated"]
-EVENTS = ["normal peak", "accident", "monsoon rain", "festival surge", "signal power failure"]
-SEEDS = [1, 2, 3]
+EVENTS = ["normal peak", "accident", "monsoon rain", "festival surge", "signal power failure"] + \
+    (["VIP closure"] if ROUND == "v9" else [])
+SEEDS = [1, 2, 3, 4, 5, 6] if ROUND == "v9" else [1, 2, 3]
 SCALE = 0.07
 
 
@@ -63,7 +69,7 @@ def main():
     tab = {c: {e: float(np.mean([r["delay"] for r in rows if r["name"] == c and r["ev"] == e])) for e in EVENTS}
            for c in names}
     json.dump(dict(variants={k: v for k, v in VARIANTS.items()}, seeds=SEEDS, table=tab),
-              open(os.path.join(out, "tune_results.json"), "w"), indent=1)
+              open(os.path.join(out, f"tune_results_{ROUND}.json"), "w"), indent=1)
     print(f"\n{'variant':28s} " + " ".join(f"{e[:11]:>11s}" for e in EVENTS) + "        mean")
     for c in names:
         v = [tab[c][e] for e in EVENTS]

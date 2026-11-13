@@ -414,6 +414,62 @@
    "served": 0.6234283484570416,
    "teleports": 58.666666666666664,
    "vehicles": 5985.333333333333
+  },
+  "normal peak|Block-Tetris v8": {
+   "delay": 717.7362670727354,
+   "p95_wait": 2050.95,
+   "max_wait": 3123.3333333333335,
+   "served": 0.627446640519865,
+   "teleports": 58.0,
+   "vehicles": 5985.333333333333
+  },
+  "accident|Block-Tetris v8": {
+   "delay": 813.0431278836062,
+   "p95_wait": 1962.8333333333333,
+   "max_wait": 2769.6666666666665,
+   "served": 0.6053706043645928,
+   "teleports": 61.0,
+   "vehicles": 5985.333333333333
+  },
+  "monsoon rain|Block-Tetris v8": {
+   "delay": 788.9193488850815,
+   "p95_wait": 1845.2999999999993,
+   "max_wait": 2955.0,
+   "served": 0.5850483954764096,
+   "teleports": 58.0,
+   "vehicles": 5985.333333333333
+  },
+  "festival surge|Block-Tetris v8": {
+   "delay": 1135.7347575879887,
+   "p95_wait": 2252.0333333333333,
+   "max_wait": 3176.0,
+   "served": 0.5205918339017733,
+   "teleports": 68.66666666666667,
+   "vehicles": 7355.666666666667
+  },
+  "VIP closure|Block-Tetris v8": {
+   "delay": 838.3568736364259,
+   "p95_wait": 1997.5666666666664,
+   "max_wait": 2872.6666666666665,
+   "served": 0.5986582197297701,
+   "teleports": 68.0,
+   "vehicles": 5985.333333333333
+  },
+  "signal power failure|Block-Tetris v8": {
+   "delay": 876.0109561956882,
+   "p95_wait": 2060.683333333333,
+   "max_wait": 3364.0,
+   "served": 0.5835741568534027,
+   "teleports": 69.33333333333333,
+   "vehicles": 5985.333333333333
+  },
+  "CCTV failure|Block-Tetris v8": {
+   "delay": 724.9653655912243,
+   "p95_wait": 2004.6666666666667,
+   "max_wait": 3050.0,
+   "served": 0.6217207070665207,
+   "teleports": 54.666666666666664,
+   "vehicles": 5985.333333333333
   }
  },
  "rows": [
@@ -598,18 +654,6 @@
    "seed": 13
   },
   {
-   "delay": 1117.8188455721727,
-   "p95_wait": 2535.0,
-   "max_wait": 3668.0,
-   "arrived": 2858,
-   "vehicles": 5951,
-   "served": 0.48025541925726767,
-   "teleports": 71,
-   "name": "Fixed-40",
-   "ev": "signal power failure",
-   "seed": 12
-  },
-  {
    "delay": 1184.6470905748663,
    "p95_wait": 2879.0,
    "max_wait": 4091.0,
@@ -622,15 +666,15 @@
    "seed": 11
   },
   {
-   "delay": 1015.4790757855824,
-   "p95_wait": 2095.5,
-   "max_wait": 3562.0,
-   "arrived": 3048,
+   "delay": 1117.8188455721727,
+   "p95_wait": 2535.0,
+   "max_wait": 3668.0,
+   "arrived": 2858,
    "vehicles": 5951,
-   "served": 0.5121828264157284,
-   "teleports": 50,
+   "served": 0.48025541925726767,
+   "teleports": 71,
    "name": "Fixed-40",
-   "ev": "CCTV failure",
+   "ev": "signal power failure",
    "seed": 12
   },
   {
@@ -658,6 +702,18 @@
    "seed": 11
   },
   {
+   "delay": 1015.4790757855824,
+   "p95_wait": 2095.5,
+   "max_wait": 3562.0,
+   "arrived": 3048,
+   "vehicles": 5951,
+   "served": 0.5121828264157284,
+   "teleports": 50,
+   "name": "Fixed-40",
+   "ev": "CCTV failure",
+   "seed": 12
+  },
+  {
    "delay": 1078.9604417870785,
    "p95_wait": 2478.0,
    "max_wait": 3929.0,
@@ -670,18 +726,6 @@
    "seed": 13
   },
   {
-   "delay": 707.9781482103849,
-   "p95_wait": 1973.5,
-   "max_wait": 3339.0,
-   "arrived": 3675,
-   "vehicles": 5951,
-   "served": 0.617543270038649,
-   "teleports": 53,
-   "name": "Actuated",
-   "ev": "normal peak",
-   "seed": 12
-  },
-  {
    "delay": 761.7973629679144,
    "p95_wait": 2115.8499999999995,
    "max_wait": 3242.0,
@@ -692,6 +736,18 @@
    "name": "Actuated",
    "ev": "normal peak",
    "seed": 11
+  },
+  {
+   "delay": 707.9781482103849,
+   "p95_wait": 1973.5,
+   "max_wait": 3339.0,
+   "arrived": 3675,
+   "vehicles": 5951,
+   "served": 0.617543270038649,
+   "teleports": 53,
+   "name": "Actuated",
+   "ev": "normal peak",
+   "seed": 12
   },
   {
    "delay": 761.5434944361401,
@@ -1126,18 +1182,6 @@
    "seed": 12
   },
   {
-   "delay": 756.7718282085561,
-   "p95_wait": 2137.8499999999995,
-   "max_wait": 3176.0,
-   "arrived": 3635,
-   "vehicles": 5984,
-   "served": 0.6074532085561497,
-   "teleports": 78,
-   "name": "MaxPressure",
-   "ev": "CCTV failure",
-   "seed": 11
-  },
-  {
    "delay": 883.7693306759676,
    "p95_wait": 2379.0,
    "max_wait": 3204.0,
@@ -1148,6 +1192,18 @@
    "name": "MaxPressure",
    "ev": "signal power failure",
    "seed": 13
+  },
+  {
+   "delay": 756.7718282085561,
+   "p95_wait": 2137.8499999999995,
+   "max_wait": 3176.0,
+   "arrived": 3635,
+   "vehicles": 5984,
+   "served": 0.6074532085561497,
+   "teleports": 78,
+   "name": "MaxPressure",
+   "ev": "CCTV failure",
+   "seed": 11
   },
   {
    "delay": 730.7983196101495,
@@ -2178,6 +2234,258 @@
    "served": 0.6176714831423351,
    "teleports": 62,
    "name": "Block-Tetris v7-final",
+   "ev": "CCTV failure",
+   "seed": 13
+  },
+  {
+   "delay": 694.3368072592841,
+   "p95_wait": 1818.0,
+   "max_wait": 3109.0,
+   "arrived": 3761,
+   "vehicles": 5951,
+   "served": 0.6319946227524785,
+   "teleports": 54,
+   "name": "Block-Tetris v8",
+   "ev": "normal peak",
+   "seed": 12
+  },
+  {
+   "delay": 718.5201520721924,
+   "p95_wait": 2217.8499999999995,
+   "max_wait": 3109.0,
+   "arrived": 3773,
+   "vehicles": 5984,
+   "served": 0.6305147058823529,
+   "teleports": 54,
+   "name": "Block-Tetris v8",
+   "ev": "normal peak",
+   "seed": 11
+  },
+  {
+   "delay": 740.3518418867299,
+   "p95_wait": 2117.0,
+   "max_wait": 3152.0,
+   "arrived": 3732,
+   "vehicles": 6021,
+   "served": 0.6198305929247633,
+   "teleports": 66,
+   "name": "Block-Tetris v8",
+   "ev": "normal peak",
+   "seed": 13
+  },
+  {
+   "delay": 826.0924649064171,
+   "p95_wait": 2225.0,
+   "max_wait": 2968.0,
+   "arrived": 3633,
+   "vehicles": 5984,
+   "served": 0.6071189839572193,
+   "teleports": 64,
+   "name": "Block-Tetris v8",
+   "ev": "accident",
+   "seed": 11
+  },
+  {
+   "delay": 796.4003965720046,
+   "p95_wait": 1773.5,
+   "max_wait": 2598.0,
+   "arrived": 3600,
+   "vehicles": 5951,
+   "served": 0.6049403461603092,
+   "teleports": 59,
+   "name": "Block-Tetris v8",
+   "ev": "accident",
+   "seed": 12
+  },
+  {
+   "delay": 816.6365221723967,
+   "p95_wait": 1890.0,
+   "max_wait": 2743.0,
+   "arrived": 3637,
+   "vehicles": 6021,
+   "served": 0.6040524829762498,
+   "teleports": 60,
+   "name": "Block-Tetris v8",
+   "ev": "accident",
+   "seed": 13
+  },
+  {
+   "delay": 783.3404662433154,
+   "p95_wait": 1850.3999999999978,
+   "max_wait": 2948.0,
+   "arrived": 3542,
+   "vehicles": 5984,
+   "served": 0.5919117647058824,
+   "teleports": 61,
+   "name": "Block-Tetris v8",
+   "ev": "monsoon rain",
+   "seed": 11
+  },
+  {
+   "delay": 767.9188808603595,
+   "p95_wait": 1701.5,
+   "max_wait": 3023.0,
+   "arrived": 3471,
+   "vehicles": 5951,
+   "served": 0.5832633170895648,
+   "teleports": 49,
+   "name": "Block-Tetris v8",
+   "ev": "monsoon rain",
+   "seed": 12
+  },
+  {
+   "delay": 815.4986995515695,
+   "p95_wait": 1984.0,
+   "max_wait": 2894.0,
+   "arrived": 3492,
+   "vehicles": 6021,
+   "served": 0.5799701046337817,
+   "teleports": 64,
+   "name": "Block-Tetris v8",
+   "ev": "monsoon rain",
+   "seed": 13
+  },
+  {
+   "delay": 1116.2633486735247,
+   "p95_wait": 2207.6499999999996,
+   "max_wait": 2912.0,
+   "arrived": 3893,
+   "vehicles": 7388,
+   "served": 0.5269355711965349,
+   "teleports": 61,
+   "name": "Block-Tetris v8",
+   "ev": "festival surge",
+   "seed": 11
+  },
+  {
+   "delay": 1169.4991675734493,
+   "p95_wait": 2244.45,
+   "max_wait": 3214.0,
+   "arrived": 3743,
+   "vehicles": 7352,
+   "served": 0.5091131664853101,
+   "teleports": 73,
+   "name": "Block-Tetris v8",
+   "ev": "festival surge",
+   "seed": 12
+  },
+  {
+   "delay": 1121.441756516992,
+   "p95_wait": 2304.0,
+   "max_wait": 3402.0,
+   "arrived": 3852,
+   "vehicles": 7327,
+   "served": 0.5257267640234748,
+   "teleports": 72,
+   "name": "Block-Tetris v8",
+   "ev": "festival surge",
+   "seed": 13
+  },
+  {
+   "delay": 843.9984993315508,
+   "p95_wait": 2088.699999999999,
+   "max_wait": 2860.0,
+   "arrived": 3578,
+   "vehicles": 5984,
+   "served": 0.597927807486631,
+   "teleports": 70,
+   "name": "Block-Tetris v8",
+   "ev": "VIP closure",
+   "seed": 11
+  },
+  {
+   "delay": 837.8183431356075,
+   "p95_wait": 1952.0,
+   "max_wait": 2892.0,
+   "arrived": 3523,
+   "vehicles": 5951,
+   "served": 0.5920013443118803,
+   "teleports": 63,
+   "name": "Block-Tetris v8",
+   "ev": "VIP closure",
+   "seed": 12
+  },
+  {
+   "delay": 833.2537784421193,
+   "p95_wait": 1952.0,
+   "max_wait": 2866.0,
+   "arrived": 3649,
+   "vehicles": 6021,
+   "served": 0.6060455073907989,
+   "teleports": 71,
+   "name": "Block-Tetris v8",
+   "ev": "VIP closure",
+   "seed": 13
+  },
+  {
+   "delay": 869.0777723930481,
+   "p95_wait": 2108.5499999999984,
+   "max_wait": 3373.0,
+   "arrived": 3543,
+   "vehicles": 5984,
+   "served": 0.5920788770053476,
+   "teleports": 60,
+   "name": "Block-Tetris v8",
+   "ev": "signal power failure",
+   "seed": 11
+  },
+  {
+   "delay": 848.2743454881532,
+   "p95_wait": 1966.5,
+   "max_wait": 3480.0,
+   "arrived": 3502,
+   "vehicles": 5951,
+   "served": 0.5884725256259452,
+   "teleports": 74,
+   "name": "Block-Tetris v8",
+   "ev": "signal power failure",
+   "seed": 12
+  },
+  {
+   "delay": 725.9138569518717,
+   "p95_wait": 2104.0,
+   "max_wait": 3149.0,
+   "arrived": 3740,
+   "vehicles": 5984,
+   "served": 0.625,
+   "teleports": 61,
+   "name": "Block-Tetris v8",
+   "ev": "CCTV failure",
+   "seed": 11
+  },
+  {
+   "delay": 697.6327995294909,
+   "p95_wait": 1809.0,
+   "max_wait": 2968.0,
+   "arrived": 3742,
+   "vehicles": 5951,
+   "served": 0.6288018820366325,
+   "teleports": 49,
+   "name": "Block-Tetris v8",
+   "ev": "CCTV failure",
+   "seed": 12
+  },
+  {
+   "delay": 910.6807507058629,
+   "p95_wait": 2107.0,
+   "max_wait": 3239.0,
+   "arrived": 3433,
+   "vehicles": 6021,
+   "served": 0.5701710679289155,
+   "teleports": 74,
+   "name": "Block-Tetris v8",
+   "ev": "signal power failure",
+   "seed": 13
+  },
+  {
+   "delay": 751.3494402923102,
+   "p95_wait": 2101.0,
+   "max_wait": 3033.0,
+   "arrived": 3681,
+   "vehicles": 6021,
+   "served": 0.6113602391629297,
+   "teleports": 54,
+   "name": "Block-Tetris v8",
    "ev": "CCTV failure",
    "seed": 13
   }
