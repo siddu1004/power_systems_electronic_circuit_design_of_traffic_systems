@@ -18,10 +18,10 @@ from . import sumo_experiments as S
 
 VARIANTS = {
     "Block-Tetris v7-final": S.BT_V7F,
-    "BT tune A (short greens)": dict(S.BT_V7F, gmin=10.0, gsat=25.0, gmax=50.0),
-    "BT tune B (back-pressure)": dict(S.BT_V7F, mp=0.25),
-    "BT tune C (dark throttle)": dict(S.BT_V7F, dark_p=0.5),
-    "BT tune D (A+B+C)": dict(S.BT_V7F, gmin=10.0, gsat=25.0, gmax=50.0, mp=0.25, dark_p=0.5),
+    "Block-Tetris tune A (short greens)": dict(S.BT_V7F, gmin=10.0, gsat=25.0, gmax=50.0),
+    "Block-Tetris tune B (back-pressure)": dict(S.BT_V7F, mp=0.25),
+    "Block-Tetris tune C (dark throttle)": dict(S.BT_V7F, dark_p=0.5),
+    "Block-Tetris tune D (A+B+C)": dict(S.BT_V7F, gmin=10.0, gsat=25.0, gmax=50.0, mp=0.25, dark_p=0.5),
 }
 BASE = ["MaxPressure", "Actuated"]
 EVENTS = ["normal peak", "accident", "monsoon rain", "festival surge", "signal power failure"]
