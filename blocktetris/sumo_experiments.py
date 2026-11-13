@@ -234,6 +234,12 @@ BT_V11 = dict(BT_V10, cam=True, est=True)
 BT_VARIANTS["Block-Tetris v11 (unified)"] = BT_V11
 BT_VARIANTS["Block-Tetris v10 (real camera, no estimator)"] = dict(BT_V10, cam=True)
 BT_VARIANTS["Block-Tetris v7-final (real camera, no estimator)"] = dict(BT_V7F, cam=True)
+# v12 candidate: tuning showed v9's statistics-timed green (dyn) costs delay while rerouting helps,
+# so v12 = v11 without dyn: v7-final core + pressure rerouting + police alerts + v10 signal-off /
+# adaptive fixed time / block area + realistic cameras through the robust estimator
+BT_V12 = dict(BT_V11, dyn=False)
+BT_VARIANTS["Block-Tetris v12"] = BT_V12
+BT_VARIANTS["Block-Tetris v12 (oracle camera)"] = dict(BT_V12, cam=False, est=False)
 
 
 class Runner:
