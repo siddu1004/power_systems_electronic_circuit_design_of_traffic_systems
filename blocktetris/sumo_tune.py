@@ -28,18 +28,25 @@ VARIANTS_V8 = {
 VARIANTS_V9 = {k: S.BT_VARIANTS[k] for k in ("Block-Tetris v7-final", "Block-Tetris v9",
                                              "Block-Tetris v9 (no reroute)", "Block-Tetris v7-final + reroute")}
 VARIANTS_V10 = dict(VARIANTS_V9, **{k: S.BT_VARIANTS[k] for k in ("Block-Tetris v10", "Block-Tetris v10 (no reroute)")})
-VARIANTS = {"v9": VARIANTS_V9, "v10": VARIANTS_V10}.get(ROUND, VARIANTS_V8)
+VARIANTS_V11 = dict(VARIANTS_V10, **{k: S.BT_VARIANTS[k] for k in (
+    "Block-Tetris v11 (unified)", "Block-Tetris v10 (real camera, no estimator)",
+    "Block-Tetris v7-final (real camera, no estimator)")})
+VARIANTS = {"v9": VARIANTS_V9, "v10": VARIANTS_V10, "v11": VARIANTS_V11}.get(ROUND, VARIANTS_V8)
 BASE = ["MaxPressure", "Actuated"]
 EVENTS = ["normal peak", "accident", "monsoon rain", "festival surge", "signal power failure"] + \
-    (["VIP closure"] if ROUND in ("v9", "v10") else [])
-SEEDS = [1, 2, 3, 4, 5, 6] if ROUND in ("v9", "v10") else [1, 2, 3]
+    (["VIP closure"] if ROUND in ("v9", "v10", "v11") else []) + (["CCTV failure"] if ROUND == "v11" else [])
+SEEDS = [1, 2, 3, 4, 5, 6] if ROUND in ("v9", "v10", "v11") else [1, 2, 3]
 SCALE = 0.07
 
 
 def _job(a):
     d, c, ev, s, r, tg = a
     S.BT_VARIANTS.update(VARIANTS)
-    m = S.Runner(d, c, ev, s, r, tg).run()
+    try:
+        m = S.Runner(d, c, ev, s, r, tg).run()
+    except Exception:                                   # SWIG exceptions do not pickle
+        import traceback
+        raise RuntimeError(f"{c} | {ev} | {s}\n" + traceback.format_exc()) from None
     m.update(name=c, ev=ev, seed=s)
     return m
 

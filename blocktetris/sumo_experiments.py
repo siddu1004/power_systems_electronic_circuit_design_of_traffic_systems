@@ -202,7 +202,7 @@ class TLS:
 
 BT_V7F = dict(gmin=15.0, gsat=35.0, gmax=70.0, low=0.5, roll=2.0, mp=0.0, dark_p=0.0,
               dyn=False, z=1.0, gdyn=60.0, reroute=False, comply=0.5, alert=False,
-              lowoff=False, adapt_gmin=False, area=False)
+              lowoff=False, adapt_gmin=False, area=False, cam=False, est=False)
 # v8 = v7-final + back-pressure in weight units (exit-lane load subtracted from the stack),
 # chosen on tuning seeds 1-3 (sumo_tune.py); validated on the untouched seeds 11-13
 BT_V8 = dict(BT_V7F, mp=0.25)
@@ -225,6 +225,15 @@ BT_VARIANTS = {"Block-Tetris v7-final": BT_V7F, "Block-Tetris v8": BT_V8, "Block
 BT_V10 = dict(BT_V9, lowoff=True, adapt_gmin=True, area=True)
 BT_VARIANTS["Block-Tetris v10"] = BT_V10
 BT_VARIANTS["Block-Tetris v10 (no reroute)"] = dict(BT_V10, reroute=False)
+# v11 = every version combined (v3 core + v4/v6 estimation + v5 blind rebuild + v7-final guarantee and
+# police alerts + v9 dynamic green / look-ahead / rerouting + v10 signal-off / adaptive fixed time /
+# block area) on REALISTIC cameras (60 m view, noise, occlusion, outliers, failures) through the
+# robust lane estimator (KCL counts + Kalman + gate + Huber + lower bound + frozen-camera test).
+# Ablations on the same realistic cameras show what the estimator itself is worth.
+BT_V11 = dict(BT_V10, cam=True, est=True)
+BT_VARIANTS["Block-Tetris v11 (unified)"] = BT_V11
+BT_VARIANTS["Block-Tetris v10 (real camera, no estimator)"] = dict(BT_V10, cam=True)
+BT_VARIANTS["Block-Tetris v7-final (real camera, no estimator)"] = dict(BT_V7F, cam=True)
 
 
 class Runner:
@@ -251,6 +260,39 @@ class Runner:
                     q[(ln, nxt)] += w
                     hal[(ln, nxt)] += 1
         self.q, self.cnt, self.hal = q, cnt, hal
+        if self.ctrl.startswith("Block") and (self.bo["cam"] or self.bo["est"]):
+            vis = {}
+            for ln in self.in_lanes:
+                Lh = self.lane_len[ln]
+                vq, nh, full, comp = 0.0, 0, False, defaultdict(float)
+                for v in tc.lane.getLastStepVehicleIDs(ln):
+                    if v not in self.route:
+                        continue
+                    pos = tc.vehicle.getLanePosition(v)
+                    if pos < Lh - 60.0:
+                        continue
+                    w = WEIGHT.get(self.vtype[v], 0.4)
+                    r = self.route[v]
+                    i = tc.vehicle.getRouteIndex(v)
+                    comp[r[i + 1] if 0 <= i < len(r) - 1 else None] += w
+                    if self.vtype[v] == "heavy":
+                        nh += 1
+                    if tc.vehicle.getSpeed(v) < 1.0:
+                        vq += w
+                        if pos < Lh - 52.0:
+                            full = True
+                vis[ln] = (vq, nh, full, dict(comp))
+            self.vis = vis
+            if self.bo["est"]:
+                truth = defaultdict(float)
+                for (ln, _), w in q.items():
+                    truth[ln] += w
+                self.Qhat = self.est.step(t, truth, vis)
+            else:
+                self.zcam = {}
+                for ln in self.in_lanes:
+                    vq, nh, full, _ = vis[ln]
+                    self.zcam[ln] = self.est.camera(ln, vq, nh, full)
         fill = {}
         for ln in self.out_lanes:
             fill[ln] = min(1.0, tc.lane.getLastStepOccupancy(ln) / 100.0 * 1.35)
@@ -271,14 +313,27 @@ class Runner:
         share = defaultdict(int)
         for i in range(j.n):
             share[(j.inl[i], j.oute[i])] += 1
+        real = self.ctrl.startswith("Block") and (self.bo["cam"] or self.bo["est"])
         for i in range(j.n):
-            if j.inl[i] is None:
+            l = j.inl[i]
+            if l is None:
                 continue
-            if j.blind:
-                V[i] = 0.6 * self.cnt[j.inl[i]] / max(1, sum(1 for k in range(j.n) if j.inl[k] == j.inl[i]))
+            if real:
+                nx = {j.oute[k] for k in range(j.n) if j.inl[k] == l}
+                f = self.est.split(l, j.oute[i])
+                if f is None:
+                    f = 1.0 / max(1, len(nx))
+                if self.bo["est"]:
+                    lane_q = self.Qhat.get(l, 0.0)
+                else:
+                    z = self.zcam.get(l)
+                    lane_q = (0.6 * self.cnt[l]) if (z is None or j.blind) else z
+                V[i] = lane_q * f / share[(l, j.oute[i])]
+            elif j.blind:
+                V[i] = 0.6 * self.cnt[l] / max(1, sum(1 for k in range(j.n) if j.inl[k] == l))
             else:
-                V[i] = self.q[(j.inl[i], j.oute[i])] / share[(j.inl[i], j.oute[i])]
-        if self.ctrl.startswith("Block"):
+                V[i] = self.q[(l, j.oute[i])] / share[(l, j.oute[i])]
+        if self.ctrl.startswith("Block") and not real:
             V *= np.clip(1 + 0.08 * self.rng.standard_normal(j.n), 0.5, 1.5)
         return V
 
@@ -670,6 +725,13 @@ class Runner:
         self.out_lanes = sorted({l for j in juncs.values() for l in j.outl if l})
         self.vtype, self.route = {}, {}
         prev_ids = {ln: set() for ln in self.in_lanes}
+        self.lane_len = {ln: tc.lane.getLength(ln) for ln in self.in_lanes}
+        self.est, self.Qhat, self.zcam, self.vis = None, {}, {}, {}
+        if self.ctrl.startswith("Block") and (self.bo["cam"] or self.bo["est"]):
+            from .sumo_estimator import RobustQueueEstimator
+            self.est = RobustQueueEstimator(tc, self.in_lanes, np.random.default_rng(2000 + self.seed),
+                                            lambda v: WEIGHT.get(self.vtype.get(v, "car"), 0.4),
+                                            lambda l: tc.lane.getMaxSpeed(l))
         self.lane_j = defaultdict(list)
         for j in juncs.values():
             for k in range(j.P):
@@ -746,6 +808,9 @@ class Runner:
                 for tid in tg["junc2"]:
                     if tid in juncs:
                         juncs[tid].blind = t == T0
+                        if self.est is not None:
+                            ls = {l for l in juncs[tid].inl if l}
+                            self.est.dead = (self.est.dead | ls) if t == T0 else (self.est.dead - ls)
             tc.simulationStep()
             teleports += tc.simulation.getStartingTeleportNumber()
             for v in tc.simulation.getDepartedIDList():
@@ -812,6 +877,9 @@ class Runner:
         m = self.metrics(trip_out, teleports)
         m.update(police_alerts=len(self.alerts), alert_log=self.alerts[:20], reroutes=self.n_reroute,
                  signal_off_s=int(self.low_off_s))
+        if self.est is not None and self.bo["est"]:
+            e, c = self.est.rmse()
+            m.update(est_rmse=e, cam_rmse=c, rejected=int(self.est.n_rej))
         return m
 
     def metrics(self, trip_out, teleports):
