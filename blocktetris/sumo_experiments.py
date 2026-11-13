@@ -174,6 +174,9 @@ class TLS:
         self.sat_ls = 0.0
         self.last_alert = -1e9
         self._vt, self._vc = -1, None
+        self.officer = None
+        self.calm_since_p = 0.0
+        self.jam_since = 0.0
         self.low_off = False
         self.calm_since = 0.0
         self.off_since = 0.0
@@ -208,7 +211,9 @@ class TLS:
 BT_V7F = dict(gmin=15.0, gsat=35.0, gmax=70.0, low=0.5, roll=2.0, mp=0.0, dark_p=0.0,
               dyn=False, z=1.0, gdyn=60.0, reroute=False, comply=0.5, alert=False,
               lowoff=False, adapt_gmin=False, area=False, cam=False, est=False,
-              learn_tau=False, alert_smart=False, rr_period=60)
+              learn_tau=False, alert_smart=False, rr_period=60,
+              police=False, officers=3, police_delay=300.0, pred_relay=False, gmaps=False,
+              special=False, sp_mp=0.25, sp_dyn=False, sp_tau=1.12, sp_acc=0.25)
 # v8 = v7-final + back-pressure in weight units (exit-lane load subtracted from the stack),
 # chosen on tuning seeds 1-3 (sumo_tune.py); validated on the untouched seeds 11-13
 BT_V8 = dict(BT_V7F, mp=0.25)
@@ -249,11 +254,21 @@ BT_VARIANTS["Block-Tetris v12 (oracle camera)"] = dict(BT_V12, cam=False, est=Fa
 # v13 = v12 + each junction learns its own discharge time per weight unit online (rain, heavy mix,
 # narrow lanes change it) + smarter police alerts (local blockage only: exits not full; stuck 30 s;
 # at most one alert per junction per 10 min); the rest are tuning candidates around v13
-BT_V13 = dict(BT_V12, learn_tau=True, alert_smart=True)
+BT_V12B = dict(BT_V12, learn_tau=True, alert_smart=True)
+BT_VARIANTS["Block-Tetris v12b"] = BT_V12B
+# v13 = ALL versions integrated (owner, 13 Nov). Generic operation = v12b; context switching as in v7:
+#   v4  predictive relay (acts on load + 60 s x rise), v6 Google-style measured travel time fused into
+#   rerouting costs, v7-final police officers (3, 5-min arrival, longest-queue-first manual control,
+#   take over dark junctions; dispatched on local-blockage alerts, dark signals, 120 s jams),
+#   special mode (held 300 s) on degraded discharge (learned tau), network accumulation or camera
+#   failure -> v8 back-pressure (and optionally v9 dynamic green) only while special
+BT_V13 = dict(BT_V12B, police=True, pred_relay=True, gmaps=True, special=True)
 BT_VARIANTS["Block-Tetris v13"] = BT_V13
-for _k, _o in {"comply 0.7": dict(comply=0.7), "comply 0.3": dict(comply=0.3), "reroute 30 s": dict(rr_period=30),
-               "roll 1.5": dict(roll=1.5), "gmax 55": dict(gmax=55.0), "low 1.0": dict(low=1.0)}.items():
-    BT_VARIANTS[f"Block-Tetris v13 ({_k})"] = dict(BT_V13, **_o)
+BT_VARIANTS["Block-Tetris v13 (special incl. v9 dyn)"] = dict(BT_V13, sp_dyn=True)
+BT_VARIANTS["Block-Tetris v13 (no special mode)"] = dict(BT_V13, special=False)
+BT_VARIANTS["Block-Tetris v13 (no police)"] = dict(BT_V13, police=False)
+BT_VARIANTS["Block-Tetris v13 (no v4/v6 prediction)"] = dict(BT_V13, pred_relay=False, gmaps=False)
+BT_VARIANTS["Block-Tetris v13 (rain trigger 5 %)"] = dict(BT_V13, sp_tau=1.05)
 
 
 class Runner:
@@ -318,7 +333,7 @@ class Runner:
             fill[ln] = min(1.0, tc.lane.getLastStepOccupancy(ln) / 100.0 * 1.35)
         self.fill = fill
         self.nveh = {ln: tc.lane.getLastStepVehicleNumber(ln) for ln in self.out_lanes}
-        if self.bo["dyn"]:
+        if self.bo["dyn"] or self.bo["sp_dyn"]:
             a = 0.05
             for ln, f in fill.items():
                 m = self.fmu.get(ln, f)
@@ -369,6 +384,11 @@ class Runner:
         tc = self.tc
         load = np.array([min(1.0, tc.edge.getLastStepOccupancy(e) / 100.0 * 1.35) for e in self.edges])
         trig = load >= 0.80
+        if self.bo["pred_relay"]:
+            rise = load - self.prev_load if self.prev_load is not None else np.zeros_like(load)
+            self.rise = 0.9 * self.rise + 0.1 * rise if self.rise is not None else rise
+            trig = trig | ((load + 60.0 * self.rise >= 0.80) & (load >= 0.5))
+            self.prev_load = load
         self.latched = np.where(trig, True, np.where(load < 0.60, False, self.latched))
         local = np.where(self.latched, np.clip((load - 0.60) / 0.40, 0.15, 1.0), 0.0)
         pe = np.append(self.p, 0.0)
@@ -455,14 +475,17 @@ class Runner:
         gate = np.array([(l.rsplit("_", 1)[0] in self.src_ids) if l else False for l in j.inl])
         o = self.bo
         Vn = V
-        if o["mp"] > 0:                              # back-pressure in weight units (MaxPressure-style)
+        mp = o["sp_mp"] if self.special_on else o["mp"]
+        dyn = o["dyn"] or (self.special_on and o["sp_dyn"])
+        if mp > 0:                                   # back-pressure in weight units (MaxPressure-style)
             wout = np.array([0.4 * self.nveh.get(l, 0) if l else 0.0 for l in j.outl])
-            Vn = np.clip(V - o["mp"] * wout, 0, None)
-        if o["dyn"]:
+            Vn = np.clip(V - mp * wout, 0, None)
+        if o["dyn"] or o["sp_dyn"]:
             a = 0.05
             d = V - j.mu
             j.mu = j.mu + a * d
             j.var = (1 - a) * (j.var + a * d * d)
+        if dyn:
             # backward thinking: chance that the exit road does NOT overflow (Gaussian on its fill)
             from math import erf
             fm = np.array([self.fmu.get(l, 0.0) if l else 1.0 for l in j.outl])
@@ -493,6 +516,7 @@ class Runner:
                 and t - j.last_move >= stuck_s:
             j.last_alert = t
             j.alerted = True
+            self.request_police(j, t, "local blockage under green")
             self.alerts.append(dict(t=int(t), tls=j.id, phase=int(j.cur), queue_W=round(float((V * j.G[j.cur]).sum()), 2),
                                     exit_fill=round(float(self.fills(j)[j.G[j.cur]].max()), 2),
                                     decision="green held, no discharge for 20 s: request officer; "
@@ -571,7 +595,7 @@ class Runner:
         j.planned = float(np.clip(Ts.max() if Ts.size else o["gmin"], o["gmin"], o["gmax"]))
         j.blocked_run = 0
         j.alerted = False
-        if o["dyn"]:
+        if o["dyn"] or (self.special_on and o["sp_dyn"]):
             # fixed allocation (gmin) + dynamic share of gdyn by mean + std of each phase's stacks
             S = j.G.astype(float) @ (j.mu + np.sqrt(j.var))
             tot = S[S > 0.05].sum()
@@ -591,6 +615,76 @@ class Runner:
                 Tplan = min(Tplan, max(o["gmin"], min(Troom)))
             j.planned = float(np.clip(Tplan, o["gmin"], o["gmax"]))
 
+    def request_police(self, j, t, why):
+        if not self.bo["police"] or j.officer is not None or j.id in self.p_queue:
+            return
+        self.p_queue[j.id] = (t, why)
+
+    def police_step(self, t, juncs):
+        """v7-final failsafe: dispatch free officers (worst first), 5-min travel, longest-queue-first
+        control on arrival, release after 300 s of calm"""
+        if not self.bo["police"]:
+            return
+        if t % 10 == 0:
+            for j in juncs.values():                 # jam: exits >= 70 % full for 120 s
+                if j.officer is not None:
+                    continue
+                f = self.fills(j)
+                jam = f[f < 1.0].mean() >= 0.7 if (f < 1.0).any() else False
+                j.jam_since = j.jam_since if jam else t
+                if jam and t - j.jam_since >= 120:
+                    self.request_police(j, t, "jam >= 70 % for 120 s")
+                if j.off:
+                    self.request_police(j, t, "signal dark")
+        while self.p_queue and self.free_officers > 0:
+            tid = max(self.p_queue, key=lambda k: self.V(juncs[k]).sum())
+            self.p_queue.pop(tid)
+            juncs[tid].officer = t + self.bo["police_delay"]
+            juncs[tid].calm_since_p = t + self.bo["police_delay"]
+            self.free_officers -= 1
+            self.dispatches += 1
+
+    def police_ctrl(self, j, t):
+        """officer on duty: longest queue first, hold until the arm clears (max 60 s); leaves after 300 s calm"""
+        V = self.V(j)
+        if V.sum() >= 2.0:
+            j.calm_since_p = t
+        if t - j.calm_since_p >= 300.0:
+            j.officer = None
+            j.p_active = False
+            self.free_officers += 1
+            if j.off:
+                self.tc.trafficlight.setProgram(j.id, "off")
+            return
+        if not getattr(j, "p_active", False):       # officer takes the junction (also a dark one)
+            j.p_active = True
+            j.state_str = ""
+            j.mode, j.g_start = "G", t
+            j.set_state(j.greens[j.cur])
+        j.tick(t)
+        if j.mode != "G":
+            return
+        el = t - j.g_start
+        q = j.G.astype(float) @ V
+        if el >= 10.0 and (q[j.cur] < 0.5 or el >= 60.0):
+            q[j.cur] = -1.0
+            j.go(int(np.argmax(q)), t)
+
+    def special_check(self, t, juncs):
+        """v7 idea: generic logic normally; special protections while degraded discharge (rain / heavy mix),
+        high network accumulation or a dead camera is detected (held 300 s)"""
+        if not self.bo["special"] or t % 10:
+            return
+        trig = self.acc >= self.bo["sp_acc"] or bool(self.est is not None and self.est.dead)
+        if self.bo["learn_tau"]:
+            taus = [j.tau for j in juncs.values()]
+            trig |= float(np.median(taus)) / 4.62 >= self.bo["sp_tau"]
+        trig |= any(j.off for j in juncs.values())
+        if trig:
+            self.special_until = t + 300
+        self.special_on = t < self.special_until
+        self.special_s += 10 if self.special_on else 0
+
     def reroute(self, t, closed):
         """pressure rerouting: road cost = free travel + queue / measured leave rate + capacity
         penalty; vehicles whose next roads are hot re-route (compliance share, at most every 120 s)"""
@@ -606,7 +700,10 @@ class Runner:
             delay = min(qe.get(e, 0.0) / rate, 900.0)
             fill = min(1.0, tc.edge.getLastStepOccupancy(e) / 100.0 * 1.35)
             pen = 0.0 if fill < 0.8 else (fill - 0.8) / 0.2 * 300.0
-            tc.edge.adaptTraveltime(e, self.edge_tt[e] + delay + pen)
+            cost = self.edge_tt[e] + delay + pen
+            if self.bo["gmaps"]:
+                cost = max(cost, min(tc.edge.getTraveltime(e), 1800.0))   # navigation-app travel time
+            tc.edge.adaptTraveltime(e, cost)
             if fill >= 0.8 or delay >= 90.0:
                 hot.add(e)
         if not hot:
@@ -741,6 +838,9 @@ class Runner:
         self.fmu, self.fvar = {}, {}
         self.lim_hist, self.lim_base, self.spilled, self.last_inc = {}, {}, {}, {}
         self.now = -1
+        self.special_on, self.special_until, self.special_s = False, -1, 0
+        self.prev_load, self.rise = None, None
+        self.p_queue, self.free_officers, self.dispatches = {}, self.bo["officers"], 0
         self.low_off_s = 0
         self.alerts, self.n_reroute = [], 0
         self.orate = defaultdict(float)
@@ -905,7 +1005,13 @@ class Runner:
                 self.relay()
             if self.ctrl.startswith("Block") and self.bo["area"]:
                 self.area_update(t)
+            if self.ctrl.startswith("Block"):
+                self.special_check(t, juncs)
+                self.police_step(t, juncs)
             for j in juncs.values():
+                if j.officer is not None and t >= j.officer:
+                    self.police_ctrl(j, t)
+                    continue
                 if j.off:
                     continue
                 if self.ctrl.startswith("Block") and self.bo["lowoff"] and not self.em and self.low_traffic(j, t):
@@ -922,6 +1028,7 @@ class Runner:
         loaded = tc.simulation.getLoadedNumber() if hasattr(tc.simulation, "getLoadedNumber") else None
         tc.close()
         m = self.metrics(trip_out, teleports)
+        m.update(police_dispatches=int(getattr(self, "dispatches", 0)), special_s=int(getattr(self, "special_s", 0)))
         if juncs:
             m["tau_mean"] = float(np.mean([j.tau for j in juncs.values()]))
             m["tau_min"] = float(np.min([j.tau for j in juncs.values()]))

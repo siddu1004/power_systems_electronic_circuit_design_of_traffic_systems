@@ -35,3 +35,4 @@ __pycache__/
 *.tmp
 Results/BlockTetris/*/jobs/
 sumo/
+Results/BlockTetris/*/jobs_*/

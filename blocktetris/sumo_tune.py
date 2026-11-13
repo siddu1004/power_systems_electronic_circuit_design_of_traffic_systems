@@ -32,7 +32,8 @@ VARIANTS_V11 = dict(VARIANTS_V10, **{k: S.BT_VARIANTS[k] for k in (
     "Block-Tetris v11 (unified)", "Block-Tetris v10 (real camera, no estimator)",
     "Block-Tetris v7-final (real camera, no estimator)")})
 VARIANTS_V12 = dict(VARIANTS_V11, **{k: S.BT_VARIANTS[k] for k in ("Block-Tetris v12", "Block-Tetris v12 (oracle camera)")})
-VARIANTS_V13 = dict(VARIANTS_V12, **{k: v for k, v in S.BT_VARIANTS.items() if k.startswith("Block-Tetris v13")})
+VARIANTS_V13 = dict(VARIANTS_V12, **{k: v for k, v in S.BT_VARIANTS.items()
+                                     if k.startswith("Block-Tetris v13") or k == "Block-Tetris v12b"})
 VARIANTS = {"v9": VARIANTS_V9, "v10": VARIANTS_V10, "v11": VARIANTS_V11, "v12": VARIANTS_V12,
             "v13": VARIANTS_V13}.get(ROUND, VARIANTS_V8)
 BASE = ["MaxPressure", "Actuated"]
