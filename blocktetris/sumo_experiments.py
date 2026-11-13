@@ -213,7 +213,7 @@ BT_V7F = dict(gmin=15.0, gsat=35.0, gmax=70.0, low=0.5, roll=2.0, mp=0.0, dark_p
               lowoff=False, adapt_gmin=False, area=False, cam=False, est=False,
               learn_tau=False, alert_smart=False, rr_period=60,
               police=False, officers=3, police_delay=300.0, pred_relay=False, gmaps=False,
-              special=False, sp_mp=0.25, sp_dyn=False, sp_tau=1.12, sp_acc=0.25)
+              special=False, sp_mp=0.25, sp_dyn=False, sp_tau=1.12, sp_acc=0.25, hol=False)
 # v8 = v7-final + back-pressure in weight units (exit-lane load subtracted from the stack),
 # chosen on tuning seeds 1-3 (sumo_tune.py); validated on the untouched seeds 11-13
 BT_V8 = dict(BT_V7F, mp=0.25)
@@ -269,6 +269,9 @@ BT_VARIANTS["Block-Tetris v13 (no special mode)"] = dict(BT_V13, special=False)
 BT_VARIANTS["Block-Tetris v13 (no police)"] = dict(BT_V13, police=False)
 BT_VARIANTS["Block-Tetris v13 (no v4/v6 prediction)"] = dict(BT_V13, pred_relay=False, gmaps=False)
 BT_VARIANTS["Block-Tetris v13 (rain trigger 5 %)"] = dict(BT_V13, sp_tau=1.05)
+# v3 head-of-line attribution in a shared lane: the first queued vehicle decides whether the lane moves,
+# so the lane's whole stack counts for that vehicle's movement (camera sees the lead vehicle)
+BT_VARIANTS["Block-Tetris v13 (+ v3 HOL)"] = dict(BT_V13, hol=True)
 
 
 class Runner:
@@ -282,6 +285,7 @@ class Runner:
     def measure(self, t):
         tc = self.tc
         q, cnt, hal = defaultdict(float), defaultdict(float), defaultdict(int)
+        lead = {}
         for ln in self.in_lanes:
             for v in tc.lane.getLastStepVehicleIDs(ln):
                 if v not in self.route:
@@ -294,7 +298,12 @@ class Runner:
                     nxt = r[i + 1] if 0 <= i < len(r) - 1 else None
                     q[(ln, nxt)] += w
                     hal[(ln, nxt)] += 1
+                    if self.bo["hol"]:
+                        pos = tc.vehicle.getLanePosition(v)
+                        if ln not in lead or pos > lead[ln][0]:
+                            lead[ln] = (pos, nxt)
         self.q, self.cnt, self.hal = q, cnt, hal
+        self.lead = {ln: nx for ln, (_, nx) in lead.items()}
         if self.ctrl.startswith("Block") and (self.bo["cam"] or self.bo["est"]):
             vis = {}
             for ln in self.in_lanes:
@@ -360,6 +369,8 @@ class Runner:
                 f = self.est.split(l, j.oute[i])
                 if f is None:
                     f = 1.0 / max(1, len(nx))
+                if self.bo["hol"] and l in self.lead and self.lead[l] in nx:
+                    f = 1.0 if j.oute[i] == self.lead[l] else 0.0
                 if self.bo["est"]:
                     lane_q = self.Qhat.get(l, 0.0)
                 else:
@@ -368,6 +379,9 @@ class Runner:
                 V[i] = lane_q * f / share[(l, j.oute[i])]
             elif j.blind:
                 V[i] = 0.6 * self.cnt[l] / max(1, sum(1 for k in range(j.n) if j.inl[k] == l))
+            elif self.bo["hol"] and l in self.lead:
+                lq = sum(w for (l2, _), w in self.q.items() if l2 == l)
+                V[i] = lq / share[(l, j.oute[i])] if j.oute[i] == self.lead[l] else 0.0
             else:
                 V[i] = self.q[(l, j.oute[i])] / share[(l, j.oute[i])]
         if self.ctrl.startswith("Block") and not real:
