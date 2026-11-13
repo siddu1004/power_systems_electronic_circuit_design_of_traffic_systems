@@ -45,7 +45,8 @@ WEIGHT = {k: v[1] for k, v in VTYPES.items()}
 T0, T1, HORIZON = 1500, 2700, 5400
 EVENTS = ["normal peak", "accident", "monsoon rain", "festival surge", "VIP closure",
           "signal power failure", "CCTV failure"]
-CTRLS = ["Fixed-40", "Actuated", "MaxPressure", "SITRA-MPC", "SCOOT-like", "SCATS-like", "Block-Tetris v7-final"]
+CTRLS = ["Fixed-40", "Actuated", "MaxPressure", "SITRA-MPC", "SCOOT-like", "SCATS-like", "Block-Tetris v7-final",
+         "Block-Tetris v8"]
 CLASS_W = {"trunk": 1.0, "primary": 1.0, "secondary": 0.6, "tertiary": 0.35,
            "trunk_link": 0.5, "primary_link": 0.5, "secondary_link": 0.35}
 AMBER, ALLRED = 3.0, 2.0
@@ -191,7 +192,10 @@ class TLS:
 
 
 BT_V7F = dict(gmin=15.0, gsat=35.0, gmax=70.0, low=0.5, roll=2.0, mp=0.0, dark_p=0.0)
-BT_VARIANTS = {"Block-Tetris v7-final": BT_V7F}
+# v8 = v7-final + back-pressure in weight units (exit-lane load subtracted from the stack),
+# chosen on tuning seeds 1-3 (sumo_tune.py); validated on the untouched seeds 11-13
+BT_V8 = dict(BT_V7F, mp=0.25)
+BT_VARIANTS = {"Block-Tetris v7-final": BT_V7F, "Block-Tetris v8": BT_V8}
 
 
 class Runner:
@@ -749,7 +753,8 @@ def plots(table, events, ctrls, out, scale):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     cols = {"Fixed-40": "#999999", "Actuated": "#22aa77", "MaxPressure": "#ee6633", "SITRA-MPC": "#7a3fa0",
-            "SCOOT-like": "#6655dd", "SCATS-like": "#e57aa0", "Block-Tetris v7-final": "#111111"}
+            "SCOOT-like": "#6655dd", "SCATS-like": "#e57aa0", "Block-Tetris v7-final": "#555555",
+            "Block-Tetris v8": "#111111"}
     fig, ax = plt.subplots(figsize=(14, 4.5))
     w = 0.8 / len(ctrls)
     for i, c in enumerate(ctrls):
