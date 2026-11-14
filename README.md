@@ -229,6 +229,18 @@ Across 32 physical Simscape runs replaying controller gate commands:
 
 ---
 
+## 🧱 Block-Tetris Algorithm (Python simulator, 5-junction chowrasta network)
+
+A block-queue signal controller with a full electrical equivalent (capacitor bottles, MOSFET taps, transmission-line roads, relay-style pressure alarms with per-hop attenuation and soft-start recovery). It is tested against Fixed-40 and MaxPressure on 8 induced-congestion scenarios, 8 seeds each.
+
+- Code and run instructions: [`blocktetris/README.md`](blocktetris/README.md)
+- Findings (11 holes in the original spec, fixes, ablation, clearance times): [`Report/BlockTetris_Results.md`](Report/BlockTetris_Results.md)
+- Figures and tables: `Results/BlockTetris/`
+
+Headline: the improved algorithm (v2) cuts average delay by 37–46 % against a fixed 40 s cycle in all 8 scenarios. The spec as literally written gridlocks.
+
+---
+
 ## 📁 Repository Organization & File Guide
 
 ```

@@ -1,0 +1,712 @@
+{
+ "T1|SITRA": {
+  "avgDelay": 17.334612819811777,
+  "netDelay": 18.81404890350974,
+  "maxQueue": 5.68,
+  "throughput": 127.57000000000001,
+  "n": 5,
+  "name": "Low"
+ },
+ "T1|Webster": {
+  "avgDelay": 16.450387840349457,
+  "netDelay": 17.84094590348304,
+  "maxQueue": 5.470000000000001,
+  "throughput": 128.04000000000002,
+  "n": 5,
+  "name": "Low"
+ },
+ "T1|Actuated": {
+  "avgDelay": 11.726045559856896,
+  "netDelay": 13.058045447877793,
+  "maxQueue": 5.0,
+  "throughput": 128.29000000000002,
+  "n": 5,
+  "name": "Low"
+ },
+ "T1|MaxPressure": {
+  "avgDelay": 13.932294868904426,
+  "netDelay": 15.23239082484665,
+  "maxQueue": 4.24,
+  "throughput": 127.92999999999999,
+  "n": 5,
+  "name": "Low"
+ },
+ "T1|BlockTetris": {
+  "avgDelay": 11.479645934550444,
+  "netDelay": 12.786675682559201,
+  "maxQueue": 3.96,
+  "throughput": 128.15,
+  "n": 5,
+  "name": "Low"
+ },
+ "T2|SITRA": {
+  "avgDelay": 25.592131024773874,
+  "netDelay": 27.697372546945495,
+  "maxQueue": 10.66,
+  "throughput": 220.7,
+  "n": 5,
+  "name": "Moderate"
+ },
+ "T2|Webster": {
+  "avgDelay": 26.773975271974983,
+  "netDelay": 28.636966301230313,
+  "maxQueue": 10.639999999999999,
+  "throughput": 217.34,
+  "n": 5,
+  "name": "Moderate"
+ },
+ "T2|Actuated": {
+  "avgDelay": 17.85256310486458,
+  "netDelay": 19.770464471093184,
+  "maxQueue": 9.8,
+  "throughput": 220.76999999999998,
+  "n": 5,
+  "name": "Moderate"
+ },
+ "T2|MaxPressure": {
+  "avgDelay": 25.410532119271103,
+  "netDelay": 27.027474496702034,
+  "maxQueue": 7.800000000000006,
+  "throughput": 220.56000000000003,
+  "n": 5,
+  "name": "Moderate"
+ },
+ "T2|BlockTetris": {
+  "avgDelay": 17.550303201667834,
+  "netDelay": 19.276032617486546,
+  "maxQueue": 7.909999999999999,
+  "throughput": 221.88000000000002,
+  "n": 5,
+  "name": "Moderate"
+ },
+ "T3|SITRA": {
+  "avgDelay": 60.713101165210674,
+  "netDelay": 63.22073474953886,
+  "maxQueue": 20.70999999999999,
+  "throughput": 279.26,
+  "n": 5,
+  "name": "High"
+ },
+ "T3|Webster": {
+  "avgDelay": 62.20907916565635,
+  "netDelay": 66.96239511342606,
+  "maxQueue": 20.890000000000008,
+  "throughput": 288.9700000000001,
+  "n": 5,
+  "name": "High"
+ },
+ "T3|Actuated": {
+  "avgDelay": 40.28605385219147,
+  "netDelay": 44.25983219709061,
+  "maxQueue": 17.519999999999992,
+  "throughput": 295.90000000000003,
+  "n": 5,
+  "name": "High"
+ },
+ "T3|MaxPressure": {
+  "avgDelay": 64.94099967886045,
+  "netDelay": 66.72810806813622,
+  "maxQueue": 21.6,
+  "throughput": 275.33000000000004,
+  "n": 5,
+  "name": "High"
+ },
+ "T3|BlockTetris": {
+  "avgDelay": 36.50053063132177,
+  "netDelay": 39.454012762539065,
+  "maxQueue": 15.610000000000017,
+  "throughput": 297.41,
+  "n": 5,
+  "name": "High"
+ },
+ "T4|SITRA": {
+  "avgDelay": 136.97493962366806,
+  "netDelay": 139.47610830447178,
+  "maxQueue": 51.810000000000194,
+  "throughput": 306.55,
+  "n": 5,
+  "name": "Oversaturated"
+ },
+ "T4|Webster": {
+  "avgDelay": 128.3763429138623,
+  "netDelay": 132.59091270074308,
+  "maxQueue": 60.12000000000016,
+  "throughput": 317.7600000000001,
+  "n": 5,
+  "name": "Oversaturated"
+ },
+ "T4|Actuated": {
+  "avgDelay": 107.51996921473865,
+  "netDelay": 113.22292184630291,
+  "maxQueue": 46.30999999999987,
+  "throughput": 334.16000000000014,
+  "n": 5,
+  "name": "Oversaturated"
+ },
+ "T4|MaxPressure": {
+  "avgDelay": 130.91732849335293,
+  "netDelay": 132.7879572855795,
+  "maxQueue": 60.95,
+  "throughput": 309.9200000000001,
+  "n": 5,
+  "name": "Oversaturated"
+ },
+ "T4|BlockTetris": {
+  "avgDelay": 97.4026051982078,
+  "netDelay": 102.59800148829916,
+  "maxQueue": 43.41999999999994,
+  "throughput": 342.1800000000001,
+  "n": 5,
+  "name": "Oversaturated"
+ },
+ "T5|SITRA": {
+  "avgDelay": 42.4824510791275,
+  "netDelay": 44.825263552570775,
+  "maxQueue": 15.429999999999996,
+  "throughput": 219.35,
+  "n": 5,
+  "name": "Step demand",
+  "clear": 76.0,
+  "cleared": "1/5",
+  "excess": 2662.4699999999993
+ },
+ "T5|Webster": {
+  "avgDelay": 46.33523958884175,
+  "netDelay": 48.23149866653256,
+  "maxQueue": 15.820000000000004,
+  "throughput": 215.06000000000003,
+  "n": 5,
+  "name": "Step demand",
+  "clear": NaN,
+  "cleared": "0/5",
+  "excess": 2927.4350000000004
+ },
+ "T5|Actuated": {
+  "avgDelay": 29.29890363962133,
+  "netDelay": 32.53317787898119,
+  "maxQueue": 14.600000000000003,
+  "throughput": 225.38000000000002,
+  "n": 5,
+  "name": "Step demand",
+  "clear": 131.66666666666666,
+  "cleared": "3/5",
+  "excess": 1332.6700000000023
+ },
+ "T5|MaxPressure": {
+  "avgDelay": 45.267414041515224,
+  "netDelay": 47.07667564645762,
+  "maxQueue": 14.0,
+  "throughput": 216.95,
+  "n": 5,
+  "name": "Step demand",
+  "clear": 117.0,
+  "cleared": "1/5",
+  "excess": 3176.655000000005
+ },
+ "T5|BlockTetris": {
+  "avgDelay": 27.327282937785533,
+  "netDelay": 29.98109739029074,
+  "maxQueue": 12.690000000000001,
+  "throughput": 224.74,
+  "n": 5,
+  "name": "Step demand",
+  "clear": 161.66666666666666,
+  "cleared": "3/5",
+  "excess": 1156.4100000000024
+ },
+ "T6|SITRA": {
+  "avgDelay": 24.281442341191497,
+  "netDelay": 28.021600278713276,
+  "maxQueue": 12.300000000000031,
+  "throughput": 167.68000000000004,
+  "n": 1,
+  "name": "Part 8 surge (deterministic)",
+  "clear": 106.0,
+  "cleared": "1/1",
+  "excess": 305.5850000000021
+ },
+ "T6|Webster": {
+  "avgDelay": 34.80745558007208,
+  "netDelay": 38.1251887121125,
+  "maxQueue": 22.45000000000006,
+  "throughput": 167.46000000000004,
+  "n": 1,
+  "name": "Part 8 surge (deterministic)",
+  "clear": NaN,
+  "cleared": "0/1",
+  "excess": 1867.21000000001
+ },
+ "T6|Actuated": {
+  "avgDelay": 17.233306236209504,
+  "netDelay": 21.066484728835217,
+  "maxQueue": 12.000000000000007,
+  "throughput": 168.55000000000007,
+  "n": 1,
+  "name": "Part 8 surge (deterministic)",
+  "clear": 63.0,
+  "cleared": "1/1",
+  "excess": 181.42500000000007
+ },
+ "T6|MaxPressure": {
+  "avgDelay": 20.048542561839458,
+  "netDelay": 22.39977935199159,
+  "maxQueue": 7.699999999999996,
+  "throughput": 168.13,
+  "n": 1,
+  "name": "Part 8 surge (deterministic)",
+  "clear": NaN,
+  "cleared": "0/1",
+  "excess": 411.95999999999464
+ },
+ "T6|BlockTetris": {
+  "avgDelay": 16.171640924399004,
+  "netDelay": 18.647892230867473,
+  "maxQueue": 6.299999999999998,
+  "throughput": 168.56,
+  "n": 1,
+  "name": "Part 8 surge (deterministic)",
+  "clear": 79.0,
+  "cleared": "1/1",
+  "excess": 250.2749999999974
+ },
+ "T7|SITRA": {
+  "avgDelay": 28.82526497431155,
+  "netDelay": 32.17096707389868,
+  "maxQueue": 15.799999999999994,
+  "throughput": 165.01,
+  "n": 5,
+  "name": "Part 8 surge (Poisson)",
+  "clear": 113.5,
+  "cleared": "2/5",
+  "excess": 947.5399999999987
+ },
+ "T7|Webster": {
+  "avgDelay": 37.39337156767306,
+  "netDelay": 40.36157848158917,
+  "maxQueue": 19.97000000000001,
+  "throughput": 160.87,
+  "n": 5,
+  "name": "Part 8 surge (Poisson)",
+  "clear": 50.0,
+  "cleared": "1/5",
+  "excess": 1756.7600000000057
+ },
+ "T7|Actuated": {
+  "avgDelay": 20.42772054371241,
+  "netDelay": 24.366824409626595,
+  "maxQueue": 13.209999999999999,
+  "throughput": 166.35,
+  "n": 5,
+  "name": "Part 8 surge (Poisson)",
+  "clear": 82.5,
+  "cleared": "4/5",
+  "excess": 405.555
+ },
+ "T7|MaxPressure": {
+  "avgDelay": 25.087191598932968,
+  "netDelay": 27.397205674420984,
+  "maxQueue": 9.899999999999997,
+  "throughput": 162.4,
+  "n": 5,
+  "name": "Part 8 surge (Poisson)",
+  "clear": NaN,
+  "cleared": "0/5",
+  "excess": 764.5900000000005
+ },
+ "T7|BlockTetris": {
+  "avgDelay": 16.58565325070223,
+  "netDelay": 19.383850989807605,
+  "maxQueue": 8.84,
+  "throughput": 166.76,
+  "n": 5,
+  "name": "Part 8 surge (Poisson)",
+  "clear": 33.25,
+  "cleared": "4/5",
+  "excess": 182.5800000000002
+ },
+ "T8|SITRA": {
+  "avgDelay": 73.88664955617746,
+  "netDelay": 77.11651058769283,
+  "maxQueue": 25.0,
+  "throughput": 270.28000000000003,
+  "n": 5,
+  "name": "Congested start",
+  "clear": 643.75,
+  "cleared": "4/5",
+  "excess": 10971.915000000019
+ },
+ "T8|Webster": {
+  "avgDelay": 83.8342107739558,
+  "netDelay": 86.40659698653614,
+  "maxQueue": 25.770000000000003,
+  "throughput": 266.49000000000007,
+  "n": 5,
+  "name": "Congested start",
+  "clear": 522.5,
+  "cleared": "2/5",
+  "excess": 12951.065000000013
+ },
+ "T8|Actuated": {
+  "avgDelay": 51.513616761201355,
+  "netDelay": 55.927893883637694,
+  "maxQueue": 25.0,
+  "throughput": 271.37000000000006,
+  "n": 5,
+  "name": "Congested start",
+  "clear": 484.4,
+  "cleared": "5/5",
+  "excess": 7816.55
+ },
+ "T8|MaxPressure": {
+  "avgDelay": 74.75061130182596,
+  "netDelay": 77.78407930873153,
+  "maxQueue": 25.0,
+  "throughput": 268.93999999999994,
+  "n": 5,
+  "name": "Congested start",
+  "clear": 736.0,
+  "cleared": "2/5",
+  "excess": 11233.130000000017
+ },
+ "T8|BlockTetris": {
+  "avgDelay": 50.0630847210674,
+  "netDelay": 54.11976616653112,
+  "maxQueue": 25.0,
+  "throughput": 271.6000000000001,
+  "n": 5,
+  "name": "Congested start",
+  "clear": 488.8,
+  "cleared": "5/5",
+  "excess": 7465.020000000004
+ },
+ "T9|SITRA": {
+  "avgDelay": 30.798219938920614,
+  "netDelay": 32.85237344656144,
+  "maxQueue": 11.449999999999996,
+  "throughput": 220.7,
+  "n": 5,
+  "name": "Incident B1",
+  "clear": 174.6,
+  "cleared": "5/5",
+  "excess": 829.0975000000001
+ },
+ "T9|Webster": {
+  "avgDelay": 37.20288291548785,
+  "netDelay": 39.01425193735223,
+  "maxQueue": 13.920000000000005,
+  "throughput": 216.7,
+  "n": 5,
+  "name": "Incident B1",
+  "clear": 148.0,
+  "cleared": "3/5",
+  "excess": 1462.1575000000007
+ },
+ "T9|Actuated": {
+  "avgDelay": 19.60902250103919,
+  "netDelay": 21.471394095521692,
+  "maxQueue": 9.4,
+  "throughput": 221.26999999999998,
+  "n": 5,
+  "name": "Incident B1",
+  "clear": 80.0,
+  "cleared": "5/5",
+  "excess": 272.85
+ },
+ "T9|MaxPressure": {
+  "avgDelay": 28.872856540584404,
+  "netDelay": 30.375372685901027,
+  "maxQueue": 8.350000000000003,
+  "throughput": 219.36999999999998,
+  "n": 5,
+  "name": "Incident B1",
+  "clear": 136.66666666666666,
+  "cleared": "3/5",
+  "excess": 644.165000000002
+ },
+ "T9|BlockTetris": {
+  "avgDelay": 18.23876341444387,
+  "netDelay": 19.823837378869392,
+  "maxQueue": 7.404999999999999,
+  "throughput": 222.05000000000004,
+  "n": 5,
+  "name": "Incident B1",
+  "clear": 81.4,
+  "cleared": "5/5",
+  "excess": 145.84749999999985
+ },
+ "T10|SITRA": {
+  "avgDelay": 34.0014674787097,
+  "netDelay": 44.78106546882349,
+  "maxQueue": 11.65,
+  "throughput": 220.62000000000006,
+  "n": 5,
+  "name": "Blockage B4 (spill-back)",
+  "clear": 247.75,
+  "cleared": "4/5",
+  "excess": 1767.5849999999998
+ },
+ "T10|Webster": {
+  "avgDelay": 34.03074218149058,
+  "netDelay": 45.276795803632744,
+  "maxQueue": 11.459999999999996,
+  "throughput": 217.10000000000005,
+  "n": 5,
+  "name": "Blockage B4 (spill-back)",
+  "clear": 153.0,
+  "cleared": "4/5",
+  "excess": 1336.2399999999998
+ },
+ "T10|Actuated": {
+  "avgDelay": 21.989392685788857,
+  "netDelay": 33.62721024880063,
+  "maxQueue": 10.44,
+  "throughput": 221.25,
+  "n": 5,
+  "name": "Blockage B4 (spill-back)",
+  "clear": 141.4,
+  "cleared": "5/5",
+  "excess": 871.5650000000007
+ },
+ "T10|MaxPressure": {
+  "avgDelay": 30.06250045648078,
+  "netDelay": 40.16506785083453,
+  "maxQueue": 9.639999999999999,
+  "throughput": 219.7,
+  "n": 5,
+  "name": "Blockage B4 (spill-back)",
+  "clear": 172.5,
+  "cleared": "4/5",
+  "excess": 870.2200000000012
+ },
+ "T10|BlockTetris": {
+  "avgDelay": 22.349363902814922,
+  "netDelay": 33.92220384198391,
+  "maxQueue": 8.76,
+  "throughput": 221.66000000000003,
+  "n": 5,
+  "name": "Blockage B4 (spill-back)",
+  "clear": 154.6,
+  "cleared": "5/5",
+  "excess": 980.8800000000007
+ },
+ "T11|SITRA": {
+  "avgDelay": 51.6639935928059,
+  "netDelay": 53.672593973130475,
+  "maxQueue": 21.670000000000012,
+  "throughput": 256.96999999999997,
+  "n": 5,
+  "name": "Platoon B2",
+  "clear": 223.0,
+  "cleared": "1/5",
+  "excess": 4266.984999999993
+ },
+ "T11|Webster": {
+  "avgDelay": 63.70231013327742,
+  "netDelay": 65.82755121071618,
+  "maxQueue": 29.429999999999932,
+  "throughput": 252.1999999999999,
+  "n": 5,
+  "name": "Platoon B2",
+  "clear": 283.0,
+  "cleared": "1/5",
+  "excess": 5334.769999999941
+ },
+ "T11|Actuated": {
+  "avgDelay": 42.29075671508207,
+  "netDelay": 44.74272876100942,
+  "maxQueue": 22.870000000000005,
+  "throughput": 261.53,
+  "n": 5,
+  "name": "Platoon B2",
+  "clear": 188.5,
+  "cleared": "2/5",
+  "excess": 3360.9149999999872
+ },
+ "T11|MaxPressure": {
+  "avgDelay": 51.74803813621372,
+  "netDelay": 53.357818694190954,
+  "maxQueue": 16.620000000000022,
+  "throughput": 253.20000000000005,
+  "n": 5,
+  "name": "Platoon B2",
+  "clear": 232.0,
+  "cleared": "1/5",
+  "excess": 4549.44500000002
+ },
+ "T11|BlockTetris": {
+  "avgDelay": 32.57351388482611,
+  "netDelay": 34.727148465144225,
+  "maxQueue": 17.130000000000024,
+  "throughput": 262.11,
+  "n": 5,
+  "name": "Platoon B2",
+  "clear": 218.25,
+  "cleared": "4/5",
+  "excess": 1893.9300000000087
+ },
+ "T12|SITRA": {
+  "avgDelay": 25.81401957671256,
+  "netDelay": 27.973050131788845,
+  "maxQueue": 10.77,
+  "throughput": 220.7,
+  "n": 5,
+  "name": "Sensor stuck B1",
+  "clear": 2.6,
+  "cleared": "5/5",
+  "excess": 32.62000000000022
+ },
+ "T12|Webster": {
+  "avgDelay": 26.773975271974983,
+  "netDelay": 28.636966301230313,
+  "maxQueue": 10.639999999999999,
+  "throughput": 217.34,
+  "n": 5,
+  "name": "Sensor stuck B1",
+  "clear": 0.0,
+  "cleared": "5/5",
+  "excess": 0.0
+ },
+ "T12|Actuated": {
+  "avgDelay": 23.974164860134316,
+  "netDelay": 26.096019968991023,
+  "maxQueue": 11.93,
+  "throughput": 221.3,
+  "n": 5,
+  "name": "Sensor stuck B1",
+  "clear": 140.6,
+  "cleared": "5/5",
+  "excess": 516.9300000000003
+ },
+ "T12|MaxPressure": {
+  "avgDelay": 43.082857912623126,
+  "netDelay": 46.03829046771422,
+  "maxQueue": 21.0,
+  "throughput": 218.66000000000003,
+  "n": 5,
+  "name": "Sensor stuck B1",
+  "clear": 136.5,
+  "cleared": "2/5",
+  "excess": 1697.8050000000057
+ },
+ "T12|BlockTetris": {
+  "avgDelay": 21.58543404835406,
+  "netDelay": 23.655933605118776,
+  "maxQueue": 12.54,
+  "throughput": 221.93,
+  "n": 5,
+  "name": "Sensor stuck B1",
+  "clear": 62.4,
+  "cleared": "5/5",
+  "excess": 395.03
+ },
+ "T13|SITRA": {
+  "avgDelay": 21.545650814541496,
+  "netDelay": 23.489651637122883,
+  "maxQueue": 9.36,
+  "throughput": 221.16000000000003,
+  "n": 5,
+  "name": "Sensor noise B1-B3",
+  "clear": 56.6,
+  "cleared": "5/5",
+  "excess": 93.965
+ },
+ "T13|Webster": {
+  "avgDelay": 26.773975271974983,
+  "netDelay": 28.636966301230313,
+  "maxQueue": 10.639999999999999,
+  "throughput": 217.34,
+  "n": 5,
+  "name": "Sensor noise B1-B3",
+  "clear": 0.0,
+  "cleared": "5/5",
+  "excess": 0.0
+ },
+ "T13|Actuated": {
+  "avgDelay": 27.007856684575717,
+  "netDelay": 29.405421329236685,
+  "maxQueue": 11.670000000000002,
+  "throughput": 217.38000000000002,
+  "n": 5,
+  "name": "Sensor noise B1-B3",
+  "clear": 424.25,
+  "cleared": "4/5",
+  "excess": 2190.205000000001
+ },
+ "T13|MaxPressure": {
+  "avgDelay": 29.911547092415333,
+  "netDelay": 31.53024072015534,
+  "maxQueue": 9.230000000000006,
+  "throughput": 217.84,
+  "n": 5,
+  "name": "Sensor noise B1-B3",
+  "clear": 0.0,
+  "cleared": "4/5",
+  "excess": 1262.405000000001
+ },
+ "T13|BlockTetris": {
+  "avgDelay": 20.369599517973086,
+  "netDelay": 22.14624929299072,
+  "maxQueue": 7.85,
+  "throughput": 221.70999999999998,
+  "n": 5,
+  "name": "Sensor noise B1-B3",
+  "clear": 41.6,
+  "cleared": "5/5",
+  "excess": 884.1449999999999
+ },
+ "T14|SITRA": {
+  "avgDelay": 29.59667591595953,
+  "netDelay": 31.72211147245007,
+  "maxQueue": 11.010000000000002,
+  "throughput": 220.7,
+  "n": 5,
+  "name": "Signal stuck off B3",
+  "clear": 219.2,
+  "cleared": "5/5",
+  "excess": 842.325000000001
+ },
+ "T14|Webster": {
+  "avgDelay": 29.769838241635426,
+  "netDelay": 31.63282927089075,
+  "maxQueue": 10.709999999999997,
+  "throughput": 217.34,
+  "n": 5,
+  "name": "Signal stuck off B3",
+  "clear": 213.0,
+  "cleared": "5/5",
+  "excess": 649.325
+ },
+ "T14|Actuated": {
+  "avgDelay": 21.650048792486796,
+  "netDelay": 23.79757010649271,
+  "maxQueue": 11.48,
+  "throughput": 221.07,
+  "n": 5,
+  "name": "Signal stuck off B3",
+  "clear": 189.8,
+  "cleared": "5/5",
+  "excess": 849.595
+ },
+ "T14|MaxPressure": {
+  "avgDelay": 31.47419045253654,
+  "netDelay": 33.06550699115277,
+  "maxQueue": 9.400000000000002,
+  "throughput": 218.93,
+  "n": 5,
+  "name": "Signal stuck off B3",
+  "clear": 143.0,
+  "cleared": "3/5",
+  "excess": 1302.9600000000028
+ },
+ "T14|BlockTetris": {
+  "avgDelay": 19.52334050648152,
+  "netDelay": 21.346821082643295,
+  "maxQueue": 8.28,
+  "throughput": 222.20999999999998,
+  "n": 5,
+  "name": "Signal stuck off B3",
+  "clear": 142.2,
+  "cleared": "5/5",
+  "excess": 544.2950000000002
+ }
+}

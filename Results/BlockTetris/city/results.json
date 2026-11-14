@@ -1,0 +1,118 @@
+{
+ "network": {
+  "junctions": 36,
+  "signalised": 32,
+  "osm_tagged_signals": 3,
+  "directed_roads": 56,
+  "gates": 15,
+  "exits": 15,
+  "dropped_arms": 8,
+  "directed_road_km": 43.8,
+  "max_travel_delay_s": 460
+ },
+ "targets": {
+  "road": "Vilankuruchi Road",
+  "cameras": [
+   15,
+   17
+  ]
+ },
+ "table": {
+  "0.05|normal|Fixed-40": {
+   "delay": 231.75638201892784,
+   "served": 0.8407203054772009
+  },
+  "0.05|normal|MaxPressure": {
+   "delay": 184.8271683780261,
+   "served": 0.8541098476033807
+  },
+  "0.05|normal|Block-Tetris v3": {
+   "delay": 92.55953312425427,
+   "served": 0.8954369484411164
+  },
+  "0.05|normal|Block-Tetris v6": {
+   "delay": 103.15288073631976,
+   "served": 0.8939832255029291
+  },
+  "0.05|busiest road closed|Fixed-40": {
+   "delay": 415.49281675754105,
+   "served": 0.774936256457075
+  },
+  "0.05|busiest road closed|MaxPressure": {
+   "delay": 536.1375834701242,
+   "served": 0.7024465565604612
+  },
+  "0.05|busiest road closed|Block-Tetris v3": {
+   "delay": 101.2444071445399,
+   "served": 0.897084321876635
+  },
+  "0.05|busiest road closed|Block-Tetris v6": {
+   "delay": 104.36897970067213,
+   "served": 0.8932783435654156
+  },
+  "0.05|2 cameras dead|Fixed-40": {
+   "delay": 231.75638201892784,
+   "served": 0.8407203054772009
+  },
+  "0.05|2 cameras dead|MaxPressure": {
+   "delay": 184.8271683780261,
+   "served": 0.8541098476033807
+  },
+  "0.05|2 cameras dead|Block-Tetris v3": {
+   "delay": 94.8465820629062,
+   "served": 0.8946342856661048
+  },
+  "0.05|2 cameras dead|Block-Tetris v6": {
+   "delay": 104.30508080760897,
+   "served": 0.8957900769233822
+  },
+  "0.07|normal|Fixed-40": {
+   "delay": 661.4218469795073,
+   "served": 0.6653105426720727
+  },
+  "0.07|normal|MaxPressure": {
+   "delay": 764.6990056744702,
+   "served": 0.5966205263941549
+  },
+  "0.07|normal|Block-Tetris v3": {
+   "delay": 163.2694410820417,
+   "served": 0.8760461683840841
+  },
+  "0.07|normal|Block-Tetris v6": {
+   "delay": 173.66999531437733,
+   "served": 0.8720979485566998
+  },
+  "0.07|busiest road closed|Fixed-40": {
+   "delay": 791.8417662611564,
+   "served": 0.6249467667649165
+  },
+  "0.07|busiest road closed|MaxPressure": {
+   "delay": 917.4843453997828,
+   "served": 0.544525088745611
+  },
+  "0.07|busiest road closed|Block-Tetris v3": {
+   "delay": 203.0959441387401,
+   "served": 0.8640676221635302
+  },
+  "0.07|busiest road closed|Block-Tetris v6": {
+   "delay": 183.8389231039252,
+   "served": 0.8744843954486048
+  },
+  "0.07|2 cameras dead|Fixed-40": {
+   "delay": 661.4218469795073,
+   "served": 0.6653105426720727
+  },
+  "0.07|2 cameras dead|MaxPressure": {
+   "delay": 764.6990056744702,
+   "served": 0.5966205263941549
+  },
+  "0.07|2 cameras dead|Block-Tetris v3": {
+   "delay": 178.91464457239243,
+   "served": 0.8681172632268626
+  },
+  "0.07|2 cameras dead|Block-Tetris v6": {
+   "delay": 184.13969992101127,
+   "served": 0.8694033242109424
+  }
+ }
+}

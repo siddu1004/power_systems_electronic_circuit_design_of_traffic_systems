@@ -1,0 +1,105 @@
+{
+ "variants": {
+  "Block-Tetris v7-final": {
+   "gmin": 15.0,
+   "gsat": 35.0,
+   "gmax": 70.0,
+   "low": 0.5,
+   "roll": 2.0,
+   "mp": 0.0,
+   "dark_p": 0.0
+  },
+  "Block-Tetris tune A (short greens)": {
+   "gmin": 10.0,
+   "gsat": 25.0,
+   "gmax": 50.0,
+   "low": 0.5,
+   "roll": 2.0,
+   "mp": 0.0,
+   "dark_p": 0.0
+  },
+  "Block-Tetris tune B (back-pressure)": {
+   "gmin": 15.0,
+   "gsat": 35.0,
+   "gmax": 70.0,
+   "low": 0.5,
+   "roll": 2.0,
+   "mp": 0.25,
+   "dark_p": 0.0
+  },
+  "Block-Tetris tune C (dark throttle)": {
+   "gmin": 15.0,
+   "gsat": 35.0,
+   "gmax": 70.0,
+   "low": 0.5,
+   "roll": 2.0,
+   "mp": 0.0,
+   "dark_p": 0.5
+  },
+  "Block-Tetris tune D (A+B+C)": {
+   "gmin": 10.0,
+   "gsat": 25.0,
+   "gmax": 50.0,
+   "low": 0.5,
+   "roll": 2.0,
+   "mp": 0.25,
+   "dark_p": 0.5
+  }
+ },
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "table": {
+  "MaxPressure": {
+   "normal peak": 392.1569701775887,
+   "accident": 500.42015519505367,
+   "monsoon rain": 467.35827240590453,
+   "festival surge": 671.7360419409193,
+   "signal power failure": 539.5268905948047
+  },
+  "Actuated": {
+   "normal peak": 393.6016028142237,
+   "accident": 514.1552553643223,
+   "monsoon rain": 533.4210920310786,
+   "festival surge": 676.4266035356359,
+   "signal power failure": 577.0409207004965
+  },
+  "Block-Tetris v7-final": {
+   "normal peak": 388.1481569022887,
+   "accident": 469.4965512037698,
+   "monsoon rain": 540.0002826906538,
+   "festival surge": 662.5626139584602,
+   "signal power failure": 529.85797343435
+  },
+  "Block-Tetris tune A (short greens)": {
+   "normal peak": 405.49697480479745,
+   "accident": 478.2844041471547,
+   "monsoon rain": 476.23779634067347,
+   "festival surge": 666.3981854412385,
+   "signal power failure": 527.6969294665101
+  },
+  "Block-Tetris tune B (back-pressure)": {
+   "normal peak": 384.9199765608044,
+   "accident": 464.51405310837725,
+   "monsoon rain": 503.4596865205835,
+   "festival surge": 654.07326304749,
+   "signal power failure": 521.9559804878
+  },
+  "Block-Tetris tune C (dark throttle)": {
+   "normal peak": 388.1481569022887,
+   "accident": 469.4965512037698,
+   "monsoon rain": 540.0002826906538,
+   "festival surge": 662.5626139584602,
+   "signal power failure": 529.85797343435
+  },
+  "Block-Tetris tune D (A+B+C)": {
+   "normal peak": 406.24699116706506,
+   "accident": 471.77703564133526,
+   "monsoon rain": 526.5994229043412,
+   "festival surge": 641.6219434901765,
+   "signal power failure": 521.8058123789705
+  }
+ }
+}
